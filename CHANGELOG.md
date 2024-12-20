@@ -1,5 +1,9 @@
 # CHANGELOGS
 
+## 0.0.6
+
+- Bug fixes
+
 ## 0.0.5
 
 - Allowed to draw the custom needle painter in Linear Bar Guages.

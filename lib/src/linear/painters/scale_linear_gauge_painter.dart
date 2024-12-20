@@ -192,38 +192,6 @@ class ScaleLinearGaugePainter extends CustomPainter {
     _drawBars(canvas, size);
   }
 
-  void _drawExponentialGauge(Canvas canvas, Size size) {
-    // Similar to default gauge, but vary the thickness exponentially
-    final Paint trackPaint = Paint()
-      ..strokeWidth = axisTrackStyle.thickness
-      ..style = PaintingStyle.stroke;
-
-    final double startX = axisSpaceExtent;
-    final double endX = size.width - axisSpaceExtent;
-
-    final Path path = Path();
-    path.moveTo(startX, size.height / 2);
-
-    for (double x = startX; x <= endX; x += 1) {
-      final double progress = (x - startX) / (endX - startX);
-      final double exponentialThickness =
-          axisTrackStyle.thickness * math.pow(progress, 2);
-
-      trackPaint.strokeWidth = exponentialThickness;
-
-      if (x > startX) {
-        canvas.drawLine(
-          Offset(x - 1, size.height / 2),
-          Offset(x, size.height / 2),
-          trackPaint,
-        );
-      }
-    }
-
-    // Draw ticks and labels if needed
-    _drawTicksAndLabels(canvas, size, startX, endX);
-  }
-
   void _drawFilledArea(Canvas canvas, Size size) {
     if (fillAreaPointers == null) {
       return;
@@ -253,10 +221,6 @@ class ScaleLinearGaugePainter extends CustomPainter {
         fillPaint,
       );
     }
-  }
-
-  void _drawGradientGauge(Canvas canvas, Size size) {
-    // Implement drawing methods for each gauge type
   }
 
   void _drawLinearMarkerPointer(Canvas canvas, Size size) {

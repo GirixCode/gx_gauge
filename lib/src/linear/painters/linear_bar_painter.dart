@@ -75,6 +75,7 @@ class LinearBarPainter extends CustomPainter {
         gapBetweenBars: gapBetweenBars,
         barPointers: barPointers,
         showNeedleInsideBar: showNeedleInsideBar,
+        customDrawNeedle: customDrawNeedle,
       );
     }
   }
