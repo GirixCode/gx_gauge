@@ -157,31 +157,6 @@ class ScaleLinearGaugePainter extends CustomPainter {
         maxValue: maximum);
   }
 
-  void _drawConcaveGauge(Canvas canvas, Size size) {
-    final Paint trackPaint = Paint()
-      ..color = axisTrackStyle.color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = axisTrackStyle.thickness;
-
-    final double startX = axisSpaceExtent;
-    final double endX = size.width - axisSpaceExtent;
-    final double centerY = size.height / 2;
-
-    final Path path = Path()
-      ..moveTo(startX, centerY)
-      ..quadraticBezierTo(
-        size.width / 2,
-        centerY - (size.height / 2),
-        endX,
-        centerY,
-      );
-
-    canvas.drawPath(path, trackPaint);
-
-    // Draw ticks and labels if needed
-    // _drawTicksAndLabelsOnPath(canvas, path);
-  }
-
   // Implement drawing methods for each gauge type
   void _drawDefaultGauge(Canvas canvas, Size size) {
     final double startX = axisSpaceExtent;

@@ -3,16 +3,6 @@ import 'package:girix_code_gauge/girix_code_gauge.dart';
 import 'package:girix_code_gauge/src/linear/painters/linear_bar_painter.dart';
 
 class GxLinearBarGauge extends StatelessWidget {
-  final GaugeValue value;
-  final List<LinearBarPointer> barPointers;
-  final bool showTooltip;
-  final LinearNeedle? needle;
-  final Size size;
-  final LinearGaugeDirection direction;
-  final AlignmentGeometry alignment;
-  final double gapBetweenBars;
-  final bool showNeedleInsideBar;
-  final GaugeTooltip? tooltip;
   const GxLinearBarGauge({
     super.key,
     this.direction = LinearGaugeDirection.horizontal,
@@ -25,7 +15,19 @@ class GxLinearBarGauge extends StatelessWidget {
     this.alignment = Alignment.centerLeft,
     this.showNeedleInsideBar = true,
     this.tooltip,
+    this.customDrawNeedle,
   });
+  final GaugeValue value;
+  final List<LinearBarPointer> barPointers;
+  final bool showTooltip;
+  final LinearNeedle? needle;
+  final Size size;
+  final LinearGaugeDirection direction;
+  final AlignmentGeometry alignment;
+  final double gapBetweenBars;
+  final bool showNeedleInsideBar;
+  final GaugeTooltip? tooltip;
+  final void Function(Canvas canvas, Offset position)? customDrawNeedle;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,8 @@ class GxLinearBarGauge extends StatelessWidget {
           needle: needle,
           showNeedleInsideBar: showNeedleInsideBar,
           direction: direction,
-          tooltip: tooltip),
+          tooltip: tooltip,
+          customDrawNeedle: customDrawNeedle),
       size: size,
     );
   }

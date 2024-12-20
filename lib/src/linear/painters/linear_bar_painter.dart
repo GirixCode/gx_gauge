@@ -12,6 +12,7 @@ class LinearBarPainter extends CustomPainter {
     this.needle,
     this.showNeedleInsideBar = true,
     this.tooltip,
+    this.customDrawNeedle,
   });
   final GaugeValue gaugeValue;
   final List<LinearBarPointer> barPointers;
@@ -20,6 +21,8 @@ class LinearBarPainter extends CustomPainter {
   final LinearNeedle? needle;
   final bool showNeedleInsideBar;
   final GaugeTooltip? tooltip;
+  void Function(Canvas canvas, Offset position)? customDrawNeedle;
+
   @override
   void paint(Canvas canvas, Size size) {
     // draw the gauge
@@ -63,15 +66,16 @@ class LinearBarPainter extends CustomPainter {
   ) {
     if (needle != null && needle!.enabled) {
       LinearBarUtils.drawNeedle(
-          canvas: canvas,
-          size: size,
-          needle: needle!,
-          value: gaugeValue.value,
-          minValue: gaugeValue.min,
-          maxValue: gaugeValue.max,
-          gapBetweenBars: gapBetweenBars,
-          barPointers: barPointers,
-          showNeedleInsideBar: showNeedleInsideBar);
+        canvas: canvas,
+        size: size,
+        needle: needle!,
+        value: gaugeValue.value,
+        minValue: gaugeValue.min,
+        maxValue: gaugeValue.max,
+        gapBetweenBars: gapBetweenBars,
+        barPointers: barPointers,
+        showNeedleInsideBar: showNeedleInsideBar,
+      );
     }
   }
 

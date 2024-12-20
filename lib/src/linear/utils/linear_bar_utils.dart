@@ -122,17 +122,17 @@ class LinearBarUtils {
   }
 
   // Draw Needle for the Linear Bars
-  static void drawNeedle({
-    required Canvas canvas,
-    required Size size,
-    required LinearNeedle needle,
-    required double value,
-    required double minValue,
-    required double maxValue,
-    required double gapBetweenBars,
-    required List<LinearBarPointer> barPointers,
-    required bool showNeedleInsideBar,
-  }) {
+  static void drawNeedle(
+      {required Canvas canvas,
+      required Size size,
+      required LinearNeedle needle,
+      required double value,
+      required double minValue,
+      required double maxValue,
+      required double gapBetweenBars,
+      required List<LinearBarPointer> barPointers,
+      required bool showNeedleInsideBar,
+      void Function(Canvas canvas, Offset position)? customDrawNeedle}) {
     double needleValue = value;
 
     // Gap Value
@@ -169,6 +169,7 @@ class LinearBarUtils {
       thickness: needle.offset,
       value: needleValue,
       needle: needle,
+      customDrawNeedle: customDrawNeedle,
     );
   }
 }
