@@ -2,6 +2,12 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-09-29
+
+### Changed
+
+- README and package description now mention that `gx_gauge` was formerly published as `girix_code_gauge`, and link to the migration guide. No code changes.
+
 ## [1.0.0] - 2026-09-29
 
 The first release under the name `gx_gauge`. **The package was previously published as [`girix_code_gauge`](https://pub.dev/packages/girix_code_gauge).** [doc/MIGRATION.md](doc/MIGRATION.md) maps every old API to the new one.
@@ -89,6 +95,7 @@ Releases published under the previous package name.
 
 - Initial release: progress, scale, bar and stepper linear gauges, and a radial gauge with gradient, ranges and pointers.
 
+[1.0.1]: https://github.com/GirixCode/gx_gauge/releases/tag/v1.0.1
 [1.0.0]: https://github.com/GirixCode/gx_gauge/releases/tag/v1.0.0
 [0.0.6]: https://pub.dev/packages/girix_code_gauge/versions/0.0.6
 [0.0.5]: https://pub.dev/packages/girix_code_gauge/versions/0.0.5

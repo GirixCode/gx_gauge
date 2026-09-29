@@ -33,3 +33,7 @@ coverage/
 
 # FVM (the pinned version lives in .fvmrc)
 .fvm/
+
+# Local working notes (not part of the repository)
+/CLAUDE.md
+/docs/

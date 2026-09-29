@@ -2,6 +2,8 @@
 
 Customizable, animated and accessible gauges for Flutter: linear progress, stepper, scale and bar gauges, plus a radial gauge.
 
+> Formerly published as [`girix_code_gauge`](https://pub.dev/packages/girix_code_gauge). Upgrading? See the [migration guide](doc/MIGRATION.md).
+
 [![pub package](https://img.shields.io/pub/v/gx_gauge.svg)](https://pub.dev/packages/gx_gauge)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
