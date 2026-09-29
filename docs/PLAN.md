@@ -39,7 +39,7 @@ Each decision has a recommended default. The plan below assumes these defaults, 
 | D7 | Lint set | `flutter_lints` (latest), plus `strict-casts`, `strict-inference` and `strict-raw-types`, plus a curated rule list that includes `public_member_api_docs`. **Drop `always_specify_types`.** | `always_specify_types` conflicts with the recommended Dart style (`omit_local_variable_types`) and adds noise. |
 | D8 | Animation API | Every gauge becomes implicitly animated through `duration` and `curve` parameters (the `ImplicitlyAnimatedWidget` pattern). **Remove `GxAnimatedProgressLinearGauge` and the `GaugeAnimationType` enum.** | This matches Flutter's own `AnimatedContainer`-style API, lets users pass any `Curve`, and fixes CR Progress 1–3 by construction. |
 | D9 | Features that can't be done well | Implement them or remove them. **Don't ship accepted-but-ignored parameters.** See §5 for the decision on each feature. | An ignored parameter is a silent bug. |
-| D10 | GitHub repo | Rename `GirixCode/girix-code-gauge` to `GirixCode/gx-gauge`. GitHub redirects the old URL. | Keeps the repo URL, the package name and the issue tracker consistent. |
+| D10 | GitHub repo | Rename `GirixCode/girix-code-gauge` to `GirixCode/gx_gauge` (done by the owner, 2026-09-29). GitHub redirects the old URL. | Keeps the repo URL, the package name and the issue tracker consistent. |
 
 ---
 
@@ -142,7 +142,7 @@ Exit criteria: CI is green, and the example builds on the new names. (CI is defe
 ### Phase 1 progress log
 
 - Done:
-  - Package renamed to `gx_gauge` 1.0.0-dev.1, with repository URLs pointing to `GirixCode/gx-gauge` (D10).
+  - Package renamed to `gx_gauge` 1.0.0-dev.1, with repository URLs pointing to `GirixCode/gx_gauge` (D10).
   - The `platforms:` restriction removed, so pana detects all 6 platforms.
   - Topics set per §3.1, and `documentation:` dropped (pub.dev hosts the API docs).
   - All §3.2 renames applied, plus `GxLinearNeedle.needleType` → `shape` and enum value `tapperedLine` → `taperedLine`.
@@ -158,7 +158,7 @@ Exit criteria: CI is green, and the example builds on the new names. (CI is defe
   - `LinearGaugeOrientation`/`LinearGaugeDirection` and `ScaleLinearGaugeType` were **removed without a replacement parameter**. Adding `Axis direction` or `ranges:` now would mean shipping parameters that are ignored, so they arrive in Phase 3 (§5) together with their implementations.
   - No `@internal` annotations. They need `package:meta` as a dependency, which D6 rules out. Not exporting from `lib/src/` is the standard pub convention and is sufficient.
   - `screenshots:` in the pubspec moved to Phase 5, together with moving the images to `doc/screenshots/`.
-- **Owner actions (not done by Claude):** rename the GitHub repo to `gx-gauge`, and create the `legacy` branch and publish `girix_code_gauge 0.0.7` (§3.3). Both are outward-facing.
+- **Owner actions (not done by Claude):** rename the GitHub repo to `gx_gauge`, and create the `legacy` branch and publish `girix_code_gauge 0.0.7` (§3.3). Both are outward-facing.
 - The root `README.md` still documents the old API. It is rewritten in Phase 5, as planned.
 
 ---
@@ -214,7 +214,7 @@ Exit criteria: all 24 CR items and the 14 below-threshold items are closed, `flu
   - `flutter analyze --fatal-infos` is clean, with `public_member_api_docs` on.
   - 116 package tests and 2 example tests pass.
   - `dart doc` reports 0 warnings.
-  - **pana scores 160/160.** The only note is that the `gx-gauge` repo URL is unreachable, which clears once the repo is renamed (D10).
+  - **pana scores 160/160.** The only note is that the `gx_gauge` repo URL is unreachable, which clears once the repo is renamed (D10).
   - Version bumped to 1.0.0-dev.2.
 - **Done:**
   - §4.1: `core/gauge_scale.dart` (`GaugeScale`, `LinearTrack`, `formatGaugeValue`), with every painter moved onto it. Bars, fill areas and radial ranges use explicit `start`/`end`.
