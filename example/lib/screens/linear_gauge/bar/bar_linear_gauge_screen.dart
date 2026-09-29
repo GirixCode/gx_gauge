@@ -279,11 +279,64 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                 ],
               )),
           const SizedBox(height: 10),
+          ItemCard(
+              title: "With a custom painter needle",
+              child: GxLinearBarGauge(
+                size: const Size(410, 25),
+                value: const GaugeValue(
+                  value: 70,
+                  min: 0,
+                  max: 100,
+                ),
+                gapBetweenBars: 5,
+                showNeedleInsideBar: true,
+                needle: const LinearNeedle(
+                    enabled: true,
+                    color: Colors.orange,
+                    size: Size(30.5, 75),
+                    position: LinearGaugeNeedlePosition.top,
+                    needleType: LinearGaugeNeedleType.custom),
+                customDrawNeedle: _drawCustomNeedle,
+                barPointers: [
+                  LinearBarPointer(
+                      // strokeCap: StrokeCap.square,
+                      // paintingStyle: PaintingStyle.stroke,
+                      radius: const Radius.circular(5),
+                      value: 75,
+                      thickness: 5,
+                      color: Colors.blueGrey.shade300),
+                  LinearBarPointer(
+                      radius: const Radius.circular(5),
+                      color: Colors.blueGrey,
+                      value: 25,
+                      thickness: 5),
+                  // LinearBarPointer(
+                  //     color: Colors.blueGrey.shade600, value: 50, thickness: 5),
+                ],
+              )),
+          const SizedBox(height: 10),
 
           const SizedBox(height: 100),
         ],
       ),
     );
+
+    // Custom Needle Painter
+  }
+
+  void _drawCustomNeedle(Canvas canvas, Offset position) {
+    final Paint paint = Paint()
+      ..color = Colors.orange
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 1.0;
+
+    final Path path = Path()
+      ..moveTo(position.dx, position.dy)
+      ..lineTo(position.dx + 15, position.dy + 15)
+      ..lineTo(position.dx - 15, position.dy + 15)
+      ..close();
+
+    canvas.drawPath(path, paint);
   }
 
   Widget buildCard(

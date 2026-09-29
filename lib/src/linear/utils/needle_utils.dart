@@ -60,7 +60,9 @@ class NeedleUtils {
 
     final Paint needlePaint = Paint()
       ..color = needleColor
-      ..style = PaintingStyle.fill;
+      ..style = needle.paintingStyle
+      ..strokeWidth = needle.strokeWidth
+      ..strokeCap = needle.strokeCap;
 
     switch (needleType) {
       case LinearGaugeNeedleType.circle:
