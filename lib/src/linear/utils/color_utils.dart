@@ -17,24 +17,26 @@ class ColorUtils {
       900: shadeColor(color, 0.4),
     };
 
-    return MaterialColor(color.value, colorSwatch);
+    return MaterialColor(color.toARGB32(), colorSwatch);
   }
 
+  /// Darkens [color] towards black by [factor] (0 = unchanged, 1 = black).
   static Color shadeColor(Color color, double factor) {
-    return Color.fromRGBO(
-      (color.red * (1 - factor)).round(),
-      (color.green * (1 - factor)).round(),
-      (color.blue * (1 - factor)).round(),
-      1,
+    return Color.from(
+      alpha: 1,
+      red: color.r * (1 - factor),
+      green: color.g * (1 - factor),
+      blue: color.b * (1 - factor),
     );
   }
 
+  /// Lightens [color] towards white by [factor] (0 = unchanged, 1 = white).
   static Color tintColor(Color color, double factor) {
-    return Color.fromRGBO(
-      color.red + ((255 - color.red) * factor).round(),
-      color.green + ((255 - color.green) * factor).round(),
-      color.blue + ((255 - color.blue) * factor).round(),
-      1,
+    return Color.from(
+      alpha: 1,
+      red: color.r + (1 - color.r) * factor,
+      green: color.g + (1 - color.g) * factor,
+      blue: color.b + (1 - color.b) * factor,
     );
   }
 }

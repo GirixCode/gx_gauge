@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/linear_gauge_common_model.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_needle_model.dart';
-import 'package:girix_code_gauge/src/linear/utils/needle_utils.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 
 class LinearBarUtils {
   // Draw the Linear bars
@@ -9,7 +10,7 @@ class LinearBarUtils {
   static void drawBars({
     required Canvas canvas,
     required Size size,
-    required List<LinearBarPointer> barPointers,
+    required List<GxLinearBarPointer> bars,
     required double value,
     required double gapBetweenBars,
     required double minValue,
@@ -25,13 +26,13 @@ class LinearBarUtils {
     final double gapValue = (gapBetweenBars / maxValue) * width;
 
     // Find out the no of gaps between bars
-    final int noOfGaps = barPointers.length - 1;
+    final int noOfGaps = bars.length - 1;
 
     // Calculate the size after gap between bars
     // final double widthAfterGap = size.width - (gapValue * noOfGaps);
 
-    for (int index = 0; index < barPointers.length; index++) {
-      final LinearBarPointer barPointer = barPointers[index];
+    for (int index = 0; index < bars.length; index++) {
+      final GxLinearBarPointer barPointer = bars[index];
       final double barToDrawnValue = barPointer.value;
 
       final Paint paintAxis = Paint()
@@ -55,7 +56,7 @@ class LinearBarUtils {
         final double tempBarToDrawn = barToDrawnWidth - gapToDrawn;
 
         // Adjust the size to bartoDrawnValue because of the [noOfGaps] and BarPointers.length
-        barToDrawnWidth = tempBarToDrawn + (gapToDrawn / barPointers.length);
+        barToDrawnWidth = tempBarToDrawn + (gapToDrawn / bars.length);
       }
 
       final Rect barRect = Rect.fromLTWH(
@@ -76,16 +77,12 @@ class LinearBarUtils {
       // Text label and style
 
       if (barPointer.label != null) {
-        final GaugeLabel label = barPointer.label!;
+        final GxGaugeLabel label = barPointer.label!;
         final TextPainter textPainter = TextPainter(
-            text: TextSpan(
-              text: label.label,
-              style: label.style,
-            ),
-            textDirection: TextDirection.rtl,
-            textAlign: barPointer.label?.textAlign ?? TextAlign.center);
-
-        textPainter.layout();
+          text: TextSpan(text: label.label, style: label.style),
+          textDirection: TextDirection.rtl,
+          textAlign: barPointer.label?.textAlign ?? TextAlign.center,
+        )..layout();
         final double textWidth = textPainter.width;
         final double textHeight = textPainter.height;
 
@@ -122,27 +119,28 @@ class LinearBarUtils {
   }
 
   // Draw Needle for the Linear Bars
-  static void drawNeedle(
-      {required Canvas canvas,
-      required Size size,
-      required LinearNeedle needle,
-      required double value,
-      required double minValue,
-      required double maxValue,
-      required double gapBetweenBars,
-      required List<LinearBarPointer> barPointers,
-      required bool showNeedleInsideBar,
-      void Function(Canvas canvas, Offset position)? customDrawNeedle}) {
+  static void drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required GxLinearNeedle needle,
+    required double value,
+    required double minValue,
+    required double maxValue,
+    required double gapBetweenBars,
+    required List<GxLinearBarPointer> bars,
+    required bool showNeedleInsideBar,
+    GxNeedlePainter? needlePainter,
+  }) {
     double needleValue = value;
 
     // Gap Value
     if (gapBetweenBars > 0 && showNeedleInsideBar) {
       // Find out the no of gaps between bars
-      final int noOfGaps = barPointers.length - 1;
+      final int noOfGaps = bars.length - 1;
       // Check whether the needleValue is inside the gap range
       if (noOfGaps > 0) {
         for (int index = 0; index < noOfGaps; index++) {
-          final double startValue = barPointers[index].value;
+          final double startValue = bars[index].value;
           final double endValue = startValue + gapBetweenBars;
 
           if (needleValue == startValue) {
@@ -160,7 +158,7 @@ class LinearBarUtils {
       }
     }
 
-// Draw the needle
+    // Draw the needle
     NeedleUtils.drawIt(
       canvas: canvas,
       size: size,
@@ -169,7 +167,7 @@ class LinearBarUtils {
       thickness: needle.offset,
       value: needleValue,
       needle: needle,
-      customDrawNeedle: customDrawNeedle,
+      needlePainter: needlePainter,
     );
   }
 }

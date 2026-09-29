@@ -1,37 +1,38 @@
 // lib/src/linear/painters/linear_gauge_painter.dart
 
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/linear_gauge_common_model.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_needle_model.dart';
-import 'package:girix_code_gauge/src/linear/utils/needle_utils.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 
-/// [ProgressLinearPainter] is a custom painter class that is used to paint the GxProgressLinearGauge widget.
+/// [ProgressLinearPainter] is a custom painter class that is used to paint the GxLinearProgressGauge widget.
 ///
 /// It extends the [CustomPainter] class from Flutter.
 ///
 /// The [ProgressLinearPainter] class contains the following properties:
 ///
-/// - [value]: An instance of the [GaugeValue] class that holds the value of the gauge.
+/// - [gaugeValue]: An instance of the [GxGaugeValue] class that holds the value of the gauge.
 ///
-/// - [style]: An instance of the [ProgressLinearStyle] class that holds the style properties of the gauge.
+/// - [style]: An instance of the [GxLinearProgressStyle] class that holds the style properties of the gauge.
 ///
 class ProgressLinearPainter extends CustomPainter {
   ProgressLinearPainter({
     required this.gaugeValue,
     this.needle,
-    this.customDrawNeedle,
+    this.needlePainter,
     this.reverse = false,
     this.showLabel = false,
     this.height,
     required this.style,
     this.label,
   });
-  final GaugeValue gaugeValue;
-  final ProgressLinearStyle style;
-  final GaugeLabel? label;
-  final LinearNeedle? needle;
-  final void Function(Canvas canvas, Offset position)? customDrawNeedle;
+  final GxGaugeValue gaugeValue;
+  final GxLinearProgressStyle style;
+  final GxGaugeLabel? label;
+  final GxLinearNeedle? needle;
+  final GxNeedlePainter? needlePainter;
   final bool reverse;
   final bool showLabel;
   final double? height;
@@ -48,7 +49,8 @@ class ProgressLinearPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ProgressLinearPainter oldDelegate) {
-    final bool shouldRepaint = oldDelegate.gaugeValue != gaugeValue ||
+    final bool shouldRepaint =
+        oldDelegate.gaugeValue != gaugeValue ||
         oldDelegate.style != style ||
         oldDelegate.needle != needle ||
         oldDelegate.reverse != reverse ||
@@ -63,7 +65,7 @@ class ProgressLinearPainter extends CustomPainter {
     // Style Properties: Background
     final double thicknessBg = style.thickness;
     final Color backgroundColor =
-        style.backgroundColor ?? style.color.withOpacity(0.2);
+        style.backgroundColor ?? style.color.withValues(alpha: 0.2);
     final double barWidth = size.width;
     final double barHeight = size.height;
 
@@ -77,8 +79,10 @@ class ProgressLinearPainter extends CustomPainter {
     final double value = gaugeValue.value;
 
     // Calculate progress ratio
-    final double progress =
-        ((value - minValue) / (maxValue - minValue)).clamp(0.0, 1.0);
+    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
+      0.0,
+      1.0,
+    );
 
     final double progressWidth = size.width * progress;
 
@@ -124,21 +128,29 @@ class ProgressLinearPainter extends CustomPainter {
       }
     } else {
       final Rect rect = Rect.fromLTWH(0, 0, barWidth, barHeight);
-      final RRect rrect =
-          RRect.fromRectAndRadius(rect, style.radius ?? Radius.zero);
+      final RRect rrect = RRect.fromRectAndRadius(
+        rect,
+        style.radius ?? Radius.zero,
+      );
       canvas.drawRRect(rrect, backgroundPaint);
 
       final double frontWidth = progress * barWidth;
       late final Rect valueRect;
       if (reverse) {
-        valueRect =
-            Rect.fromLTWH(barWidth - frontWidth, 0, frontWidth, barHeight);
+        valueRect = Rect.fromLTWH(
+          barWidth - frontWidth,
+          0,
+          frontWidth,
+          barHeight,
+        );
       } else {
         valueRect = Rect.fromLTWH(0, 0, frontWidth, barHeight);
       }
 
-      final RRect valueRRect =
-          RRect.fromRectAndRadius(valueRect, style.radius ?? Radius.zero);
+      final RRect valueRRect = RRect.fromRectAndRadius(
+        valueRect,
+        style.radius ?? Radius.zero,
+      );
 
       canvas.drawRRect(valueRRect, foregroundPaint);
     }
@@ -154,9 +166,7 @@ class ProgressLinearPainter extends CustomPainter {
         ),
         textAlign: label?.textAlign ?? TextAlign.center,
         textDirection: TextDirection.ltr,
-      );
-
-      textPainter.layout();
+      )..layout();
       final Offset offset = label!.offset ?? Offset.zero;
 
       double x;
@@ -183,20 +193,21 @@ class ProgressLinearPainter extends CustomPainter {
       //     gaugeValue: gaugeValue,
       //     dense: style.dense,
       //     style: style,
-      //     customDrawNeedle: customDrawNeedle,
+      //     needlePainter: needlePainter,
       //     needle: needle!);
 
       // Draw the needle
       NeedleUtils.drawIt(
-          dense: style.dense,
-          canvas: canvas,
-          size: size,
-          minValue: gaugeValue.min,
-          maxValue: gaugeValue.max,
-          value: gaugeValue.value,
-          needle: needle!,
-          thickness: style.thickness,
-          customDrawNeedle: customDrawNeedle);
+        dense: style.dense,
+        canvas: canvas,
+        size: size,
+        minValue: gaugeValue.min,
+        maxValue: gaugeValue.max,
+        value: gaugeValue.value,
+        needle: needle!,
+        thickness: style.thickness,
+        needlePainter: needlePainter,
+      );
     }
   }
 }

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
 
 class TooltipUtils {
-  static void drawTooltip(
-      {required Canvas canvas,
-      required Size size,
-      required GaugeTooltip tooltip,
-      required double minValue,
-      required double maxValue,
-      required double value}) {
-    final double progress =
-        ((value - minValue) / (maxValue - minValue)).clamp(0.0, 1.0);
+  static void drawTooltip({
+    required Canvas canvas,
+    required Size size,
+    required GxGaugeTooltip tooltip,
+    required double minValue,
+    required double maxValue,
+    required double value,
+  }) {
+    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
+      0.0,
+      1.0,
+    );
 
     final Color strokeColor = tooltip.borderColor ?? tooltip.color;
 
@@ -36,10 +39,10 @@ class TooltipUtils {
     Offset tooltipBarStart = Offset(tooltipX, 0);
     Offset tooltipBarEnd = Offset(tooltipX, 0);
 
-    if (tooltip.position == GaugeTooltipPosition.top) {
+    if (tooltip.position == GxTooltipPosition.top) {
       tooltipY = -size.height / 2 - tooltip.offset;
       tooltipBarEnd = Offset(tooltipX, tooltipY + tooltipHeight / 2);
-    } else if (tooltip.position == GaugeTooltipPosition.bottom) {
+    } else if (tooltip.position == GxTooltipPosition.bottom) {
       tooltipY = size.height + size.height / 2 + tooltip.offset;
       tooltipBarStart = Offset(tooltipX, size.height);
       tooltipBarEnd = Offset(tooltipX, tooltipY - tooltipHeight / 2);
@@ -77,14 +80,15 @@ class TooltipUtils {
     );
 
     canvas.drawRRect(rRect, paint);
-    if (tooltip.type == GaugeTooltipType.normal && tooltip.showPointer) {
+    if (tooltip.type == GxTooltipType.normal && tooltip.showPointer) {
       canvas.drawLine(
-          tooltipBarStart,
-          tooltipBarEnd,
-          Paint()
-            ..color = strokeColor
-            ..strokeCap = tooltip.strokeCap
-            ..strokeWidth = tooltip.thickness);
+        tooltipBarStart,
+        tooltipBarEnd,
+        Paint()
+          ..color = strokeColor
+          ..strokeCap = tooltip.strokeCap
+          ..strokeWidth = tooltip.thickness,
+      );
     }
 
     // Tooltip text painter
@@ -103,17 +107,13 @@ class TooltipUtils {
     }
 
     final TextPainter textPainter = TextPainter(
-        text: TextSpan(
-          text: tooltipText,
-          style: tooltip.textStyle.copyWith(
-            fontSize: textSize,
-            color: textColor,
-          ),
-        ),
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.center);
-
-    textPainter.layout();
+      text: TextSpan(
+        text: tooltipText,
+        style: tooltip.textStyle.copyWith(fontSize: textSize, color: textColor),
+      ),
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.center,
+    )..layout();
     final double textWidth = textPainter.width;
     final double textHeight = textPainter.height;
 

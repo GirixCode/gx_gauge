@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/models.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:girix_code_gauge/src/linear/models/stepper_linear_gauge_model.dart';
-import 'package:girix_code_gauge/src/linear/utils/color_utils.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/stepper_linear_gauge_model.dart';
+import 'package:gx_gauge/src/linear/utils/color_utils.dart';
 
 class StepperLinearPainter extends CustomPainter {
   StepperLinearPainter({
     required this.gaugeValue,
-    required this.stepperPointers,
+    required this.steps,
     required this.style,
     required this.shape,
     required this.shapeSize,
@@ -16,18 +16,17 @@ class StepperLinearPainter extends CustomPainter {
     required this.inActiveStyle,
     this.onPointerTap,
   });
-  final GaugeValue gaugeValue;
-  final List<StepperPointer> stepperPointers;
-  final ProgressLinearStyle style;
-  final StepperShape shape;
+  final GxGaugeValue gaugeValue;
+  final List<GxStepperStep> steps;
+  final GxLinearProgressStyle style;
+  final GxStepperShape shape;
   final double shapeSize;
   final TextStyle activeStyle;
   final TextStyle inActiveStyle;
   final double offset;
   final Function? onPointerTap;
   late Size? size;
-  bool checkListEquality(
-      List<StepperPointer> list1, List<StepperPointer> list2) {
+  bool checkListEquality(List<GxStepperStep> list1, List<GxStepperStep> list2) {
     if (list1.length != list2.length) {
       return false;
     }
@@ -58,8 +57,9 @@ class StepperLinearPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant StepperLinearPainter oldDelegate) {
-    final bool isRepent = gaugeValue != oldDelegate.gaugeValue ||
-        !checkListEquality(stepperPointers, oldDelegate.stepperPointers) ||
+    final bool isRepent =
+        gaugeValue != oldDelegate.gaugeValue ||
+        !checkListEquality(steps, oldDelegate.steps) ||
         style != oldDelegate.style ||
         shape != oldDelegate.shape ||
         shapeSize != oldDelegate.shapeSize ||
@@ -69,7 +69,7 @@ class StepperLinearPainter extends CustomPainter {
 
   void _drawAxis(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = style.backgroundColor ?? style.color.withOpacity(0.2)
+      ..color = style.backgroundColor ?? style.color.withValues(alpha: 0.2)
       ..strokeWidth = style.thickness
       ..style = style.paintingStyle
       ..strokeCap = style.strokeCap;
@@ -87,13 +87,17 @@ class StepperLinearPainter extends CustomPainter {
     /// Progress of the stepper without the shape size
     final double progress = actualProgress;
 
-    final int actualInterval = stepperPointers.length;
+    final int actualInterval = steps.length;
 
     // Draw axis Line
     final Offset axisStart = Offset(
-        shapeSize / 2, axisHeight / 2); // Start the axis from the shape size
-    final Offset axisEnd = Offset(axisWidth - (shapeSize / 2),
-        axisHeight / 2); // Remove the shape size from the axis width
+      shapeSize / 2,
+      axisHeight / 2,
+    ); // Start the axis from the shape size
+    final Offset axisEnd = Offset(
+      axisWidth - (shapeSize / 2),
+      axisHeight / 2,
+    ); // Remove the shape size from the axis width
     canvas.drawLine(axisStart, axisEnd, paint);
 
     // Progress Line
@@ -103,10 +107,12 @@ class StepperLinearPainter extends CustomPainter {
       ..style = style.paintingStyle
       ..strokeCap = style.strokeCap;
     final Offset progressStart = Offset(shapeSize / 2, axisHeight / 2);
-    final Offset progressEnd =
-        Offset(progress - (shapeSize / 2), axisHeight / 2);
+    final Offset progressEnd = Offset(
+      progress - (shapeSize / 2),
+      axisHeight / 2,
+    );
 
-// Draw the progress line
+    // Draw the progress line
     canvas.drawLine(progressStart, progressEnd, progressPaint);
 
     // Draw the Stepper Pointer
@@ -125,19 +131,23 @@ class StepperLinearPainter extends CustomPainter {
         ..color = isPointerInLine
             ? style.color
             : style.backgroundColor ??
-                ColorUtils.getMaterialColor(style.color).shade100
+                  ColorUtils.getMaterialColor(style.color).shade100
         ..strokeWidth = style.thickness
         ..style = style.paintingStyle;
 
-      final StepperPointer pointer = stepperPointers[i];
-      if (shape == StepperShape.circle) {
+      final GxStepperStep pointer = steps[i];
+      if (shape == GxStepperShape.circle) {
         canvas.drawCircle(startPoint, shapeSize / 2, stepperPaint);
-      } else if (shape == StepperShape.rectangle) {
+      } else if (shape == GxStepperShape.rectangle) {
         canvas.drawRect(
-            Rect.fromCenter(
-                center: startPoint, width: shapeSize, height: shapeSize),
-            stepperPaint);
-      } else if (shape == StepperShape.diamond) {
+          Rect.fromCenter(
+            center: startPoint,
+            width: shapeSize,
+            height: shapeSize,
+          ),
+          stepperPaint,
+        );
+      } else if (shape == GxStepperShape.diamond) {
         final Path diamondPath = Path()
           ..moveTo(x, y - shapeSize / 2)
           ..lineTo(x - shapeSize / 2, y)
@@ -151,23 +161,26 @@ class StepperLinearPainter extends CustomPainter {
 
       // Draw the pointer Index
       final TextPainter textIndexPainter = TextPainter(
-          text: TextSpan(
-              text: (pointer.value?.toInt() ?? i + 1).toString(),
-              style: isPointerInLine ? activeStyle : inActiveStyle),
-          textDirection: TextDirection.ltr)
-        ..layout(maxWidth: stepWidth);
+        text: TextSpan(
+          text: (pointer.value?.toInt() ?? i + 1).toString(),
+          style: isPointerInLine ? activeStyle : inActiveStyle,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: stepWidth);
       textIndexPainter.paint(
-          canvas, Offset(x - textIndexPainter.width / 2, y / 1.5));
+        canvas,
+        Offset(x - textIndexPainter.width / 2, y / 1.5),
+      );
 
       // Draw the Stepper Pointer Label
       final TextPainter textPainter = TextPainter(
-          text: TextSpan(text: pointer.label.label, style: pointer.label.style),
-          textDirection: TextDirection.ltr)
-        ..layout(maxWidth: stepWidth);
+        text: TextSpan(text: pointer.label.label, style: pointer.label.style),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: stepWidth);
       textPainter.paint(
-          canvas,
-          Offset(x - textPainter.width / 2,
-              y + offset + 5)); // 10 is the height of the stepper pointer
+        canvas,
+        Offset(x - textPainter.width / 2, y + offset + 5),
+      ); // 10 is the height of the stepper pointer
 
       // On Pointer Tap
       if (onPointerTap != null) {}

@@ -1,11 +1,11 @@
 // lib/src/radial/painters/radial_gauge_painter.dart
-import 'dart:math' as Math;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/models.dart';
-import 'package:girix_code_gauge/src/common/utils/typedef.dart';
-import 'package:girix_code_gauge/src/radial/models/radial_gauge_style.dart';
-import 'package:girix_code_gauge/src/radial/utils/angle_utils.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/radial/models/radial_gauge_style.dart';
+import 'package:gx_gauge/src/radial/utils/angle_utils.dart';
 
 /// The [RadialGaugePainter] is used to paint the radial gauge.
 ///
@@ -13,9 +13,9 @@ import 'package:girix_code_gauge/src/radial/utils/angle_utils.dart';
 ///
 /// The [RadialGaugePainter] class contains the following properties:
 ///
-/// - [value]: An instance of the [GaugeValue] class that holds the value of the gauge.
+/// - [value]: An instance of the [GxGaugeValue] class that holds the value of the gauge.
 ///
-/// - [style]: An instance of the [RadialGaugeStyle] class that holds the style properties of the gauge.
+/// - [style]: An instance of the [GxRadialGaugeStyle] class that holds the style properties of the gauge.
 ///
 class RadialGaugePainter extends CustomPainter {
   RadialGaugePainter({
@@ -36,16 +36,16 @@ class RadialGaugePainter extends CustomPainter {
     required this.needleCircleInnerColor,
     this.needle,
     this.pointers,
-    this.valueToMajorTickCallback,
-    this.valueToLabelFormatCallback,
-    this.valueToLabelStyleCallback,
-    this.rangeBars,
+    this.majorTickStyler,
+    this.labelFormatter,
+    this.labelStyler,
+    this.ranges,
   });
-  final GaugeValue value;
-  final RadialGaugeStyle style;
-  final RadialTickStyle majorTickStyle;
-  final RadialTickStyle minorTickStyle;
-  final RadialTickLabelStyle labelTickStyle;
+  final GxGaugeValue value;
+  final GxRadialGaugeStyle style;
+  final GxRadialTickStyle majorTickStyle;
+  final GxRadialTickStyle minorTickStyle;
+  final GxRadialTickLabelStyle labelTickStyle;
   final int interval;
   final int minorTicksPerInterval;
   final double startAngleInDegree;
@@ -55,21 +55,20 @@ class RadialGaugePainter extends CustomPainter {
   final bool showLabels;
   final bool showValueAtCenter;
   final bool showNeedle;
-  final RadialNeedle? needle;
+  final GxRadialNeedle? needle;
   final Color needleCircleInnerColor;
   // Marker Pointer
-  final List<RadialPointer>? pointers;
+  final List<GxRadialPointer>? pointers;
   // Callbacks
-  final ValueToLabelFormatCallback? valueToLabelFormatCallback;
-  final ValueToRadialMajorTickCallback? valueToMajorTickCallback;
-  final ValueToRadialLabelStyleCallback? valueToLabelStyleCallback;
-  List<RadialBarRange>? rangeBars;
+  final GxValueLabelFormatter? labelFormatter;
+  final GxValueTickStyler<GxRadialTickStyle>? majorTickStyler;
+  final GxValueLabelStyler<GxRadialTickLabelStyle>? labelStyler;
+  List<GxRadialRange>? ranges;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const double pi = Math.pi;
     final double radius =
-        (Math.min(size.width, size.height) / 2) - style.thickness / 2;
+        (math.min(size.width, size.height) / 2) - style.thickness / 2;
     final Offset center = Offset(size.width / 2, size.height / 2);
 
     final double startAngle = AngleUtils.degreesToRadians(startAngleInDegree);
@@ -89,34 +88,37 @@ class RadialGaugePainter extends CustomPainter {
 
     if (showNeedle && needle != null) {
       _drawNeedle(
-          canvas: canvas,
-          size: size,
-          center: center,
-          radius: radius,
-          startAngle: startAngle,
-          sweepAngle: sweepAngle,
-          needleValue: value.value,
-          needle: needle!);
+        canvas: canvas,
+        size: size,
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        sweepAngle: sweepAngle,
+        needleValue: value.value,
+        needle: needle!,
+      );
     }
 
     if (pointers != null && pointers!.isNotEmpty) {
       _drawPointers(
-          canvas: canvas,
-          size: size,
-          center: center,
-          radius: radius,
-          startAngle: startAngle,
-          sweepAngle: sweepAngle);
+        canvas: canvas,
+        size: size,
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        sweepAngle: sweepAngle,
+      );
     }
 
-    if (rangeBars != null && rangeBars!.isNotEmpty) {
+    if (ranges != null && ranges!.isNotEmpty) {
       _drawBarLabels(
-          canvas: canvas,
-          size: size,
-          center: center,
-          radius: radius,
-          startAngle: startAngle,
-          sweepAngle: sweepAngle);
+        canvas: canvas,
+        size: size,
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        sweepAngle: sweepAngle,
+      );
     }
   }
 
@@ -126,18 +128,18 @@ class RadialGaugePainter extends CustomPainter {
   }
 
   // Draw Labels
-  void _drawBarLabels(
-      {required Canvas canvas,
-      required Size size,
-      required Offset center,
-      required double radius,
-      required double startAngle,
-      required double sweepAngle}) {
-    for (final RadialBarRange bar in rangeBars!) {
+  void _drawBarLabels({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+  }) {
+    for (final GxRadialRange bar in ranges!) {
       final double startValue = bar.startValue;
       final double endValue = bar.endValue;
       final Color? color = bar.color;
-      final String labelText = bar.label.label;
       final double height = bar.height;
       final double offset = bar.offset; // Offset from the Radial Gauge Arc
 
@@ -157,14 +159,19 @@ class RadialGaugePainter extends CustomPainter {
       // Draw arc
       final Rect rect = Rect.fromCircle(center: center, radius: barRadius);
       canvas.drawArc(
-          rect, startBarAngle, endBarAngle - startBarAngle, false, barPaint);
+        rect,
+        startBarAngle,
+        endBarAngle - startBarAngle,
+        false,
+        barPaint,
+      );
 
       // Draw Label
       // final double labelAngle = (startBarAngle + endBarAngle) / 2;
       // final double labelRadius = barRadius + height / 2 + 10;
 
-      // final double labelX = center.dx + labelRadius * Math.cos(labelAngle);
-      // final double labelY = center.dy + labelRadius * Math.sin(labelAngle);
+      // final double labelX = center.dx + labelRadius * math.cos(labelAngle);
+      // final double labelY = center.dy + labelRadius * math.sin(labelAngle);
 
       // final TextPainter textPainter = TextPainter(
       //   text: TextSpan(
@@ -185,7 +192,7 @@ class RadialGaugePainter extends CustomPainter {
       // // Rotate and align the label text with the bar
       // final double angle = AngleUtils.radiansToDegrees(labelAngle);
       // final Matrix4 matrix = Matrix4.identity()..translate(labelX, labelY);
-      // // ..rotateZ(angle + Math.pi / 180);
+      // // ..rotateZ(angle + math.pi / 180);
 
       // canvas.save();
       // canvas.transform(matrix.storage);
@@ -217,34 +224,34 @@ class RadialGaugePainter extends CustomPainter {
       if (i == totalMinorTicks) {
         continue;
       }
-      double x1 = center.dx + (radius - minorTickLength) * Math.cos(minorAngle);
-      double y1 = center.dy + (radius - minorTickLength) * Math.sin(minorAngle);
-      double x2 = center.dx + (radius * Math.cos(minorAngle));
-      double y2 = center.dy + radius * Math.sin(minorAngle);
+      double x1 = center.dx + (radius - minorTickLength) * math.cos(minorAngle);
+      double y1 = center.dy + (radius - minorTickLength) * math.sin(minorAngle);
+      double x2 = center.dx + (radius * math.cos(minorAngle));
+      double y2 = center.dy + radius * math.sin(minorAngle);
 
-      if (minorTickStyle.position == RadialElementPosition.outside) {
-        x1 = center.dx + (radius + minorTickLength) * Math.cos(minorAngle);
-        y1 = center.dy + (radius + minorTickLength) * Math.sin(minorAngle);
+      if (minorTickStyle.position == GxRadialElementPosition.outside) {
+        x1 = center.dx + (radius + minorTickLength) * math.cos(minorAngle);
+        y1 = center.dy + (radius + minorTickLength) * math.sin(minorAngle);
       } else {
-        x1 = center.dx + (radius - minorTickLength) * Math.cos(minorAngle);
-        y1 = center.dy + (radius - minorTickLength) * Math.sin(minorAngle);
+        x1 = center.dx + (radius - minorTickLength) * math.cos(minorAngle);
+        y1 = center.dy + (radius - minorTickLength) * math.sin(minorAngle);
       }
 
       // End point depends on the alignment
 
-      if (minorTickStyle.alignment == RadialElementAlignment.center) {
-        x2 = center.dx + (radius * Math.cos(minorAngle));
-        y2 = center.dy + radius * Math.sin(minorAngle);
-      } else if (minorTickStyle.alignment == RadialElementAlignment.end) {
-        x1 = center.dx + (radius - style.thickness / 2) * Math.cos(minorAngle);
-        y1 = center.dy + (radius - style.thickness / 2) * Math.sin(minorAngle);
-        x2 = center.dx + (radius - minorTickLength) * Math.cos(minorAngle);
-        y2 = center.dy + (radius - minorTickLength) * Math.sin(minorAngle);
-      } else if (minorTickStyle.alignment == RadialElementAlignment.start) {
-        x1 = center.dx + (radius + style.thickness / 2) * Math.cos(minorAngle);
-        y1 = center.dy + (radius + style.thickness / 2) * Math.sin(minorAngle);
-        x2 = center.dx + (radius + minorTickLength) * Math.cos(minorAngle);
-        y2 = center.dy + (radius + minorTickLength) * Math.sin(minorAngle);
+      if (minorTickStyle.alignment == GxRadialElementAlignment.center) {
+        x2 = center.dx + (radius * math.cos(minorAngle));
+        y2 = center.dy + radius * math.sin(minorAngle);
+      } else if (minorTickStyle.alignment == GxRadialElementAlignment.end) {
+        x1 = center.dx + (radius - style.thickness / 2) * math.cos(minorAngle);
+        y1 = center.dy + (radius - style.thickness / 2) * math.sin(minorAngle);
+        x2 = center.dx + (radius - minorTickLength) * math.cos(minorAngle);
+        y2 = center.dy + (radius - minorTickLength) * math.sin(minorAngle);
+      } else if (minorTickStyle.alignment == GxRadialElementAlignment.start) {
+        x1 = center.dx + (radius + style.thickness / 2) * math.cos(minorAngle);
+        y1 = center.dy + (radius + style.thickness / 2) * math.sin(minorAngle);
+        x2 = center.dx + (radius + minorTickLength) * math.cos(minorAngle);
+        y2 = center.dy + (radius + minorTickLength) * math.sin(minorAngle);
       }
 
       final Paint minorTickPaint = Paint()
@@ -258,25 +265,27 @@ class RadialGaugePainter extends CustomPainter {
   }
 
   // Draw Needle for the Radial Gauge
-  void _drawNeedle(
-      {required Canvas canvas,
-      required Size size,
-      required Offset center,
-      required double radius,
-      required double startAngle,
-      required double sweepAngle,
-      required double needleValue,
-      required RadialNeedle needle}) {
+  void _drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+    required double needleValue,
+    required GxRadialNeedle needle,
+  }) {
     /// Needle Value and Style
 
     final double needleAngle =
         startAngle + (needleValue / value.max) * sweepAngle;
 
-    final double needleLength =
-        needle.bottomOffset != null ? (-needle.bottomOffset!) : 1;
+    final double needleLength = needle.bottomOffset != null
+        ? (-needle.bottomOffset!)
+        : 1;
 
     // Offset the start point to avoid overlap with the circle stroke
-    final NeedleCircle needleCircle = needle.circle;
+    final GxNeedleCap needleCircle = needle.circle;
     final double needleThickness = needle.thickness;
 
     /// Needle Offsets
@@ -284,8 +293,8 @@ class RadialGaugePainter extends CustomPainter {
     final double topOffeset = needle.topOffest ?? 0;
 
     final Offset needleStart = Offset(
-      center.dx + ((needleLength + startOffset - 1.5) * Math.cos(needleAngle)),
-      center.dy + ((needleLength + startOffset - 1.5) * Math.sin(needleAngle)),
+      center.dx + ((needleLength + startOffset - 1.5) * math.cos(needleAngle)),
+      center.dy + ((needleLength + startOffset - 1.5) * math.sin(needleAngle)),
     );
 
     late double needleEndX;
@@ -296,42 +305,47 @@ class RadialGaugePainter extends CustomPainter {
     late double needleRightY;
 
     // Calculate the points for the needle path with constant width
-    if (needle.alignment == RadialElementAlignment.start) {
-      needleEndX = center.dx +
-          (topOffeset + radius + style.thickness / 2) * Math.cos(needleAngle);
-      needleEndY = center.dy +
-          (topOffeset + radius + style.thickness / 2) * Math.sin(needleAngle);
-    } else if (needle.alignment == RadialElementAlignment.end) {
-      needleEndX = center.dx +
-          (topOffeset + radius - style.thickness / 2) * Math.cos(needleAngle);
-      needleEndY = center.dy +
-          (topOffeset + radius - style.thickness / 2) * Math.sin(needleAngle);
+    if (needle.alignment == GxRadialElementAlignment.start) {
+      needleEndX =
+          center.dx +
+          (topOffeset + radius + style.thickness / 2) * math.cos(needleAngle);
+      needleEndY =
+          center.dy +
+          (topOffeset + radius + style.thickness / 2) * math.sin(needleAngle);
+    } else if (needle.alignment == GxRadialElementAlignment.end) {
+      needleEndX =
+          center.dx +
+          (topOffeset + radius - style.thickness / 2) * math.cos(needleAngle);
+      needleEndY =
+          center.dy +
+          (topOffeset + radius - style.thickness / 2) * math.sin(needleAngle);
     } else {
-      needleEndX = center.dx + (radius * Math.cos(needleAngle));
-      needleEndY = center.dy + (radius * Math.sin(needleAngle));
+      needleEndX = center.dx + (radius * math.cos(needleAngle));
+      needleEndY = center.dy + (radius * math.sin(needleAngle));
     }
 
     /// Needle Offset Path
     final Offset needleEnd = Offset(needleEndX, needleEndY);
 
-    if (needle.shape == RadialNeedleShape.line) {
+    if (needle.shape == GxRadialNeedleShape.line) {
       final Paint needlePaint = Paint()
         ..color = needle.color
         ..strokeWidth = needleThickness
         ..style = PaintingStyle.stroke
         ..strokeCap = needle.strokeCap
-        ..shader = needle.gradient
-            ?.createShader(Rect.fromLTWH(0, 0, size.width, needle.thickness));
+        ..shader = needle.gradient?.createShader(
+          Rect.fromLTWH(0, 0, size.width, needle.thickness),
+        );
 
       canvas.drawLine(needleStart, needleEnd, needlePaint);
-    } else if (needle.shape == RadialNeedleShape.tapperedLine) {
-      needleLeftX = center.dx - ((needleThickness / 2) * Math.sin(needleAngle));
-      needleLeftY = center.dy + ((needleThickness / 2) * Math.cos(needleAngle));
+    } else if (needle.shape == GxRadialNeedleShape.taperedLine) {
+      needleLeftX = center.dx - ((needleThickness / 2) * math.sin(needleAngle));
+      needleLeftY = center.dy + ((needleThickness / 2) * math.cos(needleAngle));
 
       needleRightX =
-          center.dx + ((needleThickness / 2) * Math.sin(needleAngle));
+          center.dx + ((needleThickness / 2) * math.sin(needleAngle));
       needleRightY =
-          center.dy - ((needleThickness / 2) * Math.cos(needleAngle));
+          center.dy - ((needleThickness / 2) * math.cos(needleAngle));
       final Offset leftSide = Offset(needleLeftX, needleLeftY);
       final Offset rightSide = Offset(needleRightX, needleRightY);
 
@@ -346,8 +360,9 @@ class RadialGaugePainter extends CustomPainter {
         ..color = needle.color
         ..strokeWidth = needleThickness
         ..style = PaintingStyle.fill
-        ..shader = needle.gradient
-            ?.createShader(Rect.fromLTWH(0, 0, size.width, needle.thickness));
+        ..shader = needle.gradient?.createShader(
+          Rect.fromLTWH(0, 0, size.width, needle.thickness),
+        );
       canvas.drawPath(needlePath, needlePaint);
     }
 
@@ -367,9 +382,10 @@ class RadialGaugePainter extends CustomPainter {
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(
-          center,
-          needleCircle.radius - (needleCircle.strokeWidth / 2),
-          needleCircleStrokePaint);
+        center,
+        needleCircle.radius - (needleCircle.strokeWidth / 2),
+        needleCircleStrokePaint,
+      );
 
       if (showValueAtCenter) {
         _drawValueAtCenter(canvas, center, size);
@@ -378,27 +394,29 @@ class RadialGaugePainter extends CustomPainter {
   }
 
   // Draw Pointers for the Radial Gauge
-  void _drawPointers(
-      {required Canvas canvas,
-      required Size size,
-      required Offset center,
-      required double radius,
-      required double startAngle,
-      required double sweepAngle}) {
-    for (final RadialPointer pointer in pointers!) {
+  void _drawPointers({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+  }) {
+    for (final GxRadialPointer pointer in pointers!) {
       final double pointerValue = pointer.value;
 
       // Check Needle in Pointer
       if (pointer.needle != null && pointer.showNeedle) {
         _drawNeedle(
-            canvas: canvas,
-            size: size,
-            center: center,
-            radius: radius,
-            startAngle: startAngle,
-            sweepAngle: sweepAngle,
-            needleValue: pointerValue,
-            needle: pointer.needle!);
+          canvas: canvas,
+          size: size,
+          center: center,
+          radius: radius,
+          startAngle: startAngle,
+          sweepAngle: sweepAngle,
+          needleValue: pointerValue,
+          needle: pointer.needle!,
+        );
       }
 
       if (!pointer.showPointer) {
@@ -408,12 +426,12 @@ class RadialGaugePainter extends CustomPainter {
       // Draw Pointers shape
       final double pointerAngle =
           startAngle + (pointerValue / value.max) * sweepAngle;
-      final RadialPointerShape shape = pointer.shape;
+      final GxRadialPointerShape shape = pointer.shape;
       final Color pointerColor = pointer.style.color;
       final double pointerThickness = pointer.style.thickness;
       final PaintingStyle pointerPaintingStyle = pointer.style.paintingStyle;
       final double pointerSize = pointer.style.size;
-      final RadialElementAlignment alignment = pointer.alignment;
+      final GxRadialElementAlignment alignment = pointer.alignment;
       final double gaugeThickness = style.thickness;
 
       final Paint pointerPaint = Paint()
@@ -423,34 +441,38 @@ class RadialGaugePainter extends CustomPainter {
 
       double offsetValue = 0;
 
-      if (alignment == RadialElementAlignment.start) {
+      if (alignment == GxRadialElementAlignment.start) {
         offsetValue = gaugeThickness / 2;
-      } else if (alignment == RadialElementAlignment.end) {
+      } else if (alignment == GxRadialElementAlignment.end) {
         offsetValue = -gaugeThickness;
       }
 
-      if (shape == RadialPointerShape.circle) {
+      if (shape == GxRadialPointerShape.circle) {
         final double x =
-            center.dx + (radius + offsetValue) * Math.cos(pointerAngle);
+            center.dx + (radius + offsetValue) * math.cos(pointerAngle);
         final double y =
-            center.dy + (radius + offsetValue) * Math.sin(pointerAngle);
+            center.dy + (radius + offsetValue) * math.sin(pointerAngle);
 
         canvas.drawCircle(Offset(x, y), pointerSize, pointerPaint);
-      } else if (shape == RadialPointerShape.triangle) {
+      } else if (shape == GxRadialPointerShape.triangle) {
         final double x1 =
-            center.dx + (radius + offsetValue) * Math.cos(pointerAngle);
+            center.dx + (radius + offsetValue) * math.cos(pointerAngle);
         final double y1 =
-            center.dy + (radius + offsetValue) * Math.sin(pointerAngle);
+            center.dy + (radius + offsetValue) * math.sin(pointerAngle);
 
-        final double x2 = center.dx +
-            (radius + offsetValue + pointerSize) * Math.cos(pointerAngle + 0.1);
-        final double y2 = center.dy +
-            (radius + offsetValue + pointerSize) * Math.sin(pointerAngle + 0.1);
+        final double x2 =
+            center.dx +
+            (radius + offsetValue + pointerSize) * math.cos(pointerAngle + 0.1);
+        final double y2 =
+            center.dy +
+            (radius + offsetValue + pointerSize) * math.sin(pointerAngle + 0.1);
 
-        final double x3 = center.dx +
-            (radius + offsetValue + pointerSize) * Math.cos(pointerAngle - 0.1);
-        final double y3 = center.dy +
-            (radius + offsetValue + pointerSize) * Math.sin(pointerAngle - 0.1);
+        final double x3 =
+            center.dx +
+            (radius + offsetValue + pointerSize) * math.cos(pointerAngle - 0.1);
+        final double y3 =
+            center.dy +
+            (radius + offsetValue + pointerSize) * math.sin(pointerAngle - 0.1);
 
         final Path pointerPath = Path()
           ..moveTo(x1, y1)
@@ -460,9 +482,9 @@ class RadialGaugePainter extends CustomPainter {
 
         canvas.drawPath(pointerPath, pointerPaint);
         // final double x =
-        //     center.dx + ((radius + offsetValue) * Math.cos(pointerAngle));
+        //     center.dx + ((radius + offsetValue) * math.cos(pointerAngle));
         // final double y =
-        //     center.dy + ((radius + offsetValue) * Math.sin(pointerAngle));
+        //     center.dy + ((radius + offsetValue) * math.sin(pointerAngle));
         // final double halfSize = pointerSize / 2;
         // final Path path = Path()
         //   ..moveTo(x, y - halfSize)
@@ -474,18 +496,25 @@ class RadialGaugePainter extends CustomPainter {
     }
   }
 
-  void _drawRadialGauge(Canvas canvas, Size size, double radius, Offset center,
-      double startAngle, double sweepAngle) {
+  void _drawRadialGauge(
+    Canvas canvas,
+    Size size,
+    double radius,
+    Offset center,
+    double startAngle,
+    double sweepAngle,
+  ) {
     // Draw graident background if gradient is provided
 
     final Rect rect = Rect.fromCircle(center: center, radius: radius);
 
     final Paint backgroundPaint = Paint()
-      ..color = style.backgroundColor ?? style.color.withOpacity(0.2)
+      ..color = style.backgroundColor ?? style.color.withValues(alpha: 0.2)
       ..strokeWidth = style.thickness
       ..style = style.paintingStyle
       ..strokeCap = style.strokeCap
-      ..shader = style.backgroundGradient?.createShader(rect) ??
+      ..shader =
+          style.backgroundGradient?.createShader(rect) ??
           style.gradient?.createShader(rect);
 
     final Paint foregroundPaint = Paint()
@@ -495,53 +524,48 @@ class RadialGaugePainter extends CustomPainter {
       ..strokeCap = style.strokeCap
       ..shader = style.gradient?.createShader(rect);
 
-    canvas.drawArc(
-      rect,
-      startAngle,
-      sweepAngle,
-      false,
-      backgroundPaint,
-    );
+    canvas.drawArc(rect, startAngle, sweepAngle, false, backgroundPaint);
 
     final double sweep = (value.value / value.max) * sweepAngle;
-    canvas.drawArc(
-      rect,
-      startAngle,
-      sweep,
-      false,
-      foregroundPaint,
-    );
+    canvas.drawArc(rect, startAngle, sweep, false, foregroundPaint);
   }
 
-  void _drawTickLabels(Canvas canvas, Offset center, double radius,
-      double angle, double labelValue, double tickLength, int i) {
-    final RadialTickLabelStyle filteredLabel = valueToLabelStyleCallback != null
-        ? valueToLabelStyleCallback!(labelValue, i)
+  void _drawTickLabels(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double angle,
+    double labelValue,
+    double tickLength,
+    int i,
+  ) {
+    final GxRadialTickLabelStyle filteredLabel = labelStyler != null
+        ? labelStyler!(labelValue, i)
         : labelTickStyle;
     final double labelRadius = radius - tickLength - filteredLabel.padding;
-    double labelX = center.dx + labelRadius * Math.cos(angle);
-    double labelY = center.dy + labelRadius * Math.sin(angle);
+    double labelX = center.dx + labelRadius * math.cos(angle);
+    double labelY = center.dy + labelRadius * math.sin(angle);
 
-    if (filteredLabel.position == RadialElementPosition.outside) {
-      labelX = center.dx +
-          (radius + tickLength + filteredLabel.padding) * Math.cos(angle);
-      labelY = center.dy +
-          (radius + tickLength + filteredLabel.padding) * Math.sin(angle);
+    if (filteredLabel.position == GxRadialElementPosition.outside) {
+      labelX =
+          center.dx +
+          (radius + tickLength + filteredLabel.padding) * math.cos(angle);
+      labelY =
+          center.dy +
+          (radius + tickLength + filteredLabel.padding) * math.sin(angle);
     }
 
     final String labelValueStr = labelValue.toStringAsFixed(0);
 
-    final String labelText = valueToLabelFormatCallback != null
-        ? valueToLabelFormatCallback!(labelValue, i)
+    final String labelText = labelFormatter != null
+        ? labelFormatter!(labelValue, i)
         : labelValueStr;
 
     final TextPainter textPainter = TextPainter(
       text: TextSpan(text: labelText, style: filteredLabel.style),
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
-    );
-
-    textPainter.layout();
+    )..layout();
 
     final Offset labelOffset = Offset(
       labelX - textPainter.width / 2,
@@ -551,8 +575,13 @@ class RadialGaugePainter extends CustomPainter {
     textPainter.paint(canvas, labelOffset);
   }
 
-  void _drawTicksAndLabels(Canvas canvas, Offset center, double radius,
-      double startAngle, double sweepAngle) {
+  void _drawTicksAndLabels(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double startAngle,
+    double sweepAngle,
+  ) {
     final double minValue = value.min;
     final double maxValue = value.max;
     final int totalTicks = maxValue ~/ interval;
@@ -562,46 +591,45 @@ class RadialGaugePainter extends CustomPainter {
     for (int i = 0; i <= totalTicks; i++) {
       final double labelValue =
           minValue + (i / totalTicks) * (maxValue - minValue);
-      final RadialTickStyle filteredMajorTickStyle =
-          valueToMajorTickCallback != null
-              ? valueToMajorTickCallback!(labelValue, i)
-              : majorTickStyle;
+      final GxRadialTickStyle filteredMajorTickStyle = majorTickStyler != null
+          ? majorTickStyler!(labelValue, i)
+          : majorTickStyle;
 
       final double tickLength = filteredMajorTickStyle.length;
 
-      // final double angle = (-Math.pi / 2) + (i / totalTicks) * 2 * Math.pi;
+      // final double angle = (-math.pi / 2) + (i / totalTicks) * 2 * math.pi;
       final double angle = startAngle + (i / totalTicks) * sweepAngle;
 
       // Define the start and end points of the tick
-      double x1 = center.dx + (radius - tickLength) * Math.cos(angle);
-      double y1 = center.dy + (radius - tickLength) * Math.sin(angle);
-      double x2 = center.dx + (radius * Math.cos(angle));
-      double y2 = center.dy + radius * Math.sin(angle);
+      double x1 = center.dx + (radius - tickLength) * math.cos(angle);
+      double y1 = center.dy + (radius - tickLength) * math.sin(angle);
+      double x2 = center.dx + (radius * math.cos(angle));
+      double y2 = center.dy + radius * math.sin(angle);
 
-      if (filteredMajorTickStyle.position == RadialElementPosition.outside) {
-        x1 = center.dx + (radius + tickLength) * Math.cos(angle);
-        y1 = center.dy + (radius + tickLength) * Math.sin(angle);
+      if (filteredMajorTickStyle.position == GxRadialElementPosition.outside) {
+        x1 = center.dx + (radius + tickLength) * math.cos(angle);
+        y1 = center.dy + (radius + tickLength) * math.sin(angle);
       } else {
-        x1 = center.dx + (radius - tickLength) * Math.cos(angle);
-        y1 = center.dy + (radius - tickLength) * Math.sin(angle);
+        x1 = center.dx + (radius - tickLength) * math.cos(angle);
+        y1 = center.dy + (radius - tickLength) * math.sin(angle);
       }
 
       // End point depends on the alignment
-      if (filteredMajorTickStyle.alignment == RadialElementAlignment.center) {
-        x2 = center.dx + (radius * Math.cos(angle));
-        y2 = center.dy + radius * Math.sin(angle);
+      if (filteredMajorTickStyle.alignment == GxRadialElementAlignment.center) {
+        x2 = center.dx + (radius * math.cos(angle));
+        y2 = center.dy + radius * math.sin(angle);
       } else if (filteredMajorTickStyle.alignment ==
-          RadialElementAlignment.end) {
-        x1 = center.dx + (radius - thickness / 2) * Math.cos(angle);
-        y1 = center.dy + (radius - thickness / 2) * Math.sin(angle);
-        x2 = center.dx + (radius - tickLength) * Math.cos(angle);
-        y2 = center.dy + (radius - tickLength) * Math.sin(angle);
+          GxRadialElementAlignment.end) {
+        x1 = center.dx + (radius - thickness / 2) * math.cos(angle);
+        y1 = center.dy + (radius - thickness / 2) * math.sin(angle);
+        x2 = center.dx + (radius - tickLength) * math.cos(angle);
+        y2 = center.dy + (radius - tickLength) * math.sin(angle);
       } else if (filteredMajorTickStyle.alignment ==
-          RadialElementAlignment.start) {
-        x1 = center.dx + (radius + thickness / 2) * Math.cos(angle);
-        y1 = center.dy + (radius + thickness / 2) * Math.sin(angle);
-        x2 = center.dx + (radius + tickLength) * Math.cos(angle);
-        y2 = center.dy + (radius + tickLength) * Math.sin(angle);
+          GxRadialElementAlignment.start) {
+        x1 = center.dx + (radius + thickness / 2) * math.cos(angle);
+        y1 = center.dy + (radius + thickness / 2) * math.sin(angle);
+        x2 = center.dx + (radius + tickLength) * math.cos(angle);
+        y2 = center.dy + (radius + tickLength) * math.sin(angle);
       }
 
       if (showMajorTicks) {
@@ -621,20 +649,28 @@ class RadialGaugePainter extends CustomPainter {
         final double nextAngle =
             startAngle + ((i + 1) / totalTicks) * sweepAngle;
         _drawMinorTicks(
-            canvas: canvas,
-            center: center,
-            radius: radius,
-            startAngle: startAngle,
-            sweepAngle: sweepAngle,
-            angle: angle,
-            tickLength: tickLength,
-            nextAngle: nextAngle);
+          canvas: canvas,
+          center: center,
+          radius: radius,
+          startAngle: startAngle,
+          sweepAngle: sweepAngle,
+          angle: angle,
+          tickLength: tickLength,
+          nextAngle: nextAngle,
+        );
       }
 
       if (showLabels) {
         // Draw label
         _drawTickLabels(
-            canvas, center, radius, angle, labelValue, tickLength, i);
+          canvas,
+          center,
+          radius,
+          angle,
+          labelValue,
+          tickLength,
+          i,
+        );
       }
     }
   }
@@ -643,15 +679,10 @@ class RadialGaugePainter extends CustomPainter {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(
         text: value.value.toStringAsFixed(1),
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 20,
-        ),
+        style: const TextStyle(color: Colors.black, fontSize: 20),
       ),
       textDirection: TextDirection.ltr,
-    );
-
-    textPainter.layout();
+    )..layout();
     final double textWidth = textPainter.width;
     final double textHeight = textPainter.height;
 

@@ -1,0 +1,35 @@
+# pub uses this file instead of .gitignore for the package root, so it
+# repeats the relevant .gitignore entries.
+
+# Build and tool output
+.dart_tool/
+build/
+coverage/
+*.log
+/pubspec.lock
+
+# Editors and SDK pinning
+.idea/
+.vscode/
+*.iml
+.fvm/
+.fvmrc
+.DS_Store
+
+# Repository-only files (not useful to package consumers)
+.github/
+docs/
+CLAUDE.md
+
+# Example platform build output
+example/build/
+example/.dart_tool/
+
+# Generated API docs
+doc/api/
+
+# README-only images (served from GitHub raw URLs; the example app does not
+# load these subfolders). Moved to doc/screenshots/ in Phase 5.
+example/assets/images/banner/
+example/assets/images/features/linear/
+example/assets/images/features/radial/

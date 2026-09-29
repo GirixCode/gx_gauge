@@ -1,4 +1,15 @@
-# CHANGELOGS
+# Changelog
+
+## 1.0.0-dev.1 (unreleased)
+
+- **Moved from `girix_code_gauge`.** The package is now `gx_gauge`, and every public type is `Gx`-prefixed. See [doc/MIGRATION.md](doc/MIGRATION.md) for the full old-to-new mapping.
+- Requires Flutter 3.47 / Dart 3.13 or later.
+- Custom needles receive the needle's style: `GxNeedlePainter(canvas, anchor, needle)`.
+- `GxLinearScaleGauge` takes a single `GxGaugeValue value` instead of `minimum`, `maximum` and `value`.
+- Removed parameters that had no effect: `orientation` and `gaugeType` (`GxLinearScaleGauge`), `direction` (`GxLinearBarGauge`).
+- Painters and internal utilities are no longer exported.
+
+## Previous releases (as `girix_code_gauge`)
 
 ## 0.0.6
 

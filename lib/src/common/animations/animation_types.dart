@@ -1,6 +1,6 @@
 // lib/src/common/animations/animation_types.dart
 
-enum GaugeAnimationType {
+enum GxAnimationType {
   linear,
   easeIn,
   easeOut,

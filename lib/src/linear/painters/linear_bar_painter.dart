@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
-import 'package:girix_code_gauge/src/linear/utils/linear_bar_utils.dart';
-import 'package:girix_code_gauge/src/linear/utils/tooltip_utils.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/linear/utils/linear_bar_utils.dart';
+import 'package:gx_gauge/src/linear/utils/tooltip_utils.dart';
 
 class LinearBarPainter extends CustomPainter {
   LinearBarPainter({
     required this.gaugeValue,
-    required this.barPointers,
-    required this.direction,
+    required this.bars,
     this.gapBetweenBars = 0,
     this.needle,
     this.showNeedleInsideBar = true,
     this.tooltip,
-    this.customDrawNeedle,
+    this.needlePainter,
   });
-  final GaugeValue gaugeValue;
-  final List<LinearBarPointer> barPointers;
-  final LinearGaugeDirection direction;
+  final GxGaugeValue gaugeValue;
+  final List<GxLinearBarPointer> bars;
   final double gapBetweenBars;
-  final LinearNeedle? needle;
+  final GxLinearNeedle? needle;
   final bool showNeedleInsideBar;
-  final GaugeTooltip? tooltip;
-  void Function(Canvas canvas, Offset position)? customDrawNeedle;
+  final GxGaugeTooltip? tooltip;
+  GxNeedlePainter? needlePainter;
 
   @override
   void paint(Canvas canvas, Size size) {
     // draw the gauge
-    if (barPointers.isNotEmpty) {
+    if (bars.isNotEmpty) {
       _drawBars(canvas, size);
     }
 
@@ -39,31 +39,25 @@ class LinearBarPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant LinearBarPainter oldDelegate) {
     return gaugeValue != oldDelegate.gaugeValue ||
-        _isBarPointersChanged(oldDelegate.barPointers) ||
-        direction != oldDelegate.direction ||
+        _isBarPointersChanged(oldDelegate.bars) ||
         gapBetweenBars != oldDelegate.gapBetweenBars ||
         needle != oldDelegate.needle ||
         showNeedleInsideBar != oldDelegate.showNeedleInsideBar;
   }
 
-  void _drawBars(
-    Canvas canvas,
-    Size size,
-  ) {
+  void _drawBars(Canvas canvas, Size size) {
     LinearBarUtils.drawBars(
-        canvas: canvas,
-        size: size,
-        barPointers: barPointers,
-        value: gaugeValue.value,
-        gapBetweenBars: gapBetweenBars,
-        minValue: gaugeValue.min,
-        maxValue: gaugeValue.max);
+      canvas: canvas,
+      size: size,
+      bars: bars,
+      value: gaugeValue.value,
+      gapBetweenBars: gapBetweenBars,
+      minValue: gaugeValue.min,
+      maxValue: gaugeValue.max,
+    );
   }
 
-  void _drawNeedle(
-    Canvas canvas,
-    Size size,
-  ) {
+  void _drawNeedle(Canvas canvas, Size size) {
     if (needle != null && needle!.enabled) {
       LinearBarUtils.drawNeedle(
         canvas: canvas,
@@ -73,18 +67,15 @@ class LinearBarPainter extends CustomPainter {
         minValue: gaugeValue.min,
         maxValue: gaugeValue.max,
         gapBetweenBars: gapBetweenBars,
-        barPointers: barPointers,
+        bars: bars,
         showNeedleInsideBar: showNeedleInsideBar,
-        customDrawNeedle: customDrawNeedle,
+        needlePainter: needlePainter,
       );
     }
   }
 
   // Draw Tooltip
-  void _drawTooltip(
-    Canvas canvas,
-    Size size,
-  ) {
+  void _drawTooltip(Canvas canvas, Size size) {
     if (tooltip != null && tooltip!.enabled) {
       final double minValue = gaugeValue.min;
       final double maxValue = gaugeValue.max;
@@ -102,14 +93,14 @@ class LinearBarPainter extends CustomPainter {
   }
 
   // Check List of BarPointers changes
-  bool _isBarPointersChanged(List<LinearBarPointer> oldBarPointers) {
-    if (barPointers.length != oldBarPointers.length) {
+  bool _isBarPointersChanged(List<GxLinearBarPointer> oldBarPointers) {
+    if (bars.length != oldBarPointers.length) {
       return true;
     }
 
-    for (int index = 0; index < barPointers.length; index++) {
-      final LinearBarPointer barPointer = barPointers[index];
-      final LinearBarPointer oldBarPointer = oldBarPointers[index];
+    for (int index = 0; index < bars.length; index++) {
+      final GxLinearBarPointer barPointer = bars[index];
+      final GxLinearBarPointer oldBarPointer = oldBarPointers[index];
 
       if (barPointer.value != oldBarPointer.value ||
           barPointer.color != oldBarPointer.color ||

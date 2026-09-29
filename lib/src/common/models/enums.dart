@@ -1,4 +1,4 @@
-enum GaugeTooltipPosition {
+enum GxTooltipPosition {
   /// Tooltip position at the top of the gauge
   top,
 
@@ -6,12 +6,12 @@ enum GaugeTooltipPosition {
   bottom,
 }
 
-enum GaugeTooltipType {
+enum GxTooltipType {
   /// Shows the tooltip for the gauge
   normal,
 }
 
-enum LinearElementPosition {
+enum GxElementPosition {
   /// Element position inside the gauge bounds
   ///
   /// Horizontal: bottom of the Gauge.
@@ -36,30 +36,23 @@ enum LinearElementPosition {
   outAndIn,
 }
 
-enum LinearGaugeAxisPosition { start, end, center }
+enum GxLabelPosition { topCenter, bottomCenter }
 
-enum LinearGaugeDirection { horizontal }
-
-enum LinearGaugeLabelPosition {
-  topCenter,
-  bottomCenter,
-}
-
-enum LinearGaugeNeedlePosition {
+enum GxNeedlePosition {
   top,
 
   /// Needle position at the start of the gauge
   bottom,
 
   /// Needle position at the end of the gauge
-  center
+  center,
 
   /// Needle position at the center of the gauge
 }
 
 /// Enum for the type of needle to be used in the gauge
 /// The needle can be a circle, triangle, diamond, rectangle, or a custom shape
-enum LinearGaugeNeedleType {
+enum GxNeedleShape {
   /// Custom needle type such as this ✒
   custom,
 
@@ -76,14 +69,10 @@ enum LinearGaugeNeedleType {
   rectangle,
 
   /// Pipe needle type such as this |
-  pipe
+  pipe,
 }
 
-enum LinearGaugeOrientation {
-  horizontal,
-}
-
-enum RadialElementAlignment {
+enum GxRadialElementAlignment {
   /// Allign the ticks at the start of the gauge
   start,
 
@@ -94,7 +83,7 @@ enum RadialElementAlignment {
   center,
 }
 
-enum RadialElementPosition {
+enum GxRadialElementPosition {
   /// Position the ticks to the inside of the gauge
   inside,
 
@@ -107,26 +96,17 @@ enum RadialElementPosition {
 ///
 ///
 ///
-enum RadialNeedleShape {
+enum GxRadialNeedleShape {
   /// Needle with a line shape
   line,
 
-  /// Needle with a tapperedLine (triangle shape)
-  tapperedLine,
+  /// Needle with a taperedLine (triangle shape)
+  taperedLine,
 }
 
-enum RadialPointerShape {
-  circle,
-  triangle,
-  custom,
-}
+enum GxRadialPointerShape { circle, triangle, custom }
 
-enum ScaleLinearGaugeType {
-  defaultGauge,
-  multiRange,
-}
-
-enum StepperShape {
+enum GxStepperShape {
   /// Stepper shape is a circle shape ●
   circle,
 

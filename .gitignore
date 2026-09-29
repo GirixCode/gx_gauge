@@ -1,6 +1,6 @@
 # Miscellaneous
 *.class
-*.// log
+*.log
 *.pyc
 *.swp
 .DS_Store
@@ -27,3 +27,9 @@ migrate_working_dir/
 **/doc/api/
 .dart_tool/
 build/
+
+# Coverage
+coverage/
+
+# FVM (the pinned version lives in .fvmrc)
+.fvm/
