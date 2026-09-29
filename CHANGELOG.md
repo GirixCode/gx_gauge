@@ -1,102 +1,96 @@
 # Changelog
 
-## 1.0.0-dev.3 (unreleased)
+All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses [Semantic Versioning](https://semver.org/).
+
+## [1.0.0] - Unreleased
+
+The first release under the name `gx_gauge`. **The package was previously published as [`girix_code_gauge`](https://pub.dev/packages/girix_code_gauge).** [doc/MIGRATION.md](doc/MIGRATION.md) maps every old API to the new one.
 
 ### Added
 
-- **Vertical gauges.** Set `direction: Axis.vertical` on `GxLinearProgressGauge`, `GxLinearScaleGauge`, `GxLinearBarGauge` or `GxLinearStepperGauge`. Vertical gauges run bottom to top, fill the available height, and keep text upright.
-- **Interaction.** Set `onChanged`/`onChangeEnd` on the progress, scale, bar and radial gauges to make them respond to taps and drags, like a `Slider` (the radial gauge works like a knob). Interactive gauges are also adjustable by screen readers. On the stepper, `onStepTapped` reports the step nearest to a tap.
-- **Linear ranges.** `GxLinearScaleGauge.ranges` takes `GxLinearRange` bands with an optional label, gradient (`shaderCallback`), border, radius, thickness and position.
-- **Radial range labels and gradients.** `GxRadialRange.label` is now drawn (and optional), and `GxRadialRange.shaderCallback` paints the band with a shader.
-- **Needle labels.** `GxLinearNeedle.label` is drawn above (or below) the needle; `{value}` is replaced with the value the needle points at.
-- **Marker widgets.** `GxLinearMarkerPointer.marker` (any widget, e.g. an `Icon`) is drawn on the axis.
-- **Custom needles on the scale gauge.** `GxLinearScaleGauge.needlePainter` draws the value needle and marker needles whose shape is `GxNeedleShape.custom`.
-- **Bar pointer styling.** `GxLinearBarPointer` now applies `thickness` (size across the track), `position`, `offset` and `shaderCallback`, and adds `borderColor`/`borderWidth`.
+- **Implicit animation on every gauge:** `duration` and `curve` animate value changes, continuing from the value on screen when interrupted.
+- **Interaction:** `onChanged`/`onChangeEnd` on the progress, scale, bar and radial gauges (the radial gauge works like a knob), and `onStepTapped` on the stepper. Interactive gauges are adjustable by screen readers.
+- **Vertical gauges:** `direction: Axis.vertical` on all linear gauges.
+- **Right-to-left support:** linear gauges mirror in RTL locales, and `reverse` flips them.
+- **Accessibility:** `semanticLabel` and `semanticValueFormatter`.
+- **Theme-aware defaults:** colors you don't set come from the app's `ColorScheme`, so dark mode works.
+- **Ranges:**
+  - `GxLinearRange` bands on the scale gauge, with label, gradient and border.
+  - Radial range labels and gradients.
+- **Needles and markers:**
+  - Needle labels with a `{value}` placeholder.
+  - Marker widgets on the scale gauge.
+  - Custom needle painting on the scale gauge.
+- **Bars:** `GxLinearBarPointer` `thickness`, `position`, `offset`, gradient and border.
+- **Models:** `copyWith`, `==`/`hashCode` and DevTools diagnostics on every model.
 
-### Breaking
+### Changed
 
-- `GxLinearFillArea` and `GxLinearScaleGauge.fillAreas` are replaced by `GxLinearRange` and `ranges`, which do everything fill areas did and more.
-- `GxLinearStepperGauge.value` (a `GxGaugeValue`) is replaced by `currentStep` (an `int` index). `semanticValueFormatter` is removed from the stepper, which announces "Step N of M". `GxStepperStep.value` is replaced by `marker` (a `String`).
-- `GxLinearBarPointer` drops `paintingStyle` and `strokeCap`. For an outlined bar, use `color: Colors.transparent` with `borderColor`/`borderWidth`. `thickness` is now the bar's size across the track (null keeps the previous full-size default), not a stroke width.
+- **Names:** every public type has the `Gx` prefix, and the widgets are `GxLinearProgressGauge`, `GxLinearStepperGauge`, `GxLinearScaleGauge`, `GxLinearBarGauge` and `GxRadialGauge`.
+- **Values and ranges:**
+  - Bars and ranges take explicit `start`/`end` values instead of segment lengths.
+  - The stepper takes `currentStep` (an index).
+  - `GxLinearScaleGauge` takes a `GxGaugeValue`.
+- **Sizing:** gauges size themselves from their parent. Linear gauges take a `height` and fill the width; the radial gauge takes an optional `diameter`.
+- **Needle placement:** a scale gauge's needle and marker needles are positioned relative to the axis, and a `bottom` needle sits fully below the track, mirroring `top`.
+- **Radial gauge layout:**
+  - When a needle is shown, the center value moves below the needle's hub.
+  - Range labels sit inside a band that is shifted inwards.
+- **Number formatting:** displayed values drop trailing zeros (`65` rather than `65.0`).
+- **Requirements:** Flutter 3.47 / Dart 3.13 or later. The package has no dependencies beyond Flutter.
 
+### Removed
 
-## 1.0.0-dev.2 (unreleased)
-
-### Breaking
-
-- **Every gauge animates implicitly.** Pass `duration` (default `Duration.zero`, so no animation) and `curve`. `GxAnimatedLinearProgressGauge` and `GxAnimationType` are removed; use `GxLinearProgressGauge(duration: …, curve: …)`.
-- **Bars and ranges take explicit ranges.**
-  - `GxLinearBarPointer(value:)` is now `GxLinearBarPointer(start:, end:)`.
-  - `GxLinearFillArea` and `GxRadialRange` use `start`/`end` instead of `startValue`/`endValue`.
-- **Sizing follows the parent's constraints.**
-  - Linear gauges take the full width and a `height`. The `size` parameter is removed from the bar, scale and stepper gauges.
-  - `GxRadialGauge.size` is now an optional `diameter`. When it's null, the gauge fills the shortest bounded side, falling back to 200 when unbounded.
-- **Theme-aware defaults.**
-  - Color fields default to `null`, which resolves from the app's `ColorScheme`: `primary` for progress and arcs, `outlineVariant` for axes, `outline` for ticks, `onSurface` for needles, and `inverseSurface` for tooltips.
-  - Label styles merge onto the theme's `bodySmall`.
-- **Renamed and removed parameters.**
-  - Renamed: `GxRadialNeedle.topOffest` → `topOffset`, `GxRadialNeedle.circle` → `cap`, and `GxLinearStepperGauge.inActiveStyle` → `inactiveStyle`.
-  - `GxLinearBarGauge.gapBetweenBars` is now in logical pixels.
-  - Removed: `GxLinearBarGauge.showTooltip`, `alignment` and `showNeedleInsideBar`; `GxRadialTickLabelStyle.offset`; and `GxRadialPointerShape.custom`. They had no effect, or duplicated `tooltip.enabled`.
-- `GxGaugeLabel.textAlign` is non-nullable. `TextAlign.start` and `TextAlign.end` now follow the text direction.
-- `GxRadialGauge.interval` is a `double?`.
-- List parameters (`bars`, `markers`, `fillAreas`, `pointers`, `ranges`) are non-null and default to empty.
-- Models no longer extend `Equatable`; the `equatable` dependency is removed.
+- `GxAnimatedProgressLinearGauge`/`GaugeAnimationType`. Use `duration` and `curve` on any gauge.
+- Exported painters and utilities (`ProgressLinearPainter`, `RadialGaugePainter`, `BasePainter`, `AnimationUtils`).
+- `FillAreaPointer`. Use `GxLinearRange`.
+- Parameters that had no effect: `orientation`, `gaugeType`, `direction` (bar), `showTooltip`, `alignment`, `showNeedleInsideBar`, `RadialTickLabelStyle.offset` and `RadialPointerShape.custom`.
 
 ### Fixed
 
-- Radial gauges ignored `min`. The arc, needle, pointers, ranges and ticks are now placed with `(value - min) / (max - min)`.
-- Tick generation no longer divides by zero, produces `NaN`, or mislabels ticks when `interval` is 0, larger than the range, or doesn't divide it evenly. Floating-point steps such as 0.1 keep their last tick.
-- Radial minor ticks no longer run past the end of the arc, and `showMinorTicks` works without major ticks or labels.
-- `GxLinearScaleGauge.showMajorTicks: false` now hides major ticks, and ticks, needle, markers and bars now share the same track when `axisSpaceExtent > 0`.
-- Scale-gauge `bars` are drawn with the default `tickPosition` (centered on the axis). The inverted `barHeight` assert is removed.
-- Every painter repaints when any drawn property changes. Previously the radial gauge only compared `value` and `style`.
-- Animations no longer assert on overshooting curves, no longer leak listeners, and continue from the current value when interrupted.
-- The bar gauge's needle and tooltip always sit at the value. The unreachable gap-adjustment code is gone.
-- A stepper with a single step no longer divides by zero, and step markers are no longer clipped at the ends.
-- `GxRadialTickStyle.copyWith` no longer resets `alignment` and `position`.
-- Rectangle needles use `size.height`.
-- A filled tooltip's text is now readable. It was drawn in the bubble's own color.
-- `GxLinearNeedle.strokeWidth` defaults to 2, not 0, so outlined needles are visible.
+- **Radial gauge:**
+  - It ignored `min`, so the arc, needle, pointers, ranges and ticks were misplaced whenever `min != 0`.
+  - Minor ticks ran past the end of the arc, and `showMinorTicks` did nothing without major ticks or labels.
+  - Range labels were never drawn.
+- **Ticks:** tick generation could divide by zero, produce NaN, or mislabel ticks for some intervals.
+- **Scale gauge:**
+  - `showMajorTicks: false` was ignored.
+  - Ticks, needle and bars didn't line up when `axisSpaceExtent > 0`.
+  - Bars were invisible with the default `tickPosition`.
+- **Repainting:** painters now repaint whenever anything they draw changes.
+- **Animated progress gauge:** it leaked listeners, asserted on overshooting curves and snapped back when interrupted.
+- **Stepper:** it divided by zero with one step.
+- **Tooltip:** a filled tooltip's text was invisible.
+- **Needles:** rectangle needles ignored their height, and outlined needles were hairlines by default.
+- **`copyWith`:** `RadialTickStyle.copyWith` dropped `alignment` and `position`.
 
-### Added
+## girix_code_gauge
 
-- Right-to-left support: linear gauges mirror in RTL locales. `reverse` flips them, and is now available on the stepper, bar and scale gauges.
-- Accessibility: `semanticLabel` and `semanticValueFormatter` on every gauge.
-- `copyWith`, `==`/`hashCode` and diagnostics (`debugFillProperties`) on every model. Also `GxGaugeValue.fraction` and `GxGaugeValue.lerp`.
-- Displayed values are formatted without trailing zeros, for example `65` instead of `65.0`.
+Releases published under the previous package name.
 
-## 1.0.0-dev.1 (unreleased)
+### [0.0.6]
 
-- **Moved from `girix_code_gauge`.** The package is now `gx_gauge`, and every public type is `Gx`-prefixed. See [doc/MIGRATION.md](doc/MIGRATION.md) for the full old-to-new mapping.
-- Requires Flutter 3.47 / Dart 3.13 or later.
-- Custom needles receive the needle's style: `GxNeedlePainter(canvas, anchor, needle)`.
-- `GxLinearScaleGauge` takes a single `GxGaugeValue value` instead of `minimum`, `maximum` and `value`.
-- Removed parameters that had no effect: `orientation` and `gaugeType` (`GxLinearScaleGauge`), `direction` (`GxLinearBarGauge`).
-- Painters and internal utilities are no longer exported.
+- Bug fixes.
 
-## Previous releases (as `girix_code_gauge`)
+### [0.0.5]
 
-## 0.0.6
+- Custom needle painter for the linear bar gauge.
 
-- Bug fixes
+### [0.0.4]
 
-## 0.0.5
+- Documentation updates; debug logs removed.
 
-- Allowed to draw the custom needle painter in Linear Bar Guages.
+### [0.0.2]
 
-## 0.0.4
+- Documentation updates.
 
-- Doc Updated
-- Logs Removed
+### [0.0.1]
 
-## 0.0.2
+- Initial release: progress, scale, bar and stepper linear gauges, and a radial gauge with gradient, ranges and pointers.
 
-- Doc Updated
-
-## 0.0.1
-
-- Initial release of the package.
-- Added Linear and Radial Gauge.
-- Added Linear Gauge with Progress, Scale, Bar, and Stepper.
-- Added Radial Gauge with Gradient, Range Bar, Pointer, and Show Case.
+[1.0.0]: https://github.com/GirixCode/gx-gauge/releases/tag/v1.0.0
+[0.0.6]: https://pub.dev/packages/girix_code_gauge/versions/0.0.6
+[0.0.5]: https://pub.dev/packages/girix_code_gauge/versions/0.0.5
+[0.0.4]: https://pub.dev/packages/girix_code_gauge/versions/0.0.4
+[0.0.2]: https://pub.dev/packages/girix_code_gauge/versions/0.0.2
+[0.0.1]: https://pub.dev/packages/girix_code_gauge/versions/0.0.1

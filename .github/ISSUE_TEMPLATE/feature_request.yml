@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest a new gauge, option or behaviour.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to build?
+      description: The use case, rather than a specific API.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API (optional)
+      render: dart

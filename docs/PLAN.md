@@ -1,6 +1,6 @@
 # Modernisation plan: `girix_code_gauge` → `gx_gauge`
 
-Status: **Phases 0–2 done** (`064d6cf`, `7c81892`, `b38d233`). **Phase 3 done** (uncommitted, on branch `feat/phase-3-features`). Phases 4–5 are not started.
+Status: **Phases 0–3 committed** (`064d6cf`, `7c81892`, `b38d233`, `61b9e9c`). **Phases 4 and 5 done** (uncommitted, on branch `test/phase-4-tests`). **Only the owner release steps in `docs/RELEASE.md` remain.**
 
 References:
 - `docs/code_review.md` lists the confirmed defects. It is cited below as **CR**, followed by the section and item, e.g. *CR Radial 1*.
@@ -345,6 +345,31 @@ These are pure Dart and fast:
 
 Test naming: test files mirror `lib/src/`, e.g. `lib/src/core/gauge_scale.dart` → `test/core/gauge_scale_test.dart`. Delete `test/girix_shape_test.dart`.
 
+### Phase 4 progress log
+
+- **Scope (owner decision, 2026-09-29): only the required cases.** Phase 4 closes the §6.1/§6.2 gaps and meets the coverage targets. §6.3 (goldens) is skipped, because it is Linux-CI-only and CI is deferred. §6.4 (README snippet compile check) moves to Phase 5, where the README it checks is written.
+- **Result:**
+  - 152 package tests pass, and the analyzer is clean.
+  - Coverage is **98.3% for `lib/src/core`** (target 90%) and **90.3% overall** (target 80%). Measure with `fvm flutter test --coverage` and read `coverage/lcov.info`. There is no enforcing gate until CI exists.
+- **Added:**
+  - `test/core/core_equality_test.dart`: `GaugeScale`/`LinearTrack`/`PainterConfig`/`GaugeDefaults` equality, the edge input of `clamp`/`fractionAt`/`formatGaugeValue`, and theme-driven defaults (light vs dark).
+  - `test/widgets/edge_cases_test.dart`, run for every gauge fully configured:
+    - value at `min` and at `max` (`min == value == max` is impossible, because `GxGaugeValue` asserts `min < max`);
+    - a 0×0 box;
+    - fully unbounded constraints in both directions (falls back to 200);
+    - a radial gauge with a single bounded side;
+    - unmounting mid-animation leaves no ticker;
+    - vertical drag and tap mapping;
+    - DevTools diagnostics.
+- **Layout:** widget tests moved to `test/widgets/` (`smoke_test.dart`, `behavior_test.dart`, `features_test.dart`, `edge_cases_test.dart`).
+- **Already covered by Phases 2–3 (unchanged):**
+  - `GaugeScale` and tick edge cases.
+  - The table-driven model `==`/`copyWith` test.
+  - Per-painter `shouldRepaint`.
+  - Animation interruption, overshoot and settling.
+  - Semantics.
+  - Interaction.
+
 ---
 
 ## 7. Phase 5: README and release
@@ -378,6 +403,35 @@ The README must not contain a manually maintained table of contents (pub.dev and
 3. Publish `girix_code_gauge 0.0.7` from the `legacy` branch. It changes only the README and adds a deprecation notice.
 4. In the pub.dev admin UI, mark `girix_code_gauge` as discontinued and replaced by `gx_gauge`.
 5. Create a GitHub release with notes linking to `MIGRATION.md`.
+
+### Phase 5 progress log
+
+- **README:**
+  - Rewritten from 1,293 lines to about 245: pitch, badges, features, install, a quick start per gauge with a screenshot, recipes (ranges, animation, interaction, vertical, custom needle, theming, accessibility), migration, and links.
+  - No manual table of contents and no bold headings. Images use relative `doc/screenshots/` paths, which pub.dev resolves through `repository:`.
+- **§6.4 (moved here from Phase 4):** every README snippet lives in `example/lib/readme_snippets.dart`, which `flutter analyze` compiles.
+- **Screenshots:**
+  - 8 PNGs (200 KB total) in `doc/screenshots/`, rendered from those same snippets by `example/tool/screenshots_test.dart`, using Roboto from the Flutter SDK.
+  - Listed in the pubspec's `screenshots:`.
+  - The outdated README-only images in `example/assets/images/{banner,features/linear,features/radial}` are deleted. The showcase's own thumbnails stay.
+- **Rendering fixes found through the screenshots:**
+  - Scale-gauge needles and marker needles are now positioned relative to the axis. They used to sit at the edge of the whole widget.
+  - A `bottom` needle now sits fully below the track, mirroring `top`.
+  - The radial center value moves below the needle's hub when a needle is shown.
+  - Radial range labels go inside inward-shifted bands.
+- **CHANGELOG:** Keep a Changelog format. The dev pre-releases are consolidated into one `[1.0.0]` entry, and the old `girix_code_gauge` history is kept at the bottom. The version is `1.0.0`.
+- **Supporting files:**
+  - `CONTRIBUTING.md` covers setup, checks, architecture, tests, the README/screenshot workflow and Conventional Commits.
+  - `.github/ISSUE_TEMPLATE/` has bug and feature forms (blank issues disabled), plus `pull_request_template.md`.
+  - `docs/RELEASE.md` is a step-by-step owner guide for §7.3.
+- **Result:**
+  - Analyzer clean; 152 package tests and 3 example tests pass; dartdoc reports 0 warnings.
+  - `pub publish --dry-run` is clean apart from the uncommitted-files note.
+  - **pana scores 160/160** once the webp tools are installed.
+- **Deviations:**
+  - The hero image is a static PNG, not a GIF of the showcase. It is deterministic and regenerated by the tool, where a GIF would need a screen recording.
+  - The README has no CI or coverage badges, because CI is deferred.
+- **Owner actions remaining:** everything in `docs/RELEASE.md`: rename the repo, tag and publish 1.0.0, release `girix_code_gauge` 0.0.7 from a `legacy` branch, mark the old package discontinued, and create the GitHub release.
 
 ---
 
