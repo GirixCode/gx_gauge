@@ -108,6 +108,15 @@ class LinearTrack {
   double xOf(double fraction) =>
       reversed ? end - fraction * length : start + fraction * length;
 
+  /// The fraction (0..1, clamped) at x coordinate [x]: the inverse of [xOf].
+  double fractionAt(double x) {
+    if (length <= 0) {
+      return 0;
+    }
+    final double f = reversed ? (end - x) / length : (x - start) / length;
+    return f.clamp(0.0, 1.0);
+  }
+
   @override
   bool operator ==(Object other) =>
       other is LinearTrack &&

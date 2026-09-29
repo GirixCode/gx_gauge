@@ -56,7 +56,7 @@ void main() {
     await _pump(
       tester,
       const GxLinearStepperGauge(
-        value: GxGaugeValue(value: 2, max: 4),
+        currentStep: 1,
         steps: <GxStepperStep>[
           GxStepperStep(label: GxGaugeLabel(label: 'One')),
           GxStepperStep(label: GxGaugeLabel(label: 'Two')),
@@ -79,8 +79,13 @@ void main() {
         markers: <GxLinearMarkerPointer>[
           GxLinearMarkerPointer(value: 80, needle: GxLinearNeedle()),
         ],
-        fillAreas: <GxLinearFillArea>[
-          GxLinearFillArea(start: 0, end: 30, color: Colors.green),
+        ranges: <GxLinearRange>[
+          GxLinearRange(
+            start: 0,
+            end: 30,
+            color: Colors.green,
+            label: GxGaugeLabel(label: 'Low'),
+          ),
         ],
       ),
     );

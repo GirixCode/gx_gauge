@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/gauge_label.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
 import 'package:gx_gauge/src/core/gauge_scale.dart';
 import 'package:gx_gauge/src/core/painter_config.dart';
@@ -208,6 +209,36 @@ class RadialGaugePainter extends CustomPainter {
     _drawPointers(canvas, size, g);
   }
 
+  /// The value under [position] in a gauge of [size], found from the angle
+  /// around the center. Points outside the arc's sweep snap to the nearer
+  /// end.
+  static double valueAt(
+    RadialPainterConfig config,
+    Size size,
+    Offset position,
+  ) {
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final Offset d = position - center;
+    final double start = AngleUtils.degreesToRadians(config.startAngleInDegree);
+    final double sweep = AngleUtils.degreesToRadians(config.sweepAngleInDegree);
+    if (sweep == 0 || d == Offset.zero) {
+      return config.scale.min;
+    }
+    const double tau = 2 * math.pi;
+    // Angle past the start, measured in the sweep's direction, in [0, 2π).
+    final double raw = (math.atan2(d.dy, d.dx) - start) * sweep.sign;
+    final double past = ((raw % tau) + tau) % tau;
+    final double span = sweep.abs();
+    double fraction;
+    if (past <= span) {
+      fraction = past / span;
+    } else {
+      // In the gap: snap to whichever end is angularly closer.
+      fraction = (past - span) < (tau - past) ? 1 : 0;
+    }
+    return config.scale.valueAt(fraction);
+  }
+
   @override
   bool shouldRepaint(covariant RadialGaugePainter oldDelegate) =>
       oldDelegate.config != config || oldDelegate.value != value;
@@ -239,16 +270,39 @@ class RadialGaugePainter extends CustomPainter {
     for (final GxRadialRange range in config.ranges) {
       final double start = g.angleOf(range.start);
       final double end = g.angleOf(range.end);
+      final double radius = g.radius + range.offset;
+      final Rect rect = Rect.fromCircle(center: g.center, radius: radius);
       canvas.drawArc(
-        Rect.fromCircle(center: g.center, radius: g.radius + range.offset),
+        rect,
         start,
         end - start,
         false,
         Paint()
           ..color = range.color ?? config.rangeColor
           ..strokeWidth = range.height
-          ..style = PaintingStyle.stroke,
+          ..style = PaintingStyle.stroke
+          ..shader = range.shaderCallback?.call(rect.inflate(range.height / 2)),
       );
+
+      final GxGaugeLabel? label = range.label;
+      if (label != null) {
+        final double middle = (start + end) / 2;
+        paintText(
+          canvas,
+          text: label.label,
+          style: config.labelStyle.merge(label.style),
+          textDirection: config.textDirection,
+          position: (Size text) {
+            // Just outside the band, far enough that the text's corner
+            // clears it at any angle.
+            final double distance =
+                radius + range.height / 2 + 4 + text.longestSide / 2;
+            final Offset anchor =
+                g.pointAt(middle, distance) + (label.offset ?? Offset.zero);
+            return anchor - Offset(text.width / 2, text.height / 2);
+          },
+        );
+      }
     }
   }
 

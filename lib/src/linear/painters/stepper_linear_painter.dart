@@ -2,6 +2,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
 import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/linear_frame.dart';
 import 'package:gx_gauge/src/core/painter_config.dart';
 import 'package:gx_gauge/src/core/text_utils.dart';
 import 'package:gx_gauge/src/linear/models/linear_progress_style.dart';
@@ -12,7 +13,6 @@ import 'package:gx_gauge/src/linear/models/stepper_step.dart';
 class StepperPainterConfig extends PainterConfig {
   /// Creates a stepper painter configuration.
   const StepperPainterConfig({
-    required this.scale,
     required this.steps,
     required this.style,
     required this.color,
@@ -26,10 +26,8 @@ class StepperPainterConfig extends PainterConfig {
     required this.labelStyle,
     required this.reversed,
     required this.textDirection,
+    this.vertical = false,
   });
-
-  /// The value range.
-  final GaugeScale scale;
 
   /// The steps, evenly spaced along the track.
   final List<GxStepperStep> steps;
@@ -55,24 +53,36 @@ class StepperPainterConfig extends PainterConfig {
   /// Distance from the track to the step labels.
   final double offset;
 
-  /// Resolved text style of reached step numbers.
+  /// Resolved text style of reached step markers.
   final TextStyle activeStyle;
 
-  /// Resolved text style of unreached step numbers.
+  /// Resolved text style of unreached step markers.
   final TextStyle inactiveStyle;
 
   /// Base style that step labels merge onto.
   final TextStyle labelStyle;
 
-  /// Whether steps run right to left.
+  /// Whether steps run right to left (or top to bottom when [vertical]).
   final bool reversed;
 
   /// Direction for text.
   final TextDirection textDirection;
 
+  /// Whether the gauge is drawn bottom-to-top.
+  final bool vertical;
+
+  /// The track fraction (0..1) reached at [step], an index that may be
+  /// fractional while animating.
+  double fractionAt(double step) {
+    final int count = steps.length;
+    if (count <= 1) {
+      return step >= 0 ? 1 : 0;
+    }
+    return (step / (count - 1)).clamp(0.0, 1.0);
+  }
+
   @override
   List<Object?> get props => <Object?>[
-    scale,
     steps,
     style,
     color,
@@ -86,32 +96,45 @@ class StepperPainterConfig extends PainterConfig {
     labelStyle,
     reversed,
     textDirection,
+    vertical,
   ];
 }
 
 /// Paints a linear stepper gauge.
 class StepperLinearPainter extends CustomPainter {
-  /// Creates a painter that repaints whenever [value] ticks.
+  /// Creates a painter that repaints whenever [value] (the current step
+  /// index) ticks.
   StepperLinearPainter({required this.config, required this.value})
     : super(repaint: value);
 
   /// What to draw.
   final StepperPainterConfig config;
 
-  /// The current (animated) value.
+  /// The current (animated) step index.
   final Animation<double> value;
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final StepperPainterConfig c = config;
-    final double half = c.shapeSize / 2;
-    final double y = size.height / 2;
-    final LinearTrack track = LinearTrack(
+  /// The track the steps sit on, for a gauge of logical [size].
+  static LinearTrack trackFor(StepperPainterConfig config, Size size) {
+    final double half = config.shapeSize / 2;
+    return LinearTrack(
       start: half,
       end: size.width - half,
-      reversed: c.reversed,
+      reversed: config.reversed,
     );
-    final double fraction = c.scale.fractionOf(value.value);
+  }
+
+  @override
+  void paint(Canvas canvas, Size screenSize) {
+    final StepperPainterConfig c = config;
+    final LinearFrame frame = LinearFrame(screenSize, vertical: c.vertical);
+    final Size size = frame.logicalSize;
+    canvas.save();
+    frame.apply(canvas);
+
+    final double y = size.height / 2;
+    final LinearTrack track = trackFor(c, size);
+    final double current = value.value;
+    final double fraction = c.fractionAt(current);
 
     Paint linePaint(Color color) => Paint()
       ..color = color
@@ -133,18 +156,18 @@ class StepperLinearPainter extends CustomPainter {
     final int count = c.steps.length;
     final double spacing = count > 1 ? track.length / (count - 1) : size.width;
     for (int i = 0; i < count; i++) {
-      final double stepFraction = count > 1 ? i / (count - 1) : 0;
-      final double x = track.xOf(stepFraction);
-      final bool reached = stepFraction <= fraction + 1e-9;
+      final double x = track.xOf(c.fractionAt(i.toDouble()));
+      final bool reached = i <= current + 1e-9;
       _drawMarker(canvas, Offset(x, y), reached ? c.color : c.inactiveColor);
 
       final GxStepperStep step = c.steps[i];
       paintText(
         canvas,
-        text: (step.value?.toInt() ?? i + 1).toString(),
+        text: step.marker ?? '${i + 1}',
         style: reached ? c.activeStyle : c.inactiveStyle,
         textDirection: c.textDirection,
         maxWidth: c.shapeSize,
+        upright: c.vertical,
         position: (Size text) =>
             Offset(x - text.width / 2, y - text.height / 2),
       );
@@ -154,11 +177,13 @@ class StepperLinearPainter extends CustomPainter {
         style: c.labelStyle.merge(step.label.style),
         textDirection: c.textDirection,
         maxWidth: spacing,
+        upright: c.vertical,
         position: (Size text) =>
             Offset(x - text.width / 2, y + c.offset + 5) +
             (step.label.offset ?? Offset.zero),
       );
     }
+    canvas.restore();
   }
 
   void _drawMarker(Canvas canvas, Offset center, Color color) {

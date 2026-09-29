@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
 import 'package:gx_gauge/src/common/models/gauge_label.dart';
 
@@ -185,10 +185,11 @@ class GxRadialRange with Diagnosticable {
   const GxRadialRange({
     required this.start,
     required this.end,
-    required this.label,
+    this.label,
     this.color,
     this.height = 10,
     this.offset = 0,
+    this.shaderCallback,
   });
 
   /// The value where the band begins.
@@ -197,8 +198,8 @@ class GxRadialRange with Diagnosticable {
   /// The value where the band ends.
   final double end;
 
-  /// The band's label. Not drawn yet (docs/PLAN.md Phase 3).
-  final GxGaugeLabel label;
+  /// Text drawn upright just outside the band, at its middle.
+  final GxGaugeLabel? label;
 
   /// The band color. Null uses the gauge arc's color.
   final Color? color;
@@ -210,6 +211,10 @@ class GxRadialRange with Diagnosticable {
   /// outwards. Defaults to 0.
   final double offset;
 
+  /// Paints the band with a shader (e.g. a `SweepGradient`) instead of
+  /// [color]. Receives the band's bounding square.
+  final ShaderCallback? shaderCallback;
+
   /// Returns a copy with the given fields replaced.
   GxRadialRange copyWith({
     double? start,
@@ -218,6 +223,7 @@ class GxRadialRange with Diagnosticable {
     Color? color,
     double? height,
     double? offset,
+    ShaderCallback? shaderCallback,
   }) {
     return GxRadialRange(
       start: start ?? this.start,
@@ -226,6 +232,7 @@ class GxRadialRange with Diagnosticable {
       color: color ?? this.color,
       height: height ?? this.height,
       offset: offset ?? this.offset,
+      shaderCallback: shaderCallback ?? this.shaderCallback,
     );
   }
 
@@ -237,10 +244,12 @@ class GxRadialRange with Diagnosticable {
       other.label == label &&
       other.color == color &&
       other.height == height &&
-      other.offset == offset;
+      other.offset == offset &&
+      other.shaderCallback == shaderCallback;
 
   @override
-  int get hashCode => Object.hash(start, end, label, color, height, offset);
+  int get hashCode =>
+      Object.hash(start, end, label, color, height, offset, shaderCallback);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

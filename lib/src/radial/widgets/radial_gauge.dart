@@ -51,6 +51,8 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
     this.needle,
     this.pointers = const <GxRadialPointer>[],
     this.ranges = const <GxRadialRange>[],
+    this.onChanged,
+    this.onChangeEnd,
     this.semanticLabel,
     this.semanticValueFormatter,
     super.duration = Duration.zero,
@@ -123,6 +125,14 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
   /// Colored bands along the arc.
   final List<GxRadialRange> ranges;
 
+  /// Makes the gauge interactive: called with the value at the angle under
+  /// the pointer on every tap and drag (like a knob). Null (the default)
+  /// keeps the gauge read-only.
+  final ValueChanged<double>? onChanged;
+
+  /// Called with the final value when a tap or drag ends.
+  final ValueChanged<double>? onChangeEnd;
+
   /// Describes the gauge to screen readers.
   final String? semanticLabel;
 
@@ -142,6 +152,9 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
       ..add(DoubleProperty('startAngleInDegree', startAngleInDegree))
       ..add(DoubleProperty('sweepAngleInDegree', sweepAngleInDegree))
       ..add(DoubleProperty('interval', interval))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
@@ -161,47 +174,59 @@ class _GxRadialGaugeState extends AnimatedGaugeState<GxRadialGauge> {
         context.findAncestorWidgetOfExactType<Material>()?.color ??
         defaults.surface;
 
+    final GaugeScale scale = GaugeScale(w.value.min, w.value.max);
+    final RadialPainterConfig config = RadialPainterConfig(
+      scale: scale,
+      style: w.style,
+      color: color,
+      trackColor: w.style.backgroundColor ?? color.withValues(alpha: 0.2),
+      startAngleInDegree: w.startAngleInDegree,
+      sweepAngleInDegree: w.sweepAngleInDegree,
+      interval: w.interval,
+      minorTicksPerInterval: w.minorTicksPerInterval,
+      showMajorTicks: w.showMajorTicks,
+      showMinorTicks: w.showMinorTicks,
+      showLabels: w.showLabels,
+      majorTickStyle: w.majorTickStyle,
+      minorTickStyle: w.minorTickStyle,
+      tickColor: defaults.tick,
+      labelTickStyle: w.labelTickStyle,
+      labelStyle: defaults.labelStyle,
+      showValueAtCenter: w.showValueAtCenter,
+      valueStyle: defaults.valueStyle,
+      showNeedle: w.showNeedle,
+      needleColor: defaults.needle,
+      pointerColor: defaults.tertiary,
+      rangeColor: color,
+      capInnerColor: capInner,
+      textDirection: direction,
+      needle: w.needle,
+      pointers: w.pointers,
+      ranges: w.ranges,
+      labelFormatter: w.labelFormatter,
+      labelStyler: w.labelStyler,
+      majorTickStyler: w.majorTickStyler,
+    );
+    String format(double v) => semanticValue(w.semanticValueFormatter, v);
+
     return gaugeSemantics(
       label: w.semanticLabel,
-      value: semanticValue(w.semanticValueFormatter, w.value.value),
+      value: format(w.value.value),
+      current: w.value.value,
+      min: scale.min,
+      max: scale.max,
+      step: scale.range / 20,
+      onChanged: w.onChanged,
+      format: format,
       child: RadialGaugeBox(
         diameter: w.diameter,
-        child: CustomPaint(
-          painter: RadialGaugePainter(
-            value: valueAnimation,
-            config: RadialPainterConfig(
-              scale: GaugeScale(w.value.min, w.value.max),
-              style: w.style,
-              color: color,
-              trackColor:
-                  w.style.backgroundColor ?? color.withValues(alpha: 0.2),
-              startAngleInDegree: w.startAngleInDegree,
-              sweepAngleInDegree: w.sweepAngleInDegree,
-              interval: w.interval,
-              minorTicksPerInterval: w.minorTicksPerInterval,
-              showMajorTicks: w.showMajorTicks,
-              showMinorTicks: w.showMinorTicks,
-              showLabels: w.showLabels,
-              majorTickStyle: w.majorTickStyle,
-              minorTickStyle: w.minorTickStyle,
-              tickColor: defaults.tick,
-              labelTickStyle: w.labelTickStyle,
-              labelStyle: defaults.labelStyle,
-              showValueAtCenter: w.showValueAtCenter,
-              valueStyle: defaults.valueStyle,
-              showNeedle: w.showNeedle,
-              needleColor: defaults.needle,
-              pointerColor: defaults.tertiary,
-              rangeColor: color,
-              capInnerColor: capInner,
-              textDirection: direction,
-              needle: w.needle,
-              pointers: w.pointers,
-              ranges: w.ranges,
-              labelFormatter: w.labelFormatter,
-              labelStyler: w.labelStyler,
-              majorTickStyler: w.majorTickStyler,
-            ),
+        child: GaugeInteraction(
+          onChanged: w.onChanged,
+          onChangeEnd: w.onChangeEnd,
+          valueAt: (Offset position, Size size) =>
+              RadialGaugePainter.valueAt(config, size, position),
+          child: CustomPaint(
+            painter: RadialGaugePainter(value: valueAnimation, config: config),
           ),
         ),
       ),

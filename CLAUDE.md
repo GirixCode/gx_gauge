@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The package is being rebuilt and republished as **`gx_gauge`**. `docs/PLAN.md` is the source of truth for the target API, the phase order and the PR slicing. `docs/code_review.md` lists the known defects that the plan cites as "CR <section> <n>".
 - Execute only the phase or PR you were asked to do. Don't pull later-phase work forward. The README rewrite is deliberately last.
 - The decisions in PLAN.md §1 (D1–D10) are settled defaults. Don't re-litigate them in code. If one needs changing, update PLAN.md first.
-- Phases 1 (the rename) and 2 (quality and correctness) have landed. `doc/MIGRATION.md` maps every old name to its new one. When you change a public name or parameter, update MIGRATION.md and CHANGELOG.md in the same change.
+- Phases 1 (rename), 2 (quality and correctness) and 3 (features) have landed. `doc/MIGRATION.md` maps every old name to its new one. When you change a public name or parameter, update MIGRATION.md and CHANGELOG.md in the same change.
 - Directory roles: `docs/` holds internal planning and review, which is not published. `doc/` holds user-facing docs such as `MIGRATION.md`, which is published with the package.
 
 ## Commands
@@ -44,31 +44,36 @@ There is no CI yet (deferred, see PLAN.md Phase 0). Before handing work back, ru
 
 **How a gauge renders.** Each gauge follows the same pipeline, and a new option has to go through all of it:
 1. **Widget** (`*/widgets/`). An `ImplicitlyAnimatedWidget` whose state extends `AnimatedGaugeState` (`core/gauge_widgets.dart`). That state tweens `value.value` whenever it changes, continuing from the value on screen if a previous animation is still running.
-   - `build` resolves theme fallbacks through `GaugeDefaults.of(context)` (`core/gauge_defaults.dart`) and the text direction through `Directionality`. For linear gauges, `reversed = (rtl) != reverse`.
-   - It builds one immutable `*PainterConfig`, then wraps the paint in `gaugeSemantics` (`Semantics` plus `RepaintBoundary`) and in `LinearGaugeBox` (full width, fixed height) or `RadialGaugeBox` (square).
+   - `build` resolves theme fallbacks through `GaugeDefaults.of(context)` (`core/gauge_defaults.dart`) and the text direction through `Directionality`. For linear gauges, `linearReversed()` applies `(rtl) != reverse`, and vertical gauges ignore RTL.
+   - It builds one immutable `*PainterConfig`.
+   - Linear gauges then go through `linearGaugeShell()` (`core/gauge_widgets.dart`): `gaugeSemantics` (`Semantics` plus `RepaintBoundary`), then `LinearGaugeBox` (full length, fixed thickness), then `GaugeInteraction`. The radial gauge composes the same pieces with `RadialGaugeBox`.
 2. **Config** (`*PainterConfig extends PainterConfig`, in the painter file). It holds every drawn field, with colors already resolved. It lists all of them in `props`, which drives `==`, so `shouldRepaint` is just `old.config != config || old.value != value`. A field missing from `props` means the gauge won't repaint when it changes.
 3. **Painter.** `CustomPainter(repaint: value)`, so animation frames repaint without rebuilding. All value-to-position math goes through `GaugeScale` (`core/gauge_scale.dart`):
    - `fractionOf` is clamped, so overshooting curves are safe.
    - `ticks(interval)` is the only tick generator.
    - Linear x positions come from `LinearTrack.xOf`, which handles RTL. Radial angles are `start + fraction * sweep`.
    - Text is drawn with `paintText` (`core/text_utils.dart`), which disposes each `TextPainter`, and values are displayed with `formatGaugeValue`.
+   - **Vertical gauges:** linear painters always draw in horizontal *logical* coordinates. `LinearFrame` (`core/linear_frame.dart`) rotates the canvas for `direction: Axis.vertical`, so pass `upright: config.vertical` to every `paintText`.
+   - Painters expose static geometry helpers (`trackFor`, `placeBar`, `RadialGaugePainter.valueAt`), so widgets reuse the exact painting geometry for hit-testing and overlays such as marker widgets. Never duplicate that math in a widget.
 
 **Models** live in `common/models/` (`GxGaugeValue`, `GxGaugeLabel`, `GxGaugeTooltip`, enums), `linear/models/` and `radial/models/radial_gauge_style.dart`.
 - Each model is `@immutable`, mixes in `Diagnosticable`, and has hand-written `==`/`hashCode` and a `copyWith` covering every field.
 - Color fields are nullable: null means the theme default, resolved in the widget, never in the model.
-- Bars, fill areas and radial ranges cover explicit `start`..`end` values.
+- Bars, linear ranges (`GxLinearRange`) and radial ranges cover explicit `start`..`end` values. Bars and ranges share one fill model: `color` or `shaderCallback`, plus an optional `borderColor`/`borderWidth` (`LinearBarUtils.paintBand`). The stepper is index-based: `currentStep`, not a `GxGaugeValue`.
 - Callbacks live in `common/utils/typedef.dart`: `GxValueLabelFormatter`, the generic `GxValueLabelStyler<T>`/`GxValueTickStyler<T>`, and `GxNeedlePainter`. `GxSemanticValueFormatter` is in `core/semantics.dart`.
 
-**Custom needles.** When `GxLinearNeedle.shape` is `GxNeedleShape.custom`, `NeedleUtils.drawIt` calls `needlePainter(canvas, anchor, needle)`, with the needle's color already resolved. This is wired for the progress and bar gauges; the scale gauge gets it in Phase 3.
+**Custom needles.** When `GxLinearNeedle.shape` is `GxNeedleShape.custom`, `NeedleUtils.drawIt` calls `needlePainter(canvas, anchor, needle)`, with the needle's color already resolved. This is wired for the progress, bar and scale gauges (including scale marker needles). `NeedleUtils.drawIt` also draws the needle label.
 
-**Example app** (package `gx_gauge_example`). `example/lib/main.dart` is a deliberately minimal demo, because pub.dev shows it on the Example tab. Keep it short. The full showcase is `example/lib/showcase/`: `showcase_app.dart` lists `FeatureItem` demos, with one screen per gauge type under `showcase/screens/`. README images are served from `example/assets/images/` through raw GitHub URLs.
+**Interaction.** `onChanged` is opt-in. When it's null, no `GestureDetector` is added, so gauges are read-only by default. Drags follow the gauge's axis. Interactive gauges are adjustable semantics nodes.
+
+**Example app** (package `gx_gauge_example`). `example/lib/main.dart` is a deliberately minimal demo, because pub.dev shows it on the Example tab. Keep it short. The full showcase is `example/lib/showcase/`: `showcase_app.dart` lists `FeatureItem` demos, with one screen per gauge type under `showcase/screens/`, and `screens/features/` demonstrates the Phase 3 features. README images are served from `example/assets/images/` through raw GitHub URLs.
 
 ## Conventions
 
 - Public widgets use the `Gx` prefix. In `gx_gauge`, **every** public type does (PLAN.md D2).
 - Rules for new or refactored code:
   - Follow the rendering pipeline above. Never do value math outside `GaugeScale`/`LinearTrack`, and never hard-code a color or `TextDirection.ltr` in a painter.
-  - Don't add parameters that aren't wired to rendering. Parameters that are still ignored are documented as "Not applied yet (docs/PLAN.md Phase 3)".
+  - Don't add parameters that aren't wired to rendering. Every parameter is now implemented, so keep it that way.
   - `public_member_api_docs` is on: every public member needs a `///` doc comment that states its real default.
 - `analysis_options.yaml` builds on `flutter_lints` and adds `strict-casts`/`strict-inference`/`strict-raw-types`, `always_use_package_imports` (in `lib/`, use `package:gx_gauge/src/...`, never relative imports), `prefer_single_quotes`, `sort_constructors_first` and a curated rule list. `always_specify_types` was intentionally dropped (PLAN.md D7), but existing code still spells out types, so match the surrounding style.
 - Record user-visible changes in `CHANGELOG.md` and bump `version` in `pubspec.yaml`.

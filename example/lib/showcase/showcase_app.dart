@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:gx_gauge_example/showcase/screens/features/features_screen.dart';
 import 'package:gx_gauge_example/showcase/screens/linear_gauge/bar/bar_linear_gauge_screen.dart';
 import 'package:gx_gauge_example/showcase/screens/linear_gauge/progress/progress_linear_screen.dart';
 import 'package:gx_gauge_example/showcase/screens/linear_gauge/scale/scale_linear_gauge_screen.dart';
@@ -38,6 +39,14 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
   late final ScrollController _scrollController;
 
   final List<dynamic> _items = [
+    "Features",
+    FeatureItem(
+      title: 'Interactive, vertical, ranges and markers',
+      description: 'Tap and drag gauges, vertical orientation, labelled ranges, gradient bars, marker widgets and custom needles.',
+      widget: () => const FeaturesScreen(),
+      code: 'FeaturesScreen()',
+      leading: const Icon(Icons.auto_awesome),
+    ),
     "Linear Gauge",
     FeatureItem(
       title: 'Progress Linear Gauge',

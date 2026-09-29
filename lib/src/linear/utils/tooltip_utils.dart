@@ -18,6 +18,7 @@ abstract final class TooltipUtils {
     required Color color,
     required Color textColor,
     required TextDirection textDirection,
+    bool upright = false,
   }) {
     final Color strokeColor = tooltip.borderColor ?? color;
     final Paint paint = Paint()
@@ -28,8 +29,10 @@ abstract final class TooltipUtils {
       ..strokeCap = tooltip.strokeCap
       ..style = tooltip.paintingStyle;
 
-    final double width = tooltip.size.width;
-    final double height = tooltip.size.height;
+    // On a vertical gauge the canvas is rotated, so swap the bubble's sides
+    // to keep it `tooltip.size` on screen.
+    final double width = upright ? tooltip.size.height : tooltip.size.width;
+    final double height = upright ? tooltip.size.width : tooltip.size.height;
 
     double centerY = size.height / 2;
     Offset pointerStart = Offset(x, 0);
@@ -80,7 +83,8 @@ abstract final class TooltipUtils {
             : strokeColor,
       ).merge(tooltip.textStyle),
       textDirection: textDirection,
-      maxWidth: width,
+      maxWidth: tooltip.size.width,
+      upright: upright,
       position: (Size textSize) =>
           bubble.center - Offset(textSize.width / 2, textSize.height / 2),
     );

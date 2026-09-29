@@ -2,14 +2,14 @@
 
 `girix_code_gauge` is now published as **`gx_gauge`**. The API is the same set of gauges, with consistent `Gx`-prefixed names and a few cleaned-up parameters.
 
-This guide covers `gx_gauge` up to 1.0.0-dev.2.
+This guide covers `gx_gauge` up to 1.0.0-dev.3.
 
 ## 1. Update the dependency and imports
 
 ```yaml
 # pubspec.yaml
 dependencies:
-  gx_gauge: ^1.0.0-dev.2   # was: girix_code_gauge: ^0.0.6
+  gx_gauge: ^1.0.0-dev.3   # was: girix_code_gauge: ^0.0.6
 ```
 
 ```dart
@@ -45,7 +45,7 @@ Most migrations are a find-and-replace of the names below. Match whole words, so
 | `LinearNeedleLabel` | `GxNeedleLabel` |
 | `LinearBarPointer` | `GxLinearBarPointer` |
 | `LinearMarkerPointer` | `GxLinearMarkerPointer` |
-| `FillAreaPointer` | `GxLinearFillArea` |
+| `FillAreaPointer` | `GxLinearRange` (see §6) |
 | `LinearAxisTrackStyle` | `GxLinearAxisStyle` |
 | `LinearTickStyle` | `GxLinearTickStyle` |
 | `StepperPointer` | `GxStepperStep` |
@@ -95,7 +95,7 @@ Most migrations are a find-and-replace of the names below. Match whole words, so
 | `GxLinearProgressGauge`, `GxLinearBarGauge` | `customDrawNeedle:` | `needlePainter:` (new signature, see below) |
 | `GxLinearScaleGauge`, `GxLinearBarGauge` | `barPointers:` | `bars:` |
 | `GxLinearScaleGauge` | `markerPointers:` | `markers:` |
-| `GxLinearScaleGauge` | `fillAreaPointers:` | `fillAreas:` |
+| `GxLinearScaleGauge` | `fillAreaPointers:` | `ranges:` |
 | `GxLinearScaleGauge`, `GxRadialGauge` | `valueToLabelFormatCallback:` | `labelFormatter:` |
 | `GxLinearScaleGauge`, `GxRadialGauge` | `valueToLabelStyleCallback:` | `labelStyler:` |
 | `GxLinearScaleGauge` | `valueToMajorTickStyleCallback:` | `majorTickStyler:` |
@@ -106,6 +106,8 @@ Most migrations are a find-and-replace of the names below. Match whole words, so
 | `GxRadialNeedle` | `topOffest:` | `topOffset:` |
 | `GxRadialNeedle` | `circle:` | `cap:` |
 | `FillAreaPointer` / `RadialBarRange` | `startValue:`, `endValue:` | `start:`, `end:` |
+| `GxLinearStepperGauge` | `value: GaugeValue(...)` | `currentStep:` (an `int` index, see §6) |
+| `StepperPointer` | `value:` | `marker:` (a `String`, e.g. `'1'`) |
 
 ### Custom needles receive the needle
 
@@ -189,6 +191,42 @@ bars: const [
 ```
 
 `GxLinearBarGauge.gapBetweenBars` is now measured in logical pixels, not gauge units.
+
+Bars no longer take `paintingStyle` or `strokeCap`, and `thickness` now sets the bar's size across the track:
+
+```dart
+// Before: an outlined bar
+LinearBarPointer(value: 40, paintingStyle: PaintingStyle.stroke, thickness: 2, color: Colors.black45)
+
+// After
+const GxLinearBarPointer(
+  start: 0,
+  end: 40,
+  color: Colors.transparent,
+  borderColor: Colors.black45,
+  borderWidth: 2,
+)
+```
+
+Fill areas became ranges. `GxLinearRange` has the same `start`/`end`/`color`/`thickness`, plus a label, border and gradient:
+
+```dart
+// Before
+fillAreaPointers: [FillAreaPointer(startValue: 0, endValue: 40, color: Colors.green)]
+
+// After
+ranges: const [GxLinearRange(start: 0, end: 40, color: Colors.green)]
+```
+
+The stepper takes the index of the current step instead of a value on a range:
+
+```dart
+// Before: 4 steps, 77% of the way
+GxStepperLinearGauge(value: GaugeValue(value: 77), stepperPointers: [...])
+
+// After: steps 0, 1 and 2 are reached
+GxLinearStepperGauge(currentStep: 2, steps: [...])
+```
 
 ## 7. Sizing
 

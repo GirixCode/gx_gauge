@@ -284,8 +284,8 @@ class _DefaultScaleLinearGaugeBodyState
                   ? FontWeight.bold
                   : FontWeight.normal,
             ),
-            fillAreas: [
-              GxLinearFillArea(
+            ranges: [
+              GxLinearRange(
                 thickness: 60,
                 start: 30,
                 end: 80,
@@ -353,14 +353,14 @@ class _DefaultScaleLinearGaugeBodyState
                   ? FontWeight.bold
                   : FontWeight.normal,
             ),
-            fillAreas: [
-              GxLinearFillArea(
+            ranges: [
+              GxLinearRange(
                 thickness: 60,
                 start: 10,
                 end: 70,
                 color: Colors.grey.withValues(alpha: 0.3),
               ),
-              GxLinearFillArea(
+              GxLinearRange(
                 thickness: 48,
                 start: 30,
                 end: 80,

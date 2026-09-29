@@ -1,6 +1,6 @@
 # Modernisation plan: `girix_code_gauge` → `gx_gauge`
 
-Status: **Phase 0 done** (`064d6cf`). **Phase 1 done** (`7c81892`). **Phase 2 done** (uncommitted, on branch `refactor/phase-2-quality`). Phases 3–5 are not started.
+Status: **Phases 0–2 done** (`064d6cf`, `7c81892`, `b38d233`). **Phase 3 done** (uncommitted, on branch `feat/phase-3-features`). Phases 4–5 are not started.
 
 References:
 - `docs/code_review.md` lists the confirmed defects. It is cited below as **CR**, followed by the section and item, e.g. *CR Radial 1*.
@@ -284,6 +284,33 @@ Each feature is either **implemented** (I) or **removed** (R).
 | `GaugeAnimationType` custom curves | **R** → `Curve curve` (D8) | |
 
 Each implemented feature gets a showcase screen in the example app and README coverage (one snippet).
+
+### Phase 3 progress log
+
+- **Result:**
+  - `flutter analyze --fatal-infos` is clean.
+  - 139 package tests and 3 example tests pass. They include a test file per feature (`test/features_test.dart`) and `test/core/linear_frame_test.dart`.
+  - Version bumped to 1.0.0-dev.3.
+- **Implemented:**
+  - Vertical orientation (`Axis direction`) on all four linear gauges, via `core/linear_frame.dart`. Painters keep drawing in horizontal logical coordinates and the canvas is rotated a quarter turn. `paintText(upright: true)` keeps text readable, and the tooltip bubble keeps its on-screen size.
+  - Linear ranges (`GxLinearRange`), with label, shader, border, radius, thickness, position and offset.
+  - Radial range labels (CR Radial 5), with `label` now optional, and radial range shaders.
+  - Needle labels with `{value}` (the rest of CR Needle 1).
+  - `needlePainter` on the scale gauge, for the value needle and marker needles.
+  - Marker widgets, drawn as a `Stack` overlay positioned with the painter's own `trackFor` geometry.
+  - Bar pointer `thickness`/`position`/`offset`/`shaderCallback`, plus a border.
+  - Stepper `currentStep` (CR Stepper 1), with the step `value` becoming a `marker` string.
+  - Interaction: `onChanged`/`onChangeEnd` on progress, scale, bar and radial, and `onStepTapped` on the stepper.
+    - `GaugeInteraction` maps positions back through the same `LinearTrack`/`LinearFrame`, and through `RadialGaugePainter.valueAt` for the radial gauge.
+    - Drags are restricted to the gauge's axis so they don't steal list scrolling.
+    - Interactive gauges become adjustable semantics nodes, stepping 5% at a time.
+  - A showcase "Features" screen in the example app.
+- **Deviations:**
+  - **Fill areas were merged into ranges.** `GxLinearFillArea` is removed rather than kept alongside `GxLinearRange`. A range is a strict superset (start/end/color/thickness plus label, border, gradient), so the plan's "linear ranges" and "fill-area border" rows are delivered by one type.
+  - **Bars and ranges share one fill-and-border model.** `GxLinearBarPointer.paintingStyle`/`strokeCap` are replaced by `borderColor`/`borderWidth`. `thickness` couldn't mean both stroke width and cross-axis size.
+  - `onChanged` gives no snapping to divisions. It can be added later without breaking changes.
+  - The stepper's `semanticValueFormatter` was removed. Steps are announced as "Step N of M".
+- **Remaining for Phase 5:** README coverage, one snippet per feature.
 
 ---
 

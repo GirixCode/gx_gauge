@@ -21,6 +21,7 @@ ProgressPainterConfig progressConfig({
   GxLinearNeedle? linearNeedle,
   GxGaugeLabel? gaugeLabel,
   bool showLabel = false,
+  bool vertical = false,
 }) {
   return ProgressPainterConfig(
     scale: scale,
@@ -34,6 +35,7 @@ ProgressPainterConfig progressConfig({
     needle: linearNeedle,
     label: gaugeLabel,
     showLabel: showLabel,
+    vertical: vertical,
   );
 }
 
@@ -44,6 +46,7 @@ BarPainterConfig barConfig({
   bool reversed = false,
   GxLinearNeedle? linearNeedle,
   GxGaugeTooltip? tooltip,
+  bool vertical = false,
 }) {
   return BarPainterConfig(
     scale: scale,
@@ -58,16 +61,16 @@ BarPainterConfig barConfig({
     gap: gap,
     needle: linearNeedle,
     tooltip: tooltip,
+    vertical: vertical,
   );
 }
 
 StepperPainterConfig stepperConfig({
-  GaugeScale scale = const GaugeScale(0, 100),
   List<GxStepperStep> steps = const <GxStepperStep>[],
   bool reversed = false,
+  bool vertical = false,
 }) {
   return StepperPainterConfig(
-    scale: scale,
     steps: steps,
     style: const GxLinearProgressStyle(thickness: 4),
     color: primary,
@@ -81,6 +84,7 @@ StepperPainterConfig stepperConfig({
     labelStyle: label,
     reversed: reversed,
     textDirection: TextDirection.ltr,
+    vertical: vertical,
   );
 }
 
@@ -96,7 +100,11 @@ ScalePainterConfig scaleConfig({
   GxElementPosition tickPosition = GxElementPosition.cross,
   GxLinearNeedle? linearNeedle,
   List<GxLinearBarPointer> bars = const <GxLinearBarPointer>[],
+  List<GxLinearRange> ranges = const <GxLinearRange>[],
+  List<GxLinearMarkerPointer> markers = const <GxLinearMarkerPointer>[],
+  GxNeedlePainter? needlePainter,
   bool reversed = false,
+  bool vertical = false,
 }) {
   return ScalePainterConfig(
     scale: scale,
@@ -123,7 +131,11 @@ ScalePainterConfig scaleConfig({
     reversed: reversed,
     textDirection: TextDirection.ltr,
     needle: linearNeedle,
+    needlePainter: needlePainter,
     bars: bars,
+    ranges: ranges,
+    markers: markers,
+    vertical: vertical,
   );
 }
 
@@ -138,6 +150,7 @@ RadialPainterConfig radialConfig({
   bool showLabels = false,
   GxRadialNeedle? radialNeedle,
   List<GxRadialPointer> pointers = const <GxRadialPointer>[],
+  List<GxRadialRange> ranges = const <GxRadialRange>[],
 }) {
   return RadialPainterConfig(
     scale: scale,
@@ -166,5 +179,6 @@ RadialPainterConfig radialConfig({
     textDirection: TextDirection.ltr,
     needle: radialNeedle,
     pointers: pointers,
+    ranges: ranges,
   );
 }

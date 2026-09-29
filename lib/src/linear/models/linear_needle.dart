@@ -44,7 +44,8 @@ class GxLinearNeedle with Diagnosticable {
   /// Whether the needle is drawn. Defaults to true.
   final bool enabled;
 
-  /// A label for the needle. Not drawn yet (see docs/PLAN.md, Phase 3).
+  /// Text drawn beyond the needle: above it, or below it for
+  /// [GxNeedlePosition.bottom].
   final GxNeedleLabel? label;
 
   /// Spacing used by the bar gauge and marker pointers when positioning the
@@ -135,13 +136,13 @@ class GxNeedleLabel with Diagnosticable {
   /// Creates a needle label.
   const GxNeedleLabel({required this.label, this.textStyle, this.offset = 0});
 
-  /// The text, e.g. the gauge's value.
+  /// The text. `{value}` is replaced with the value the needle points at.
   final String label;
 
   /// The text style. Null uses the theme's label style.
   final TextStyle? textStyle;
 
-  /// Distance between the needle and the text. Defaults to 0.
+  /// Extra distance between the needle and the text. Defaults to 0.
   final double offset;
 
   /// Returns a copy with the given fields replaced.

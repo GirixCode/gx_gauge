@@ -1,8 +1,10 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
 import 'package:gx_gauge/src/common/models/gauge_tooltip.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
 import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/linear_frame.dart';
 import 'package:gx_gauge/src/core/painter_config.dart';
 import 'package:gx_gauge/src/linear/models/linear_bar_pointer.dart';
 import 'package:gx_gauge/src/linear/models/linear_needle.dart';
@@ -28,6 +30,7 @@ class BarPainterConfig extends PainterConfig {
     this.needle,
     this.needlePainter,
     this.tooltip,
+    this.vertical = false,
   });
 
   /// The value range.
@@ -69,6 +72,9 @@ class BarPainterConfig extends PainterConfig {
   /// The optional tooltip.
   final GxGaugeTooltip? tooltip;
 
+  /// Whether the gauge is drawn bottom-to-top.
+  final bool vertical;
+
   @override
   List<Object?> get props => <Object?>[
     scale,
@@ -84,6 +90,7 @@ class BarPainterConfig extends PainterConfig {
     needle,
     needlePainter,
     tooltip,
+    vertical,
   ];
 }
 
@@ -100,7 +107,37 @@ class LinearBarPainter extends CustomPainter {
   final Animation<double> value;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size screenSize) {
+    final LinearFrame frame = LinearFrame(
+      screenSize,
+      vertical: config.vertical,
+    );
+    final Size size = frame.logicalSize;
+    canvas.save();
+    frame.apply(canvas);
+    _paint(canvas, size);
+    canvas.restore();
+  }
+
+  /// Where [bar] sits across a gauge of [height]: full height by default,
+  /// or the lower/upper half for inside/outside.
+  static BarPlacement placeBar(GxLinearBarPointer bar, double height) {
+    final double center = height / 2;
+    switch (bar.position ?? GxElementPosition.cross) {
+      case GxElementPosition.inside:
+        return (top: center + bar.offset, height: bar.thickness ?? center);
+      case GxElementPosition.outside:
+        final double h = bar.thickness ?? center;
+        return (top: center - h - bar.offset, height: h);
+      case GxElementPosition.cross:
+      case GxElementPosition.inAndOut:
+      case GxElementPosition.outAndIn:
+        final double h = bar.thickness ?? height;
+        return (top: center - h / 2, height: h);
+    }
+  }
+
+  void _paint(Canvas canvas, Size size) {
     final LinearTrack track = LinearTrack(
       start: 0,
       end: size.width,
@@ -111,15 +148,16 @@ class LinearBarPainter extends CustomPainter {
       scale: config.scale,
       track: track,
       bars: config.bars,
-      top: 0,
-      height: size.height,
+      place: (GxLinearBarPointer bar) => placeBar(bar, size.height),
       color: config.barColor,
       labelStyle: config.labelStyle,
       textDirection: config.textDirection,
       gap: config.gap,
+      upright: config.vertical,
     );
 
     final double x = track.xOf(config.scale.fractionOf(value.value));
+    final String text = formatGaugeValue(config.scale.clamp(value.value));
     final GxLinearNeedle? needle = config.needle;
     if (needle != null && needle.enabled) {
       NeedleUtils.drawIt(
@@ -130,12 +168,15 @@ class LinearBarPainter extends CustomPainter {
         thickness: needle.offset,
         color: needle.color ?? config.needleColor,
         needlePainter: config.needlePainter,
+        valueText: text,
+        labelStyle: config.labelStyle,
+        textDirection: config.textDirection,
+        upright: config.vertical,
       );
     }
 
     final GxGaugeTooltip? tooltip = config.tooltip;
     if (tooltip != null && tooltip.enabled) {
-      final String text = formatGaugeValue(config.scale.clamp(value.value));
       TooltipUtils.drawTooltip(
         canvas: canvas,
         size: size,
@@ -145,6 +186,7 @@ class LinearBarPainter extends CustomPainter {
         color: tooltip.color ?? config.tooltipColor,
         textColor: config.tooltipTextColor,
         textDirection: config.textDirection,
+        upright: config.vertical,
       );
     }
   }
