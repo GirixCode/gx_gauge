@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/models.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:girix_code_gauge/src/linear/models/stepper_linear_gauge_model.dart';
-import 'package:girix_code_gauge/src/linear/utils/color_utils.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/stepper_linear_gauge_model.dart';
+import 'package:gx_gauge/src/linear/utils/color_utils.dart';
 
 class StepperLinearPainter extends CustomPainter {
   StepperLinearPainter({
     required this.gaugeValue,
-    required this.stepperPointers,
+    required this.steps,
     required this.style,
     required this.shape,
     required this.shapeSize,
@@ -16,20 +16,17 @@ class StepperLinearPainter extends CustomPainter {
     required this.inActiveStyle,
     this.onPointerTap,
   });
-  final GaugeValue gaugeValue;
-  final List<StepperPointer> stepperPointers;
-  final ProgressLinearStyle style;
-  final StepperShape shape;
+  final GxGaugeValue gaugeValue;
+  final List<GxStepperStep> steps;
+  final GxLinearProgressStyle style;
+  final GxStepperShape shape;
   final double shapeSize;
   final TextStyle activeStyle;
   final TextStyle inActiveStyle;
   final double offset;
   final Function? onPointerTap;
   late Size? size;
-  bool checkListEquality(
-    List<StepperPointer> list1,
-    List<StepperPointer> list2,
-  ) {
+  bool checkListEquality(List<GxStepperStep> list1, List<GxStepperStep> list2) {
     if (list1.length != list2.length) {
       return false;
     }
@@ -62,7 +59,7 @@ class StepperLinearPainter extends CustomPainter {
   bool shouldRepaint(covariant StepperLinearPainter oldDelegate) {
     final bool isRepent =
         gaugeValue != oldDelegate.gaugeValue ||
-        !checkListEquality(stepperPointers, oldDelegate.stepperPointers) ||
+        !checkListEquality(steps, oldDelegate.steps) ||
         style != oldDelegate.style ||
         shape != oldDelegate.shape ||
         shapeSize != oldDelegate.shapeSize ||
@@ -90,7 +87,7 @@ class StepperLinearPainter extends CustomPainter {
     /// Progress of the stepper without the shape size
     final double progress = actualProgress;
 
-    final int actualInterval = stepperPointers.length;
+    final int actualInterval = steps.length;
 
     // Draw axis Line
     final Offset axisStart = Offset(
@@ -138,10 +135,10 @@ class StepperLinearPainter extends CustomPainter {
         ..strokeWidth = style.thickness
         ..style = style.paintingStyle;
 
-      final StepperPointer pointer = stepperPointers[i];
-      if (shape == StepperShape.circle) {
+      final GxStepperStep pointer = steps[i];
+      if (shape == GxStepperShape.circle) {
         canvas.drawCircle(startPoint, shapeSize / 2, stepperPaint);
-      } else if (shape == StepperShape.rectangle) {
+      } else if (shape == GxStepperShape.rectangle) {
         canvas.drawRect(
           Rect.fromCenter(
             center: startPoint,
@@ -150,7 +147,7 @@ class StepperLinearPainter extends CustomPainter {
           ),
           stepperPaint,
         );
-      } else if (shape == StepperShape.diamond) {
+      } else if (shape == GxStepperShape.diamond) {
         final Path diamondPath = Path()
           ..moveTo(x, y - shapeSize / 2)
           ..lineTo(x - shapeSize / 2, y)

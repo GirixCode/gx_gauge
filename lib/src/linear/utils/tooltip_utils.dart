@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
 
 class TooltipUtils {
   static void drawTooltip({
     required Canvas canvas,
     required Size size,
-    required GaugeTooltip tooltip,
+    required GxGaugeTooltip tooltip,
     required double minValue,
     required double maxValue,
     required double value,
@@ -39,10 +39,10 @@ class TooltipUtils {
     Offset tooltipBarStart = Offset(tooltipX, 0);
     Offset tooltipBarEnd = Offset(tooltipX, 0);
 
-    if (tooltip.position == GaugeTooltipPosition.top) {
+    if (tooltip.position == GxTooltipPosition.top) {
       tooltipY = -size.height / 2 - tooltip.offset;
       tooltipBarEnd = Offset(tooltipX, tooltipY + tooltipHeight / 2);
-    } else if (tooltip.position == GaugeTooltipPosition.bottom) {
+    } else if (tooltip.position == GxTooltipPosition.bottom) {
       tooltipY = size.height + size.height / 2 + tooltip.offset;
       tooltipBarStart = Offset(tooltipX, size.height);
       tooltipBarEnd = Offset(tooltipX, tooltipY - tooltipHeight / 2);
@@ -80,7 +80,7 @@ class TooltipUtils {
     );
 
     canvas.drawRRect(rRect, paint);
-    if (tooltip.type == GaugeTooltipType.normal && tooltip.showPointer) {
+    if (tooltip.type == GxTooltipType.normal && tooltip.showPointer) {
       canvas.drawLine(
         tooltipBarStart,
         tooltipBarEnd,

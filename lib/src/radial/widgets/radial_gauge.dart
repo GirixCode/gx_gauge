@@ -1,10 +1,10 @@
 // lib/src/radial/widgets/radial_gauge.dart
 
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/linear_gauge_common_model.dart';
-import 'package:girix_code_gauge/src/common/utils/typedef.dart';
-import 'package:girix_code_gauge/src/radial/models/radial_gauge_style.dart';
-import 'package:girix_code_gauge/src/radial/painters/radial_gauge_painter.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/radial/models/radial_gauge_style.dart';
+import 'package:gx_gauge/src/radial/painters/radial_gauge_painter.dart';
 
 /// The [GxRadialGauge] widget is used to display a radial gauge.
 ///
@@ -13,14 +13,14 @@ class GxRadialGauge extends StatelessWidget {
   const GxRadialGauge({
     super.key,
     required this.value,
-    this.style = const RadialGaugeStyle(),
+    this.style = const GxRadialGaugeStyle(),
     this.size = const Size(200, 200),
-    this.labelTickStyle = const RadialTickLabelStyle(),
+    this.labelTickStyle = const GxRadialTickLabelStyle(),
     this.showMajorTicks = false,
     this.showMinorTicks = false,
     this.showLabels = false,
-    this.majorTickStyle = const RadialTickStyle(),
-    this.minorTickStyle = const RadialTickStyle(),
+    this.majorTickStyle = const GxRadialTickStyle(),
+    this.minorTickStyle = const GxRadialTickStyle(),
     this.interval = 10,
     this.minorTicksPerInterval = 10,
     this.startAngleInDegree = 0,
@@ -28,11 +28,11 @@ class GxRadialGauge extends StatelessWidget {
     this.showValueAtCenter = true,
     this.showNeedle = false,
     this.needle,
-    this.valueToLabelFormatCallback,
-    this.valueToLabelStyleCallback,
-    this.valueToMajorTickCallback,
+    this.labelFormatter,
+    this.labelStyler,
+    this.majorTickStyler,
     this.pointers,
-    this.rangeBars,
+    this.ranges,
   });
 
   /// Specifies the value of the gauge.
@@ -40,7 +40,7 @@ class GxRadialGauge extends StatelessWidget {
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///  value: GaugeValue(
+  ///  value: GxGaugeValue(
   ///   value: 50,
   ///   min: 0,
   ///   max: 100,
@@ -48,21 +48,21 @@ class GxRadialGauge extends StatelessWidget {
   /// )
   /// ```
   ///
-  final GaugeValue value;
+  final GxGaugeValue value;
 
   /// Specifies the style of the gauge.
-  ///  * [style] : The style of the gauge. The default value is [RadialGaugeStyle()]. The style is optional.
+  ///  * [style] : The style of the gauge. The default value is [GxRadialGaugeStyle()]. The style is optional.
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///   style: RadialGaugeStyle(
+  ///   style: GxRadialGaugeStyle(
   ///     color: Colors.cyan,
   ///     thickness: 35,
   ///    ),
   /// )
   /// ```
   ///
-  final RadialGaugeStyle style;
+  final GxRadialGaugeStyle style;
 
   /// Specifies the size of the gauge.
   /// * [size] : The size of the gauge. The default value is [Size(200, 200)]. The size is optional.
@@ -76,11 +76,11 @@ class GxRadialGauge extends StatelessWidget {
   final Size size;
 
   /// Specifies the style of the label tick.
-  /// * [labelTickStyle] : The style of the label tick. The default value is [RadialTickLabelStyle()]. The labelTickStyle is optional.
+  /// * [labelTickStyle] : The style of the label tick. The default value is [GxRadialTickLabelStyle()]. The labelTickStyle is optional.
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///   labelTickStyle: RadialTickLabelStyle(
+  ///   labelTickStyle: GxRadialTickLabelStyle(
   ///     padding: 30,
   ///     offset: 10,
   ///     style: TextStyle(
@@ -91,7 +91,7 @@ class GxRadialGauge extends StatelessWidget {
   /// )
   /// ```
   ///
-  final RadialTickLabelStyle labelTickStyle;
+  final GxRadialTickLabelStyle labelTickStyle;
 
   /// Specifies whether to show the major ticks.
   /// * [showMajorTicks] : The default value is false. The showMajorTicks is optional.
@@ -127,38 +127,38 @@ class GxRadialGauge extends StatelessWidget {
   final bool showLabels;
 
   /// Specifies the style of the major ticks.
-  /// * [majorTickStyle] : The default value is [RadialTickStyle()]. The majorTickStyle is optional.
+  /// * [majorTickStyle] : The default value is [GxRadialTickStyle()]. The majorTickStyle is optional.
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///   majorTickStyle: RadialTickStyle(
+  ///   majorTickStyle: GxRadialTickStyle(
   ///     color: Colors.black,
   ///     thickness: 1,
   ///     length: 25,
-  ///     alignment: RadialElementAlignment.center,
-  ///     position: RadialElementPosition.inside,
+  ///     alignment: GxRadialElementAlignment.center,
+  ///     position: GxRadialElementPosition.inside,
   ///   ),
   /// )
   /// ```
   ///
-  final RadialTickStyle majorTickStyle;
+  final GxRadialTickStyle majorTickStyle;
 
   /// Specifies the style of the minor ticks.
-  /// * [minorTickStyle] : The default value is [RadialTickStyle()]. The minorTickStyle is optional.
+  /// * [minorTickStyle] : The default value is [GxRadialTickStyle()]. The minorTickStyle is optional.
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///  minorTickStyle: RadialTickStyle(
+  ///  minorTickStyle: GxRadialTickStyle(
   ///     color: Colors.black,
   ///     thickness: 1,
   ///     length: 10,
-  ///     alignment: RadialElementAlignment.center,
-  ///     position: RadialElementPosition.inside,
+  ///     alignment: GxRadialElementAlignment.center,
+  ///     position: GxRadialElementPosition.inside,
   ///   ),
   /// )
   /// ```
   ///
-  final RadialTickStyle minorTickStyle;
+  final GxRadialTickStyle minorTickStyle;
 
   /// Specifies the interval of the gauge.
   /// * [interval] : The default value is 10. The interval is optional.
@@ -231,12 +231,12 @@ class GxRadialGauge extends StatelessWidget {
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///  needle: RadialNeedle(
+  ///  needle: GxRadialNeedle(
   ///   color: Colors.lightBlue,
-  ///   shape: RadialNeedleShape.tapperedLine,
+  ///   shape: GxRadialNeedleShape.taperedLine,
   ///   thickness: 18,
-  ///   alignment: RadialElementAlignment.end,
-  ///   circle: NeedleCircle(
+  ///   alignment: GxRadialElementAlignment.end,
+  ///   circle: GxNeedleCap(
   ///     radius: 15,
   ///     color: Colors.red
   ///     ),
@@ -244,27 +244,27 @@ class GxRadialGauge extends StatelessWidget {
   /// )
   /// ```
   ///
-  final RadialNeedle? needle;
+  final GxRadialNeedle? needle;
 
   /// Specifies the value to label format callback.
-  /// * [valueToLabelFormatCallback] : The value to label format callback. The valueToLabelFormatCallback is optional.
+  /// * [labelFormatter] : The value to label format callback. The labelFormatter is optional.
   ///
   /// ```dart
   /// GxRadialGauge(
-  ///   valueToLabelFormatCallback: (double value, int index) {
+  ///   labelFormatter: (double value, int index) {
   ///     return value.toStringAsFixed(2);
   ///   },
   /// )
   /// ```
   ///
-  final ValueToLabelFormatCallback? valueToLabelFormatCallback;
+  final GxValueLabelFormatter? labelFormatter;
 
   /// Specifies the value to label style callback.
-  /// * [valueToLabelStyleCallback] : The value to label style callback. The valueToLabelStyleCallback is optional.
+  /// * [labelStyler] : The value to label style callback. The labelStyler is optional.
   /// ```dart
   /// GxRadialGauge(
-  ///   valueToLabelStyleCallback: (double value, int index) {
-  ///    return RadialTickStyle(
+  ///   labelStyler: (double value, int index) {
+  ///    return GxRadialTickStyle(
   ///       color: Colors.black,
   ///       thickness: 1,
   ///       length: 25,
@@ -273,15 +273,15 @@ class GxRadialGauge extends StatelessWidget {
   /// )
   /// ```
   ///
-  final ValueToRadialMajorTickCallback? valueToMajorTickCallback;
+  final GxValueTickStyler<GxRadialTickStyle>? majorTickStyler;
   // Callbacks
 
   /// Specifies the value to label style callback.
-  /// * [valueToLabelStyleCallback] : The value to label style callback. The valueToLabelStyleCallback is optional.
+  /// * [labelStyler] : The value to label style callback. The labelStyler is optional.
   /// ```dart
   /// GxRadialGauge(
-  ///  valueToLabelStyleCallback: (double value, int index) {
-  ///   return RadialTickLabelStyle(
+  ///  labelStyler: (double value, int index) {
+  ///   return GxRadialTickLabelStyle(
   ///     padding: 30,
   ///     offset: 10,
   ///     style: TextStyle(
@@ -293,28 +293,28 @@ class GxRadialGauge extends StatelessWidget {
   /// )
   /// ```
   ///
-  final ValueToRadialLabelStyleCallback? valueToLabelStyleCallback;
+  final GxValueLabelStyler<GxRadialTickLabelStyle>? labelStyler;
 
   /// Specifies the radial pointers.
   /// * [pointers] : The radial pointers. The pointers is optional.
   /// ```dart
   /// GxRadialGauge(
   ///   pointers: [
-  ///    RadialPointer(
+  ///    GxRadialPointer(
   ///      value: 50,
   ///     ),
   ///   ],
   /// )
   /// ```
   ///
-  final List<RadialPointer>? pointers;
+  final List<GxRadialPointer>? pointers;
 
   /// Specifies the range bars.
-  /// * [rangeBars] : The range bars. The rangeBars is optional.
+  /// * [ranges] : The range bars. The ranges is optional.
   /// ```dart
   /// GxRadialGauge(
-  ///  rangeBars: [
-  ///   RadialBarRange(
+  ///  ranges: [
+  ///   GxRadialRange(
   ///     height: 30,
   ///     startValue: 0,
   ///     endValue: 33,
@@ -323,7 +323,7 @@ class GxRadialGauge extends StatelessWidget {
   ///   ],
   /// )
   /// ```
-  final List<RadialBarRange>? rangeBars;
+  final List<GxRadialRange>? ranges;
 
   @override
   Widget build(BuildContext context) {
@@ -349,11 +349,11 @@ class GxRadialGauge extends StatelessWidget {
         showNeedle: showNeedle,
         needle: needle,
         needleCircleInnerColor: needleCircleInnerColor,
-        valueToLabelFormatCallback: valueToLabelFormatCallback,
-        valueToLabelStyleCallback: valueToLabelStyleCallback,
-        valueToMajorTickCallback: valueToMajorTickCallback,
+        labelFormatter: labelFormatter,
+        labelStyler: labelStyler,
+        majorTickStyler: majorTickStyler,
         pointers: pointers,
-        rangeBars: rangeBars,
+        ranges: ranges,
       ),
     );
   }

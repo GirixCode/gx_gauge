@@ -1,37 +1,38 @@
 // lib/src/linear/painters/linear_gauge_painter.dart
 
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/linear_gauge_common_model.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:girix_code_gauge/src/linear/models/linear_needle_model.dart';
-import 'package:girix_code_gauge/src/linear/utils/needle_utils.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 
-/// [ProgressLinearPainter] is a custom painter class that is used to paint the GxProgressLinearGauge widget.
+/// [ProgressLinearPainter] is a custom painter class that is used to paint the GxLinearProgressGauge widget.
 ///
 /// It extends the [CustomPainter] class from Flutter.
 ///
 /// The [ProgressLinearPainter] class contains the following properties:
 ///
-/// - [gaugeValue]: An instance of the [GaugeValue] class that holds the value of the gauge.
+/// - [gaugeValue]: An instance of the [GxGaugeValue] class that holds the value of the gauge.
 ///
-/// - [style]: An instance of the [ProgressLinearStyle] class that holds the style properties of the gauge.
+/// - [style]: An instance of the [GxLinearProgressStyle] class that holds the style properties of the gauge.
 ///
 class ProgressLinearPainter extends CustomPainter {
   ProgressLinearPainter({
     required this.gaugeValue,
     this.needle,
-    this.customDrawNeedle,
+    this.needlePainter,
     this.reverse = false,
     this.showLabel = false,
     this.height,
     required this.style,
     this.label,
   });
-  final GaugeValue gaugeValue;
-  final ProgressLinearStyle style;
-  final GaugeLabel? label;
-  final LinearNeedle? needle;
-  final void Function(Canvas canvas, Offset position)? customDrawNeedle;
+  final GxGaugeValue gaugeValue;
+  final GxLinearProgressStyle style;
+  final GxGaugeLabel? label;
+  final GxLinearNeedle? needle;
+  final GxNeedlePainter? needlePainter;
   final bool reverse;
   final bool showLabel;
   final double? height;
@@ -192,7 +193,7 @@ class ProgressLinearPainter extends CustomPainter {
       //     gaugeValue: gaugeValue,
       //     dense: style.dense,
       //     style: style,
-      //     customDrawNeedle: customDrawNeedle,
+      //     needlePainter: needlePainter,
       //     needle: needle!);
 
       // Draw the needle
@@ -205,7 +206,7 @@ class ProgressLinearPainter extends CustomPainter {
         value: gaugeValue.value,
         needle: needle!,
         thickness: style.thickness,
-        customDrawNeedle: customDrawNeedle,
+        needlePainter: needlePainter,
       );
     }
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:girix_code_gauge/src/linear/utils/color_utils.dart';
+import 'package:gx_gauge/src/linear/utils/color_utils.dart';
 
 void main() {
   const Color base = Color(0xFF3366CC);

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
-import 'package:girix_code_gauge/src/linear/painters/linear_bar_painter.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/linear/painters/linear_bar_painter.dart';
 
 class GxLinearBarGauge extends StatelessWidget {
   const GxLinearBarGauge({
     super.key,
-    this.direction = LinearGaugeDirection.horizontal,
     required this.value,
-    required this.barPointers,
+    required this.bars,
     this.showTooltip = true,
     required this.size,
     this.needle,
@@ -15,19 +16,18 @@ class GxLinearBarGauge extends StatelessWidget {
     this.alignment = Alignment.centerLeft,
     this.showNeedleInsideBar = true,
     this.tooltip,
-    this.customDrawNeedle,
+    this.needlePainter,
   });
-  final GaugeValue value;
-  final List<LinearBarPointer> barPointers;
+  final GxGaugeValue value;
+  final List<GxLinearBarPointer> bars;
   final bool showTooltip;
-  final LinearNeedle? needle;
+  final GxLinearNeedle? needle;
   final Size size;
-  final LinearGaugeDirection direction;
   final AlignmentGeometry alignment;
   final double gapBetweenBars;
   final bool showNeedleInsideBar;
-  final GaugeTooltip? tooltip;
-  final void Function(Canvas canvas, Offset position)? customDrawNeedle;
+  final GxGaugeTooltip? tooltip;
+  final GxNeedlePainter? needlePainter;
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +35,11 @@ class GxLinearBarGauge extends StatelessWidget {
       painter: LinearBarPainter(
         gapBetweenBars: gapBetweenBars,
         gaugeValue: value,
-        barPointers: barPointers,
+        bars: bars,
         needle: needle,
         showNeedleInsideBar: showNeedleInsideBar,
-        direction: direction,
         tooltip: tooltip,
-        customDrawNeedle: customDrawNeedle,
+        needlePainter: needlePainter,
       ),
       size: size,
     );

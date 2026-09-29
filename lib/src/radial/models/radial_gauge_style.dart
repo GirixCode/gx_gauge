@@ -1,10 +1,10 @@
 // lib/src/radial/models/radial_gauge_style.dart
 
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
 
-class NeedleCircle {
-  const NeedleCircle({
+class GxNeedleCap {
+  const GxNeedleCap({
     this.color,
     this.radius = 5,
     this.strokeWidth = 1.0,
@@ -25,8 +25,8 @@ class NeedleCircle {
 
 // Radial
 
-class RadialBarRange {
-  const RadialBarRange({
+class GxRadialRange {
+  const GxRadialRange({
     required this.startValue,
     required this.endValue,
     required this.label,
@@ -36,13 +36,13 @@ class RadialBarRange {
   });
   final double startValue;
   final double endValue;
-  final GaugeLabel label;
+  final GxGaugeLabel label;
   final Color? color;
   final double height;
   final double offset;
 }
 
-/// [RadialGaugeStyle] is a class that holds the style properties for the RadialGauge widget.
+/// [GxRadialGaugeStyle] is a class that holds the style properties for the RadialGauge widget.
 ///
 /// It contains the following properties:
 ///
@@ -50,8 +50,8 @@ class RadialBarRange {
 ///
 /// - [thickness]: The stroke width of the RadialGauge widget. It is set to 10.0 by default.
 ///
-class RadialGaugeStyle {
-  const RadialGaugeStyle({
+class GxRadialGaugeStyle {
+  const GxRadialGaugeStyle({
     this.backgroundColor,
     this.color = Colors.blue,
     this.thickness = 10.0,
@@ -69,20 +69,20 @@ class RadialGaugeStyle {
   /// Specifies the color of the RadialGauge widget. The default value is Colors.blue.
   final Color color;
 
-  /// [thickness] is the stroke width of the GxProgressLinearGauge widget. It is set to 10.0 by default.
+  /// [thickness] is the stroke width of the GxLinearProgressGauge widget. It is set to 10.0 by default.
   ///
   /// The thickness determines the width of the line.
   ///
   final double thickness;
 
-  /// [strokeCap] is the stroke cap of the GxProgressLinearGauge widget. It is set to StrokeCap.butt by default.
+  /// [strokeCap] is the stroke cap of the GxLinearProgressGauge widget. It is set to StrokeCap.butt by default.
   ///
   /// The stroke cap determines the shape of the ends of the line.
   final StrokeCap strokeCap;
 
-  /// [paintingStyle] is the painting style of the GxProgressLinearGauge widget. It is set to PaintingStyle.fill by default.
+  /// [paintingStyle] is the painting style of the GxLinearProgressGauge widget. It is set to PaintingStyle.fill by default.
   ///
-  /// The painting style determines how the GxProgressLinearGauge widget is painted.
+  /// The painting style determines how the GxLinearProgressGauge widget is painted.
   final PaintingStyle paintingStyle;
 
   final Gradient? gradient;
@@ -91,52 +91,52 @@ class RadialGaugeStyle {
 }
 
 // Radial Gauge Needle
-class RadialNeedle {
-  const RadialNeedle({
+class GxRadialNeedle {
+  const GxRadialNeedle({
     this.color = Colors.red,
     this.topOffest,
     this.bottomOffset,
-    this.alignment = RadialElementAlignment.center,
-    this.circle = const NeedleCircle(),
+    this.alignment = GxRadialElementAlignment.center,
+    this.circle = const GxNeedleCap(),
     this.thickness = 10.0,
-    this.shape = RadialNeedleShape.tapperedLine,
+    this.shape = GxRadialNeedleShape.taperedLine,
     this.strokeCap = StrokeCap.round,
     this.gradient,
   });
   final Color color;
   final double? bottomOffset;
   final double? topOffest;
-  final RadialElementAlignment alignment;
-  final NeedleCircle circle;
+  final GxRadialElementAlignment alignment;
+  final GxNeedleCap circle;
   final double thickness;
-  final RadialNeedleShape shape;
+  final GxRadialNeedleShape shape;
   final StrokeCap strokeCap;
   final Gradient? gradient;
 }
 
-class RadialPointer {
-  const RadialPointer({
+class GxRadialPointer {
+  const GxRadialPointer({
     required this.value,
-    this.style = const RadialPointerStyle(),
+    this.style = const GxRadialPointerStyle(),
     this.needle,
-    this.alignment = RadialElementAlignment.center,
-    this.shape = RadialPointerShape.circle,
+    this.alignment = GxRadialElementAlignment.center,
+    this.shape = GxRadialPointerShape.circle,
     this.showNeedle = true,
     this.showPointer = true,
   });
   final double value;
-  final RadialNeedle? needle;
-  final RadialElementAlignment alignment;
-  final RadialPointerShape shape;
-  final RadialPointerStyle style;
+  final GxRadialNeedle? needle;
+  final GxRadialElementAlignment alignment;
+  final GxRadialPointerShape shape;
+  final GxRadialPointerStyle style;
   final bool showNeedle;
   final bool showPointer;
 }
 
 /// radial Pointers
 ///
-class RadialPointerStyle {
-  const RadialPointerStyle({
+class GxRadialPointerStyle {
+  const GxRadialPointerStyle({
     this.color = Colors.red,
     this.thickness = 10.0,
     this.paintingStyle = PaintingStyle.fill,
@@ -148,26 +148,26 @@ class RadialPointerStyle {
   final double size;
 }
 
-class RadialTickLabelStyle {
-  const RadialTickLabelStyle({
+class GxRadialTickLabelStyle {
+  const GxRadialTickLabelStyle({
     this.style = const TextStyle(fontSize: 12, color: Colors.black),
-    this.position = RadialElementPosition.inside,
+    this.position = GxRadialElementPosition.inside,
     this.padding = 20,
     this.offset = 0,
   });
   final TextStyle style;
-  final RadialElementPosition position;
+  final GxRadialElementPosition position;
   final double padding;
   final double offset;
 }
 
-class RadialTickStyle {
-  const RadialTickStyle({
+class GxRadialTickStyle {
+  const GxRadialTickStyle({
     this.length = 8.0,
     this.thickness = 1.0,
     this.color = Colors.grey,
-    this.alignment = RadialElementAlignment.center,
-    this.position = RadialElementPosition.inside,
+    this.alignment = GxRadialElementAlignment.center,
+    this.position = GxRadialElementPosition.inside,
   });
 
   /// Specifies the length (size) of the tick in the linear gauge.
@@ -192,18 +192,22 @@ class RadialTickStyle {
 
   /// Specifies the alignment of the tick on the axis.
   ///
-  /// The default value is RadialElementAlignment.inside.
-  final RadialElementAlignment alignment;
+  /// The default value is GxRadialElementAlignment.inside.
+  final GxRadialElementAlignment alignment;
 
   /// Specifies the position of the tick on the axis.
   ///
-  /// The default value is RadialElementPosition.center.
+  /// The default value is GxRadialElementPosition.center.
   ///
-  final RadialElementPosition position;
+  final GxRadialElementPosition position;
 
   // CopyWith method
-  RadialTickStyle copyWith({double? length, double? thickness, Color? color}) {
-    return RadialTickStyle(
+  GxRadialTickStyle copyWith({
+    double? length,
+    double? thickness,
+    Color? color,
+  }) {
+    return GxRadialTickStyle(
       length: length ?? this.length,
       thickness: thickness ?? this.thickness,
       color: color ?? this.color,

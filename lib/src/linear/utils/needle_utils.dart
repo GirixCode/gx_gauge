@@ -1,6 +1,10 @@
 import 'dart:ui';
 
-import 'package:girix_code_gauge/girix_code_gauge.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
 
 class NeedleUtils {
   static void drawIt({
@@ -10,9 +14,9 @@ class NeedleUtils {
     required double maxValue,
     required double value,
     bool dense = false,
-    required LinearNeedle needle,
+    required GxLinearNeedle needle,
     required double thickness,
-    void Function(Canvas canvas, Offset position)? customDrawNeedle,
+    GxNeedlePainter? needlePainter,
   }) {
     // Calculate the needle's x-position based on the needle position
     final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
@@ -26,21 +30,21 @@ class NeedleUtils {
     final double needleX = (size.width * progress) - denseValue;
     double needleY = size.height / 2;
 
-    final LinearGaugeNeedlePosition needlePosition = needle.position;
+    final GxNeedlePosition needlePosition = needle.position;
     final Color needleColor = needle.color;
     final double needleWidthSize = needle.size.width;
     final double needleHeightSize = needle.size.height;
-    final LinearGaugeNeedleType needleType = needle.needleType;
+    final GxNeedleShape shape = needle.shape;
 
     //    |
     // -------- X+
     //    | Y+ needle
 
     switch (needlePosition) {
-      case LinearGaugeNeedlePosition.top:
+      case GxNeedlePosition.top:
         needleY = -(dense ? thickness : needleHeightSize / 2);
         break;
-      case LinearGaugeNeedlePosition.bottom:
+      case GxNeedlePosition.bottom:
         if (dense) {
           if (size.height >= thickness) {
             needleY = size.height + needleHeightSize / 2;
@@ -51,7 +55,7 @@ class NeedleUtils {
           needleY = size.height;
         }
         break;
-      case LinearGaugeNeedlePosition.center:
+      case GxNeedlePosition.center:
         // Use the calculated needleX based on the value
         // needleX = size.height / 2;
         break;
@@ -66,15 +70,15 @@ class NeedleUtils {
       ..strokeWidth = needle.strokeWidth
       ..strokeCap = needle.strokeCap;
 
-    switch (needleType) {
-      case LinearGaugeNeedleType.circle:
+    switch (shape) {
+      case GxNeedleShape.circle:
         canvas.drawCircle(
           Offset(needleX, needleY),
           needleWidthSize / 2,
           needlePaint,
         );
         break;
-      case LinearGaugeNeedleType.triangle:
+      case GxNeedleShape.triangle:
         final Path trianglePath = Path()
           ..moveTo(needleX, needleY - needleWidthSize / 2)
           ..lineTo(needleX - needleWidthSize / 2, needleY + needleWidthSize / 2)
@@ -82,7 +86,7 @@ class NeedleUtils {
           ..close();
         canvas.drawPath(trianglePath, needlePaint);
         break;
-      case LinearGaugeNeedleType.diamond:
+      case GxNeedleShape.diamond:
         final Path diamondPath = Path()
           ..moveTo(needleX, needleY - needleWidthSize / 2)
           ..lineTo(needleX - needleWidthSize / 2, needleY)
@@ -91,7 +95,7 @@ class NeedleUtils {
           ..close();
         canvas.drawPath(diamondPath, needlePaint);
         break;
-      case LinearGaugeNeedleType.rectangle:
+      case GxNeedleShape.rectangle:
         final Rect rect = Rect.fromCenter(
           center: Offset(needleX, needleY),
           width: needleWidthSize,
@@ -99,12 +103,12 @@ class NeedleUtils {
         );
         canvas.drawRect(rect, needlePaint);
         break;
-      case LinearGaugeNeedleType.custom:
-        if (customDrawNeedle != null) {
-          customDrawNeedle(canvas, Offset(needleX, needleY));
+      case GxNeedleShape.custom:
+        if (needlePainter != null) {
+          needlePainter(canvas, Offset(needleX, needleY), needle);
         }
         break;
-      case LinearGaugeNeedleType.pipe:
+      case GxNeedleShape.pipe:
         final Rect rect = Rect.fromCenter(
           center: Offset(needleX, needleY),
           width: needleWidthSize,
@@ -118,11 +122,11 @@ class NeedleUtils {
   static void drawNeedle({
     required Canvas canvas,
     required Size size,
-    required GaugeValue gaugeValue,
+    required GxGaugeValue gaugeValue,
     bool dense = false,
-    required ProgressLinearStyle style,
-    required LinearNeedle needle,
-    void Function(Canvas canvas, Offset position)? customDrawNeedle,
+    required GxLinearProgressStyle style,
+    required GxLinearNeedle needle,
+    GxNeedlePainter? needlePainter,
   }) {
     return drawIt(
       canvas: canvas,
@@ -133,7 +137,7 @@ class NeedleUtils {
       dense: dense,
       needle: needle,
       thickness: style.thickness,
-      customDrawNeedle: customDrawNeedle,
+      needlePainter: needlePainter,
     );
   }
 }

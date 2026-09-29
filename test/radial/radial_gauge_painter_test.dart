@@ -2,24 +2,25 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
+import 'package:gx_gauge/gx_gauge.dart';
+import 'package:gx_gauge/src/radial/painters/radial_gauge_painter.dart';
 
 import '../helpers/recording_canvas.dart';
 
 RadialGaugePainter _painter({
-  required GaugeValue value,
+  required GxGaugeValue value,
   double startAngleInDegree = 0,
   double sweepAngleInDegree = 360,
 }) {
   return RadialGaugePainter(
     value: value,
-    style: const RadialGaugeStyle(),
+    style: const GxRadialGaugeStyle(),
     showMajorTicks: false,
     showMinorTicks: false,
     showLabels: false,
-    majorTickStyle: const RadialTickStyle(),
-    minorTickStyle: const RadialTickStyle(),
-    labelTickStyle: const RadialTickLabelStyle(),
+    majorTickStyle: const GxRadialTickStyle(),
+    minorTickStyle: const GxRadialTickStyle(),
+    labelTickStyle: const GxRadialTickLabelStyle(),
     interval: 10,
     minorTicksPerInterval: 10,
     startAngleInDegree: startAngleInDegree,
@@ -49,7 +50,7 @@ void main() {
   group('RadialGaugePainter arcs', () {
     test('draws the full track, then the value arc (min = 0)', () {
       final List<(double, double)> arcs = _arcs(
-        _painter(value: const GaugeValue(value: 25)),
+        _painter(value: const GxGaugeValue(value: 25)),
       );
       expect(arcs, hasLength(2));
       expect(arcs[0].$2, closeTo(2 * math.pi, 1e-9));
@@ -59,7 +60,7 @@ void main() {
     test('honours start and sweep angles', () {
       final List<(double, double)> arcs = _arcs(
         _painter(
-          value: const GaugeValue(value: 50),
+          value: const GxGaugeValue(value: 50),
           startAngleInDegree: 135,
           sweepAngleInDegree: 270,
         ),
@@ -70,7 +71,7 @@ void main() {
 
     test('normalises the value arc with a non-zero min', () {
       final List<(double, double)> arcs = _arcs(
-        _painter(value: const GaugeValue(value: 0, min: -50, max: 50)),
+        _painter(value: const GxGaugeValue(value: 0, min: -50, max: 50)),
       );
       expect(arcs[1].$2, closeTo(math.pi, 1e-9));
     }, skip: 'Known bug CR Radial 1: uses value / max. Fixed in Phase 2.');
@@ -79,8 +80,8 @@ void main() {
   group('RadialGaugePainter.shouldRepaint', () {
     test('is true when the value changes', () {
       expect(
-        _painter(value: const GaugeValue(value: 1))
-            .shouldRepaint(_painter(value: const GaugeValue(value: 2))),
+        _painter(value: const GxGaugeValue(value: 1))
+            .shouldRepaint(_painter(value: const GxGaugeValue(value: 2))),
         isTrue,
       );
     });

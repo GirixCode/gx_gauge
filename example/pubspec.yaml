@@ -1,5 +1,5 @@
-name: examples
-description: "A new Flutter project."
+name: gx_gauge_example
+description: "Demo and showcase app for the gx_gauge package."
 publish_to: "none"
 
 version: 1.0.0+1
@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  girix_code_gauge:
+  gx_gauge:
     path: ../
 
 dev_dependencies:

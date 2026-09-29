@@ -1,16 +1,9 @@
-# examples
+# gx_gauge example
 
-A new Flutter project.
+- `lib/main.dart` is a minimal demo: a slider drives a linear progress gauge, a scale gauge and a radial gauge.
+- `lib/showcase/` is the full showcase, covering every gauge type and option.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+flutter run                          # minimal demo
+flutter run -t lib/showcase/main.dart  # full showcase
+```

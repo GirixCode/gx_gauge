@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
-import 'package:girix_code_gauge/src/linear/utils/needle_utils.dart';
+import 'package:gx_gauge/gx_gauge.dart';
+import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 
 import '../helpers/recording_canvas.dart';
 
@@ -12,7 +12,7 @@ Offset _needleCenter({
   required double max,
   required double value,
   Size size = const Size(200, 20),
-  LinearGaugeNeedlePosition position = LinearGaugeNeedlePosition.center,
+  GxNeedlePosition position = GxNeedlePosition.center,
 }) {
   final RecordingCanvas canvas = RecordingCanvas();
   NeedleUtils.drawIt(
@@ -21,10 +21,7 @@ Offset _needleCenter({
     minValue: min,
     maxValue: max,
     value: value,
-    needle: LinearNeedle(
-      needleType: LinearGaugeNeedleType.circle,
-      position: position,
-    ),
+    needle: GxLinearNeedle(shape: GxNeedleShape.circle, position: position),
     thickness: 4,
   );
   final Invocation circle = canvas.callsTo('drawCircle').single;
@@ -56,8 +53,8 @@ void main() {
         minValue: 0,
         maxValue: 100,
         value: 50,
-        needle: const LinearNeedle(
-          needleType: LinearGaugeNeedleType.circle,
+        needle: const GxLinearNeedle(
+          shape: GxNeedleShape.circle,
           size: Size(16, 16),
         ),
         thickness: 4,
@@ -65,20 +62,28 @@ void main() {
       expect(canvas.callsTo('drawCircle').single.positionalArguments[1], 8);
     });
 
-    test('passes the needle position to a custom drawer', () {
-      Offset? received;
+    test('passes the anchor and the needle to a custom painter', () {
+      const GxLinearNeedle needle = GxLinearNeedle(
+        shape: GxNeedleShape.custom,
+        color: Color(0xFFFF9800),
+      );
+      Offset? receivedAnchor;
+      GxLinearNeedle? receivedNeedle;
       NeedleUtils.drawIt(
         canvas: RecordingCanvas(),
         size: const Size(200, 20),
         minValue: 0,
         maxValue: 100,
         value: 75,
-        needle: const LinearNeedle(needleType: LinearGaugeNeedleType.custom),
+        needle: needle,
         thickness: 4,
-        customDrawNeedle: (Canvas canvas, Offset position) =>
-            received = position,
+        needlePainter: (Canvas canvas, Offset anchor, GxLinearNeedle n) {
+          receivedAnchor = anchor;
+          receivedNeedle = n;
+        },
       );
-      expect(received, const Offset(150, 10));
+      expect(receivedAnchor, const Offset(150, 10));
+      expect(receivedNeedle, same(needle));
     });
   });
 }

@@ -2,7 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
+import 'package:gx_gauge/gx_gauge.dart';
+import 'package:gx_gauge/src/linear/painters/progress_linear_painter.dart';
 
 import '../helpers/recording_canvas.dart';
 
@@ -19,8 +20,8 @@ void main() {
     test('draws the track then the progress line', () {
       final RecordingCanvas canvas = paint(
         ProgressLinearPainter(
-          gaugeValue: const GaugeValue(value: 25),
-          style: const ProgressLinearStyle(),
+          gaugeValue: const GxGaugeValue(value: 25),
+          style: const GxLinearProgressStyle(),
         ),
       );
       final List<Invocation> lines = canvas.callsTo('drawLine').toList();
@@ -33,8 +34,8 @@ void main() {
     test('normalises with a non-zero min', () {
       final RecordingCanvas canvas = paint(
         ProgressLinearPainter(
-          gaugeValue: const GaugeValue(value: 75, min: 50, max: 150),
-          style: const ProgressLinearStyle(),
+          gaugeValue: const GxGaugeValue(value: 75, min: 50, max: 150),
+          style: const GxLinearProgressStyle(),
         ),
       );
       expect(
@@ -46,8 +47,8 @@ void main() {
     test('fills from the right when reversed', () {
       final RecordingCanvas canvas = paint(
         ProgressLinearPainter(
-          gaugeValue: const GaugeValue(value: 25),
-          style: const ProgressLinearStyle(),
+          gaugeValue: const GxGaugeValue(value: 25),
+          style: const GxLinearProgressStyle(),
           reverse: true,
         ),
       );
@@ -61,8 +62,8 @@ void main() {
     test('draws a full-size track and a proportional value rect', () {
       final RecordingCanvas canvas = paint(
         ProgressLinearPainter(
-          gaugeValue: const GaugeValue(value: 40),
-          style: const ProgressLinearStyle(dense: false, radius: Radius.zero),
+          gaugeValue: const GxGaugeValue(value: 40),
+          style: const GxLinearProgressStyle(dense: false, radius: Radius.zero),
         ),
       );
       final List<Invocation> rrects = canvas.callsTo('drawRRect').toList();
@@ -81,8 +82,8 @@ void main() {
   group('ProgressLinearPainter.shouldRepaint', () {
     ProgressLinearPainter painter({double value = 10, bool reverse = false}) =>
         ProgressLinearPainter(
-          gaugeValue: GaugeValue(value: value),
-          style: const ProgressLinearStyle(),
+          gaugeValue: GxGaugeValue(value: value),
+          style: const GxLinearProgressStyle(),
           reverse: reverse,
         );
 

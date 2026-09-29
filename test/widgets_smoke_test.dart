@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
+import 'package:gx_gauge/gx_gauge.dart';
 
 /// Characterisation tests: every public gauge builds and paints its common
 /// configurations without throwing. They guard the Phase 1 rename and the
@@ -19,87 +19,87 @@ Future<void> _pump(WidgetTester tester, Widget gauge) async {
 }
 
 void main() {
-  testWidgets('GxProgressLinearGauge (dense, needle, label)', (
+  testWidgets('GxLinearProgressGauge (dense, needle, label)', (
     WidgetTester tester,
   ) async {
     await _pump(
       tester,
-      const GxProgressLinearGauge(
-        value: GaugeValue(value: 40),
-        needle: LinearNeedle(),
+      const GxLinearProgressGauge(
+        value: GxGaugeValue(value: 40),
+        needle: GxLinearNeedle(),
         showLabel: true,
-        label: GaugeLabel(label: '{value}%'),
+        label: GxGaugeLabel(label: '{value}%'),
       ),
     );
   });
 
-  testWidgets('GxProgressLinearGauge (not dense, reversed)', (
+  testWidgets('GxLinearProgressGauge (not dense, reversed)', (
     WidgetTester tester,
   ) async {
     await _pump(
       tester,
-      const GxProgressLinearGauge(
-        value: GaugeValue(value: 70, min: 50),
-        style: ProgressLinearStyle(dense: false),
+      const GxLinearProgressGauge(
+        value: GxGaugeValue(value: 70, min: 50),
+        style: GxLinearProgressStyle(dense: false),
         height: 20,
         reverse: true,
       ),
     );
   });
 
-  testWidgets('GxAnimatedProgressLinearGauge animates to its value', (
+  testWidgets('GxAnimatedLinearProgressGauge animates to its value', (
     WidgetTester tester,
   ) async {
     await _pump(
       tester,
-      const GxAnimatedProgressLinearGauge(
+      const GxAnimatedLinearProgressGauge(
         value: 60,
-        style: ProgressLinearStyle(),
+        style: GxLinearProgressStyle(),
         duration: Duration(milliseconds: 100),
       ),
     );
   });
 
-  testWidgets('GxStepperLinearGauge', (WidgetTester tester) async {
+  testWidgets('GxLinearStepperGauge', (WidgetTester tester) async {
     await _pump(
       tester,
-      const GxStepperLinearGauge(
-        value: GaugeValue(value: 2, max: 4),
-        stepperPointers: <StepperPointer>[
-          StepperPointer(label: GaugeLabel(label: 'One')),
-          StepperPointer(label: GaugeLabel(label: 'Two')),
-          StepperPointer(label: GaugeLabel(label: 'Three')),
+      const GxLinearStepperGauge(
+        value: GxGaugeValue(value: 2, max: 4),
+        steps: <GxStepperStep>[
+          GxStepperStep(label: GxGaugeLabel(label: 'One')),
+          GxStepperStep(label: GxGaugeLabel(label: 'Two')),
+          GxStepperStep(label: GxGaugeLabel(label: 'Three')),
         ],
       ),
     );
   });
 
-  testWidgets('GxScaleLinearGauge (ticks, labels, needle)', (
+  testWidgets('GxLinearScaleGauge (ticks, labels, needle)', (
     WidgetTester tester,
   ) async {
     await _pump(
       tester,
-      const GxScaleLinearGauge(
-        value: 30,
+      const GxLinearScaleGauge(
+        value: GxGaugeValue(value: 30),
         interval: 10,
-        needle: LinearNeedle(),
+        needle: GxLinearNeedle(),
         size: Size(300, 60),
       ),
     );
   });
 
-  testWidgets('GxScaleLinearGauge (bar pointers inside)', (
+  testWidgets('GxLinearScaleGauge (bar pointers inside)', (
     WidgetTester tester,
   ) async {
     await _pump(
       tester,
-      GxScaleLinearGauge(
+      GxLinearScaleGauge(
         interval: 20,
-        tickPosition: LinearElementPosition.inside,
+        tickPosition: GxElementPosition.inside,
         barHeight: 10,
-        barPointers: <LinearBarPointer>[
-          LinearBarPointer(value: 30, color: Colors.green),
-          LinearBarPointer(value: 40, color: Colors.orange),
+        bars: <GxLinearBarPointer>[
+          GxLinearBarPointer(value: 30, color: Colors.green),
+          GxLinearBarPointer(value: 40, color: Colors.orange),
         ],
         size: const Size(300, 60),
       ),
@@ -112,21 +112,21 @@ void main() {
     await _pump(
       tester,
       GxLinearBarGauge(
-        value: const GaugeValue(value: 45),
+        value: const GxGaugeValue(value: 45),
         size: const Size(300, 20),
-        needle: const LinearNeedle(),
-        tooltip: const GaugeTooltip(),
-        barPointers: <LinearBarPointer>[
-          LinearBarPointer(value: 30, color: Colors.green),
-          LinearBarPointer(value: 30, color: Colors.orange),
-          LinearBarPointer(value: 40, color: Colors.red),
+        needle: const GxLinearNeedle(),
+        tooltip: const GxGaugeTooltip(),
+        bars: <GxLinearBarPointer>[
+          GxLinearBarPointer(value: 30, color: Colors.green),
+          GxLinearBarPointer(value: 30, color: Colors.orange),
+          GxLinearBarPointer(value: 40, color: Colors.red),
         ],
       ),
     );
   });
 
   testWidgets('GxRadialGauge (default)', (WidgetTester tester) async {
-    await _pump(tester, const GxRadialGauge(value: GaugeValue(value: 30)));
+    await _pump(tester, const GxRadialGauge(value: GxGaugeValue(value: 30)));
   });
 
   testWidgets('GxRadialGauge (ticks, labels, needle, 270° sweep)', (
@@ -135,7 +135,7 @@ void main() {
     await _pump(
       tester,
       const GxRadialGauge(
-        value: GaugeValue(value: 65),
+        value: GxGaugeValue(value: 65),
         startAngleInDegree: 135,
         sweepAngleInDegree: 270,
         showMajorTicks: true,

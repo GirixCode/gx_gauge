@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:girix_code_gauge/src/radial/utils/angle_utils.dart';
+import 'package:gx_gauge/src/radial/utils/angle_utils.dart';
 
 void main() {
   group('AngleUtils', () {

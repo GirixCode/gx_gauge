@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
-import 'package:girix_code_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
 
-class LinearNeedle extends Equatable {
-  const LinearNeedle({
-    this.needleType = LinearGaugeNeedleType.rectangle,
-    this.position = LinearGaugeNeedlePosition.center,
+class GxLinearNeedle extends Equatable {
+  const GxLinearNeedle({
+    this.shape = GxNeedleShape.rectangle,
+    this.position = GxNeedlePosition.center,
     this.size = const Size(10, 10),
     this.color = const Color(0xFF000000),
     this.enabled = true,
@@ -16,12 +16,12 @@ class LinearNeedle extends Equatable {
     this.paintingStyle = PaintingStyle.fill,
     this.strokeWidth = 0.0,
   });
-  final LinearGaugeNeedleType needleType;
-  final LinearGaugeNeedlePosition position;
+  final GxNeedleShape shape;
+  final GxNeedlePosition position;
   final Size size;
   final Color color;
   final bool enabled;
-  final LinearNeedleLabel? label;
+  final GxNeedleLabel? label;
   final double offset;
 
   final StrokeCap strokeCap;
@@ -30,7 +30,7 @@ class LinearNeedle extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-    needleType,
+    shape,
     position,
     size,
     color,
@@ -44,12 +44,8 @@ class LinearNeedle extends Equatable {
 }
 
 // Needle Label
-class LinearNeedleLabel extends Equatable {
-  const LinearNeedleLabel({
-    required this.label,
-    this.textStyle,
-    this.offset = 0,
-  });
+class GxNeedleLabel extends Equatable {
+  const GxNeedleLabel({required this.label, this.textStyle, this.offset = 0});
 
   /// [label] is the text that will be displayed on the needle such as the value of the gauge.
 

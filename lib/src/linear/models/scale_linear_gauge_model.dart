@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
 
-class FillAreaPointer {
-  FillAreaPointer({
+class GxLinearFillArea {
+  GxLinearFillArea({
     required this.startValue,
     required this.endValue,
     required this.color,
     this.thickness = 5.0,
-    this.position = LinearElementPosition.cross,
+    this.position = GxElementPosition.cross,
     this.shaderCallback,
     this.borderColor,
     this.borderWidth = 5.0,
@@ -17,15 +18,15 @@ class FillAreaPointer {
   final double endValue;
   final Color color;
   final double thickness;
-  final LinearElementPosition position;
+  final GxElementPosition position;
   Shader Function(Rect)? shaderCallback;
   final Color? borderColor;
   final double borderWidth;
   final double offset;
 }
 
-class LinearAxisTrackStyle {
-  const LinearAxisTrackStyle({
+class GxLinearAxisStyle {
+  const GxLinearAxisStyle({
     this.thickness = 5.0,
     this.color = Colors.grey,
     this.strokeCap = StrokeCap.butt,
@@ -50,16 +51,16 @@ class LinearAxisTrackStyle {
 //   });
 // }
 
-class LinearMarkerPointer {
-  LinearMarkerPointer({required this.value, this.marker, this.needle});
+class GxLinearMarkerPointer {
+  GxLinearMarkerPointer({required this.value, this.marker, this.needle});
   final double value;
   final Widget? marker;
-  final LinearNeedle? needle;
+  final GxLinearNeedle? needle;
 }
 
-/// The [LinearTickStyle] class holds the style properties of the ticks in the linear gauge.
+/// The [GxLinearTickStyle] class holds the style properties of the ticks in the linear gauge.
 ///
-/// The [LinearTickStyle] class requires the following properties:
+/// The [GxLinearTickStyle] class requires the following properties:
 ///
 /// - [length]: A double value that holds the length of the tick.
 ///
@@ -70,15 +71,15 @@ class LinearMarkerPointer {
 /// Example:
 ///
 /// ```dart
-/// LinearTickStyle(
+/// GxLinearTickStyle(
 ///  length: 8.0,
 ///  thickness: 1.0,
 ///  color: Colors.black,
 /// )
 /// ```
 ///
-class LinearTickStyle {
-  const LinearTickStyle({
+class GxLinearTickStyle {
+  const GxLinearTickStyle({
     this.length = 8.0,
     this.thickness = 1.0,
     this.color = Colors.grey,
@@ -105,8 +106,12 @@ class LinearTickStyle {
   final Color color;
 
   // CopyWith method
-  LinearTickStyle copyWith({double? length, double? thickness, Color? color}) {
-    return LinearTickStyle(
+  GxLinearTickStyle copyWith({
+    double? length,
+    double? thickness,
+    Color? color,
+  }) {
+    return GxLinearTickStyle(
       length: length ?? this.length,
       thickness: thickness ?? this.thickness,
       color: color ?? this.color,

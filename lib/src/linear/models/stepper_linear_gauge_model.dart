@@ -1,17 +1,17 @@
-import 'package:girix_code_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
 
-/// [StepperPointer]: A class that represents a step in the process. The stepper pointer includes the value and label of the step.
+/// [GxStepperStep]: A class that represents a step in the process. The stepper pointer includes the value and label of the step.
 ///
-/// The following properties are required to create a [StepperPointer]:
+/// The following properties are required to create a [GxStepperStep]:
 ///  * [value]: The value of the step. The value should be between the minimum and maximum values of the gauge.
 /// * [label]: The label of the step. The label is displayed on the gauge.
-class StepperPointer {
-  const StepperPointer({this.value, required this.label});
+class GxStepperStep {
+  const GxStepperStep({this.value, required this.label});
 
   /// Specifies the value of the step. The value should be between the minimum and maximum values of the gauge.
   ///
   /// ```dart
-  /// StepperPointer(
+  /// GxStepperStep(
   ///  value: 20,
   /// ),
   /// ```
@@ -21,12 +21,12 @@ class StepperPointer {
   /// Specifies the label of the step. The label is displayed on the gauge.
   ///
   /// ```dart
-  /// StepperPointer(
-  ///  label: GaugeLabel(
+  /// GxStepperStep(
+  ///  label: GxGaugeLabel(
   ///    label: 'Ordered',
   ///   style: TextStyle(color: Colors.black),
   /// ),
   /// ```
   ///
-  final GaugeLabel label;
+  final GxGaugeLabel label;
 }

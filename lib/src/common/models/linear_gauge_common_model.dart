@@ -1,14 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
 
-/// [GaugeLabel] model
+/// [GxGaugeLabel] model
 ///
 /// This model is used to represent the label of a gauge. It contains the label, the style, the text alignment and the offset.
 ///
 ///
-class GaugeLabel {
-  const GaugeLabel({
+class GxGaugeLabel {
+  const GxGaugeLabel({
     required this.label,
     this.textAlign = TextAlign.center,
     this.style = const TextStyle(),
@@ -20,7 +20,7 @@ class GaugeLabel {
   ///
   /// [label] String: The label of the gauge.
   /// ```dart
-  /// GaugeLabel(
+  /// GxGaugeLabel(
   ///  label: 'Label',
   /// )
   /// ```
@@ -30,7 +30,7 @@ class GaugeLabel {
   ///
   /// [style] TextStyle: The style of the label.
   /// ```dart
-  /// GaugeLabel(
+  /// GxGaugeLabel(
   ///  label: 'Label',
   ///  style: TextStyle(color: Colors.black),
   /// )
@@ -42,7 +42,7 @@ class GaugeLabel {
   /// [textAlign] TextAlign: The text alignment of the label.
   ///
   /// ```dart
-  /// GaugeLabel(
+  /// GxGaugeLabel(
   ///  label: 'Label',
   ///  textAlign: TextAlign.center,
   /// )
@@ -55,7 +55,7 @@ class GaugeLabel {
   /// [offset] Offset: The offset of the label.
   ///
   /// ```dart
-  /// GaugeLabel(
+  /// GxGaugeLabel(
   ///  label: 'Label',
   ///  offset: Offset(0, -10),
   /// )
@@ -68,7 +68,7 @@ class GaugeLabel {
   /// [spaceExtent] double: The space extent of the label.
   ///
   /// ```dart
-  /// GaugeLabel(
+  /// GxGaugeLabel(
   ///  label: 'Label',
   ///  spaceExtent: 0.0,
   /// )
@@ -77,14 +77,14 @@ class GaugeLabel {
   final double spaceExtent;
 }
 
-class GaugeTooltip {
-  const GaugeTooltip({
+class GxGaugeTooltip {
+  const GxGaugeTooltip({
     this.showPointer = true,
     this.enabled = true,
     this.color = Colors.grey,
     this.radius,
-    this.type = GaugeTooltipType.normal,
-    this.position = GaugeTooltipPosition.top,
+    this.type = GxTooltipType.normal,
+    this.position = GxTooltipPosition.top,
     this.paintingStyle = PaintingStyle.fill,
     this.thickness = 2.0,
     this.offset = 10.0,
@@ -99,8 +99,8 @@ class GaugeTooltip {
   final Color color;
   final Color? borderColor;
   final Radius? radius;
-  final GaugeTooltipType type;
-  final GaugeTooltipPosition position;
+  final GxTooltipType type;
+  final GxTooltipPosition position;
   final PaintingStyle paintingStyle;
   final double thickness;
   final double offset;
@@ -120,8 +120,8 @@ class GaugeTooltip {
 ///
 /// [max] double: The maximum value of the gauge. Default is 100.0.
 ///
-class GaugeValue extends Equatable {
-  const GaugeValue({required this.value, this.min = 0.0, this.max = 100.0})
+class GxGaugeValue extends Equatable {
+  const GxGaugeValue({required this.value, this.min = 0.0, this.max = 100.0})
     : assert(min < max, 'min must be less than max'),
       assert(value >= min && value <= max, 'value must be between min and max');
   final double value;
@@ -132,15 +132,15 @@ class GaugeValue extends Equatable {
   List<Object?> get props => <Object?>[value, min, max];
 }
 
-/// [LinearBarPointer] model
+/// [GxLinearBarPointer] model
 ///
 /// This model is used to represent the bar pointer of a linear gauge. It contains the value, the color, the thickness, the position, the shader callback, the border color, the border width, the offset, the radius, the painting style, the stroke cap and the label.
-class LinearBarPointer {
-  LinearBarPointer({
+class GxLinearBarPointer {
+  GxLinearBarPointer({
     required this.value,
     this.color = Colors.blue,
     this.thickness = 5.0,
-    this.position = LinearElementPosition.cross,
+    this.position = GxElementPosition.cross,
     this.shaderCallback,
     this.radius,
     this.offset = 0.0,
@@ -153,7 +153,7 @@ class LinearBarPointer {
   ///
   /// [value] double: The value of the bar pointer. The value must be between the `minimum` and `maximum` value of the gauge.
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   /// )
   final double value;
@@ -162,7 +162,7 @@ class LinearBarPointer {
   ///
   /// [color] Color: The color of the bar pointer.
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  color: Colors.blue,
   /// )
@@ -175,31 +175,31 @@ class LinearBarPointer {
   /// [thickness] double: The thickness of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  thickness: 5.0,
   /// )
   /// ```
   final double thickness;
 
-  /// Specifies the position of the bar pointer when the Gauge is Scale. Default is LinearElementPosition.cross.
+  /// Specifies the position of the bar pointer when the Gauge is Scale. Default is GxElementPosition.cross.
   ///
-  /// [position] LinearElementPosition: The position of the bar pointer.
+  /// [position] GxElementPosition: The position of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
-  ///  position: LinearElementPosition.cross,
+  ///  position: GxElementPosition.cross,
   /// )
   /// ```
-  final LinearElementPosition position;
+  final GxElementPosition position;
 
   /// Specifies the shader callback of the bar pointer. Default is null.
   ///
   /// [shaderCallback] Shader Function(Rect): The shader callback of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  shaderCallback: (Rect rect) {
   ///    return LinearGradient(
@@ -217,7 +217,7 @@ class LinearBarPointer {
   /// [offset] double: The offset of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  offset: 0.0,
   /// )
@@ -230,7 +230,7 @@ class LinearBarPointer {
   /// [radius] Radius: The radius of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  radius: Radius.circular(10),
   /// )
@@ -243,7 +243,7 @@ class LinearBarPointer {
   /// [paintingStyle] PaintingStyle: The painting style of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  paintingStyle: PaintingStyle.fill,
   /// )
@@ -256,7 +256,7 @@ class LinearBarPointer {
   /// [strokeCap] StrokeCap: The stroke cap of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
   ///  strokeCap: StrokeCap.butt,
   /// )
@@ -266,12 +266,12 @@ class LinearBarPointer {
 
   /// Specifies the label of the bar pointer. Default is null.
   ///
-  /// [label] GaugeLabel: The label of the bar pointer.
+  /// [label] GxGaugeLabel: The label of the bar pointer.
   ///
   /// ```dart
-  /// LinearBarPointer(
+  /// GxLinearBarPointer(
   ///  value: 50,
-  ///  label: GaugeLabel(
+  ///  label: GxGaugeLabel(
   ///    label: 'Label',
   ///    style: TextStyle(color: Colors.black),
   ///    textAlign: TextAlign.center,
@@ -279,7 +279,7 @@ class LinearBarPointer {
   /// )
   /// ```
   ///
-  final GaugeLabel? label;
+  final GxGaugeLabel? label;
 }
 
 // Directional Linear Gauge

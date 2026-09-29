@@ -1,58 +1,56 @@
-import 'package:flutter/material.dart';
-import 'package:girix_code_gauge/girix_code_gauge.dart';
+import 'dart:ui';
 
-typedef ValueToLabelCallback = GaugeLabel Function(double value, int index);
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
 
-/// Callback to format the value to be displayed as label.
+/// Formats a scale value as label text.
 ///
-/// The [ValueToLabelFormatCallback] is used to format the value to be displayed as label in the gauge.
-///
-/// The [value] argument represents the value to be formatted.
-///
-/// The [index] argument represents the index of the value.
+/// [value] is the value at the tick, and [index] is the tick's position,
+/// starting at 0.
 ///
 /// ```dart
-/// String valueToLabelFormat(double value, int index) {
-///   return value;
-/// }
+/// labelFormatter: (double value, int index) => '${value.toInt()}%',
 /// ```
-///
-typedef ValueToLabelFormatCallback = String Function(double value, int index);
+typedef GxValueLabelFormatter = String Function(double value, int index);
 
-typedef ValueToLabelStyleCallback = TextStyle Function(double value, int index);
-
-/// Callback to format the value to be displayed as major tick.
+/// Returns the label style of type [T] for the tick at [value] and [index].
 ///
-/// The [ValueToMajorTickStyleCallback] is used to format the value to be displayed as major tick in the gauge.
-///
-/// The [value] argument represents the value to be formatted.
-///
-/// The [index] argument represents the index of the value.
+/// Linear gauges use `GxValueLabelStyler<TextStyle>`, and radial gauges use
+/// `GxValueLabelStyler<GxRadialTickLabelStyle>`.
 ///
 /// ```dart
-/// LinearTickStyle majorTickStyle(double value, int index) {
-///  return LinearTickStyle(
-///   length: 20,
-///   thickness: 2,
-///   color: Colors.blue,
-/// );
-/// }
+/// labelStyler: (double value, int index) =>
+///     TextStyle(color: value > 80 ? Colors.red : Colors.black),
 /// ```
-///
-typedef ValueToMajorTickStyleCallback = LinearTickStyle Function(
-  double value,
-  int index,
-);
+typedef GxValueLabelStyler<T> = T Function(double value, int index);
 
-/// Callback to format the value to be displayed as radial tick label.
+/// Returns the major tick style of type [T] for the tick at [value] and
+/// [index].
 ///
-/// The [ValueToRadialLabelStyleCallback] is used to format the value to be displayed as radial tick label in the gauge.
-typedef ValueToRadialLabelStyleCallback = RadialTickLabelStyle Function(
-  double value,
-  int index,
-);
+/// Linear gauges use `GxValueTickStyler<GxLinearTickStyle>`, and radial
+/// gauges use `GxValueTickStyler<GxRadialTickStyle>`.
+///
+/// ```dart
+/// majorTickStyler: (double value, int index) => GxLinearTickStyle(
+///   length: value % 50 == 0 ? 16 : 8,
+/// ),
+/// ```
+typedef GxValueTickStyler<T> = T Function(double value, int index);
 
-typedef ValueToRadialMajorTickCallback = RadialTickStyle Function(
-  double value,
-  int index,
+/// Draws a custom needle.
+///
+/// [anchor] is the needle's position on the gauge, and [needle] carries the
+/// configured style (color, size, painting style), so the drawing can match
+/// the rest of the gauge. Used when the needle's shape is
+/// [GxNeedleShape.custom].
+///
+/// ```dart
+/// needlePainter: (Canvas canvas, Offset anchor, GxLinearNeedle needle) {
+///   canvas.drawCircle(anchor, needle.size.width / 2, Paint()..color = needle.color);
+/// },
+/// ```
+typedef GxNeedlePainter = void Function(
+  Canvas canvas,
+  Offset anchor,
+  GxLinearNeedle needle,
 );

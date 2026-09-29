@@ -1,20 +1,14 @@
-name: girix_code_gauge
+name: gx_gauge
 description: "Customizable Flutter gauges: linear progress, stepper, scale and bar gauges plus radial gauges with ranges, ticks, labels, needles and animation."
-version: 0.0.6
-homepage: "https://github.com/GirixCode/girix-code-gauge"
-repository: "https://github.com/GirixCode/girix-code-gauge"
-issue_tracker: "https://github.com/GirixCode/girix-code-gauge/issues"
-documentation: "https://github.com/GirixCode/girix-code-gauge?tab=readme-ov-file#girix-code-gauge"
-platforms:
-  android:
-  ios:
-  web:
+version: 1.0.0-dev.1
+repository: https://github.com/GirixCode/gx-gauge
+issue_tracker: https://github.com/GirixCode/gx-gauge/issues
 topics:
-  - flutter-linear-gauge
-  - flutter-radial-gauge
-  - flutter-gauge
+  - gauge
+  - chart
   - progress-indicator
-  - steppers
+  - stepper
+  - widget
 
 environment:
   sdk: ^3.13.0

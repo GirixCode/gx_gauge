@@ -1,6 +1,6 @@
 # Modernisation plan: `girix_code_gauge` → `gx_gauge`
 
-Status: **Phase 0 in progress** on branch `chore/phase-0-tooling`. Phases 1–5 are not started.
+Status: **Phase 0 done** (commit `064d6cf`). **Phase 1 done** (uncommitted, on branch `chore/phase-0-tooling`). Phases 2–5 are not started.
 
 References:
 - `docs/code_review.md` lists the confirmed defects. It is cited below as **CR**, followed by the section and item, e.g. *CR Radial 1*.
@@ -83,7 +83,7 @@ Exit criteria: run locally, `dart format`, `flutter analyze --fatal-infos` and b
   - Example smoke test replaced.
   - pubspec description shortened, which fixes a pana penalty.
 - Baseline pana score: 140/160. The two failures are the description length (fixed) and dartdoc crashing (below).
-- **Known issue:** dartdoc 9.0.x (shipped with Dart 3.13) crashes with a stack overflow on this package, which costs 10 pana points for API docs. An unnamed `library;` directive in the barrel is one trigger, so the barrel keeps a named library with an `ignore`. The remaining trigger is under investigation. If it isn't resolved in Phase 0, it moves to Phase 2 (§4.6), where the doc comments are rewritten anyway.
+- **Known issue:** dartdoc 9.0.x (shipped with Dart 3.13) crashes with a stack overflow on this package, which costs 10 pana points for API docs. An unnamed `library;` directive in the barrel is one trigger, so the barrel keeps a named library with an `ignore`. The Phase 0 tree still overflows with the named library. A bisect showed that no single changed file causes it on its own; reverting any one file still crashes. The trigger is therefore an interaction between changes, most likely the file deletions. **Deferred to Phase 2 (§4.6)**, where the export surface and doc comments are rewritten anyway. Re-check with `fvm dart doc --dry-run` after each Phase 1–2 PR.
 
 ---
 
@@ -137,7 +137,29 @@ Parameter hygiene across all widgets:
 - `doc/MIGRATION.md` maps every old symbol to its new one, with before/after snippets.
 - The final `girix_code_gauge 0.0.7` release, published from a `legacy` branch. Its README carries a banner: "This package has moved to `gx_gauge`", with a link to the migration guide.
 
-Exit criteria: CI is green, and the example builds on the new names.
+Exit criteria: CI is green, and the example builds on the new names. (CI is deferred, so the local checks from Phase 0 apply.)
+
+### Phase 1 progress log
+
+- Done:
+  - Package renamed to `gx_gauge` 1.0.0-dev.1, with repository URLs pointing to `GirixCode/gx-gauge` (D10).
+  - The `platforms:` restriction removed, so pana detects all 6 platforms.
+  - Topics set per §3.1, and `documentation:` dropped (pub.dev hosts the API docs).
+  - All §3.2 renames applied, plus `GxLinearNeedle.needleType` → `shape` and enum value `tapperedLine` → `taperedLine`.
+  - Parameter renames: `bars`, `markers`, `fillAreas`, `ranges`, `steps`, `labelFormatter`, `labelStyler`, `majorTickStyler`, `needlePainter`.
+  - `GxNeedlePainter(canvas, anchor, needle)` wired through.
+  - `GxLinearScaleGauge` takes a `GxGaugeValue`.
+  - `lib/gx_gauge.dart` uses explicit `show` lists, so painters and utils are no longer exported.
+  - Unused `ValueToLabelCallback` and `LinearGaugeAxisPosition` deleted.
+  - Example restructured into a minimal `main.dart` plus `showcase/`.
+  - `doc/MIGRATION.md` and a CHANGELOG entry added.
+- Deviations from the plan, all behaviour-preserving:
+  - `GxAnimatedProgressLinearGauge` was renamed to `GxAnimatedLinearProgressGauge` instead of being removed. Removing it before the implicit-animation replacement (§4.3) would drop a working feature, so it is removed in Phase 2 with its `GxAnimationType` enum.
+  - `LinearGaugeOrientation`/`LinearGaugeDirection` and `ScaleLinearGaugeType` were **removed without a replacement parameter**. Adding `Axis direction` or `ranges:` now would mean shipping parameters that are ignored, so they arrive in Phase 3 (§5) together with their implementations.
+  - No `@internal` annotations. They need `package:meta` as a dependency, which D6 rules out. Not exporting from `lib/src/` is the standard pub convention and is sufficient.
+  - `screenshots:` in the pubspec moved to Phase 5, together with moving the images to `doc/screenshots/`.
+- **Owner actions (not done by Claude):** rename the GitHub repo to `gx-gauge`, and create the `legacy` branch and publish `girix_code_gauge 0.0.7` (§3.3). Both are outward-facing.
+- The root `README.md` still documents the old API. It is rewritten in Phase 5, as planned.
 
 ---
 
