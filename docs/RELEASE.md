@@ -16,20 +16,9 @@ dart pub global run pana --no-warning .    # must score 160/160
 
 pana checks the screenshots with the `webp` command-line tools (`brew install webp`). Without them it reports "No such file or directory" and loses 10 points, although pub.dev itself has the tools.
 
-## 1. Rename the GitHub repository (D10)
+## 1. Rename the GitHub repository (D10): done
 
-GitHub → `GirixCode/girix-code-gauge` → Settings → rename it to **`gx-gauge`**. GitHub redirects the old URL.
-
-This must happen first:
-- `pubspec.yaml` already points at `https://github.com/GirixCode/gx-gauge`.
-- pana's only remaining note is that this URL is unreachable.
-- pub.dev resolves the README's relative image links through it.
-
-Update your local remote afterwards:
-
-```sh
-git remote set-url public https://github.com/GirixCode/gx-gauge.git
-```
+The repository is now `GirixCode/gx_gauge`, and GitHub redirects `GirixCode/girix-code-gauge` to it. `pubspec.yaml`, the CHANGELOG link and `publish.yaml` point at it.
 
 ## 2. Publish gx_gauge 1.0.0 (manually)
 
@@ -61,7 +50,7 @@ git switch -c legacy c5e74a7        # 0.0.6
    ```markdown
    > **This package has moved to [gx_gauge](https://pub.dev/packages/gx_gauge).**
    > `girix_code_gauge` receives no further updates. See the
-   > [migration guide](https://github.com/GirixCode/gx-gauge/blob/main/doc/MIGRATION.md).
+   > [migration guide](https://github.com/GirixCode/gx_gauge/blob/main/doc/MIGRATION.md).
    ```
 
 3. In `CHANGELOG.md`, add:

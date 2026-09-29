@@ -3,7 +3,7 @@
 #
 # One-time setup on pub.dev (gx_gauge → Admin → Automated publishing):
 #   - Enable publishing from GitHub Actions
-#   - Repository: GirixCode/gx-gauge
+#   - Repository: GirixCode/gx_gauge
 #   - Tag pattern: v{{version}}
 #   - Require the `pub.dev` GitHub environment (recommended; create it under
 #     the repo's Settings → Environments, optionally with required reviewers)

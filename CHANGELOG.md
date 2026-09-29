@@ -89,7 +89,7 @@ Releases published under the previous package name.
 
 - Initial release: progress, scale, bar and stepper linear gauges, and a radial gauge with gradient, ranges and pointers.
 
-[1.0.0]: https://github.com/GirixCode/gx-gauge/releases/tag/v1.0.0
+[1.0.0]: https://github.com/GirixCode/gx_gauge/releases/tag/v1.0.0
 [0.0.6]: https://pub.dev/packages/girix_code_gauge/versions/0.0.6
 [0.0.5]: https://pub.dev/packages/girix_code_gauge/versions/0.0.5
 [0.0.4]: https://pub.dev/packages/girix_code_gauge/versions/0.0.4
