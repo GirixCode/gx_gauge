@@ -30,3 +30,6 @@ doc/api/
 
 # Developer-only tooling in the example (renders doc/screenshots/).
 example/tool/
+
+# Repository tooling
+tool/

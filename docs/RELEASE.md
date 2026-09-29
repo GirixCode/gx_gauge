@@ -4,7 +4,7 @@ These are the owner's steps (PLAN.md §7.3). They are outward-facing, so no auto
 
 ## 0. Pre-flight
 
-Run these from the repo root on the release commit, with a clean working tree:
+CI (`.github/workflows/ci.yaml`) runs all of these on every push to `main`, so a green CI run on the release commit covers them. To run them by hand, from the repo root on the release commit with a clean working tree:
 
 ```sh
 fvm dart format --output=none --set-exit-if-changed lib test example/lib example/test
@@ -45,7 +45,7 @@ fvm flutter pub publish
 
 Then, on pub.dev → `gx_gauge` → Admin:
 - Add the `GirixCode` verified publisher, if you have one.
-- Enable automated publishing from GitHub Actions with the tag pattern `v{{version}}`, so that later releases publish when a tag is pushed (once CI is set up; see PLAN.md Phase 0).
+- Enable automated publishing from GitHub Actions with the tag pattern `v{{version}}`, so that later releases publish when a tag is pushed (`.github/workflows/publish.yaml`). After that, releasing is: bump `version`, date the CHANGELOG entry, push a `vX.Y.Z` tag.
 
 ## 3. Final girix_code_gauge release (0.0.7)
 

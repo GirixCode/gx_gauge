@@ -1,0 +1,55 @@
+# Publishes to pub.dev when a version tag is pushed, using OIDC
+# (https://dart.dev/tools/pub/automated-publishing). No secrets are stored.
+#
+# One-time setup on pub.dev (gx_gauge → Admin → Automated publishing):
+#   - Enable publishing from GitHub Actions
+#   - Repository: GirixCode/gx-gauge
+#   - Tag pattern: v{{version}}
+#   - Require the `pub.dev` GitHub environment (recommended; create it under
+#     the repo's Settings → Environments, optionally with required reviewers)
+#
+# pub.dev can't auto-publish a package that doesn't exist yet: publish the
+# first gx_gauge release manually (docs/RELEASE.md), then use this workflow.
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for pub.dev OIDC authentication.
+    steps:
+      - uses: actions/checkout@v4
+
+      # Configures the OIDC token that `flutter pub publish` uses.
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Read Flutter version
+        run: echo "FLUTTER_VERSION=$(jq -r .flutter .fvmrc)" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Check the tag matches the pubspec version
+        run: |
+          version=$(grep -E '^version:' pubspec.yaml | awk '{print $2}')
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match pubspec version $version"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Test
+        run: flutter test
+
+      - name: Publish
+        run: flutter pub publish --force

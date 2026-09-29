@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Format, analyze, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # .fvmrc is the single source of truth for the Flutter version.
+      - name: Read Flutter version
+        run: echo "FLUTTER_VERSION=$(jq -r .flutter .fvmrc)" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          (cd example && flutter pub get)
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test tool example/lib example/test example/tool
+
+      # Also analyzes example/, which compiles every README snippet
+      # (example/lib/readme_snippets.dart).
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+
+      - name: Test package
+        run: flutter test --coverage
+
+      - name: Coverage gate
+        run: dart run tool/coverage_gate.dart
+
+      - name: Test example
+        working-directory: example
+        run: flutter test
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+
+  package-health:
+    name: Publish dry run and pana
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read Flutter version
+        run: echo "FLUTTER_VERSION=$(jq -r .flutter .fvmrc)" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Publish dry run
+        run: flutter pub publish --dry-run
+
+      # pana converts the pubspec screenshots with the webp tools.
+      - name: Install webp tools
+        run: sudo apt-get update && sudo apt-get install -y webp
+
+      - name: pana (must score 160/160)
+        run: |
+          dart pub global activate pana
+          dart pub global run pana --no-warning --exit-code-threshold 0 .

@@ -24,7 +24,13 @@ fvm flutter test                       # package tests
 fvm flutter pub publish --dry-run      # package validation
 ```
 
-Coverage targets are ≥ 90% for `lib/src/core` and ≥ 80% overall (`fvm flutter test --coverage`).
+Coverage must stay at least 90% for `lib/src/core` and at least 80% overall. CI enforces this; to check locally:
+
+```sh
+fvm flutter test --coverage && fvm dart run tool/coverage_gate.dart
+```
+
+CI (`.github/workflows/ci.yaml`) runs all of the above, plus pana, on every pull request.
 
 ## How the code is organised
 
