@@ -1,6 +1,6 @@
 # Modernisation plan: `girix_code_gauge` → `gx_gauge`
 
-Status: **Phases 0–3 committed** (`064d6cf`, `7c81892`, `b38d233`, `61b9e9c`). **Phases 4 and 5 done** (uncommitted, on branch `test/phase-4-tests`). **Only the owner release steps in `docs/RELEASE.md` remain.**
+Status: **All phases are done and committed** (`064d6cf`, `7c81892`, `b38d233`, `61b9e9c`, `efddbee`, `ef42510`). **CI has been added** (uncommitted, on branch `ci/github-actions`). **Only the owner release steps in `docs/RELEASE.md` remain.**
 
 References:
 - `docs/code_review.md` lists the confirmed defects. It is cited below as **CR**, followed by the section and item, e.g. *CR Radial 1*.
@@ -57,13 +57,13 @@ Goal: a green, trustworthy baseline before anything moves.
    - `common/widgets/gauge_label.dart`, which is entirely commented out
    - `example/flutter_0*.log`
 4. **`.gitignore`:** fix the `*.// log` line, add `*.log` and `coverage/`, and stop ignoring `.vscode/` only where it's useful.
-5. **CI (deferred by the owner, 2026-09-29).** Not part of Phase 0. When it's picked up, `.github/workflows/ci.yaml` should run the following on each PR and on `main`, for the package and for `example/`:
+5. **CI (deferred by the owner on 2026-09-29, then done after Phase 5; see the post-release log below).** `.github/workflows/ci.yaml` runs the following on each PR and on `main`, for the package and for `example/`:
    - `dart format --set-exit-if-changed`
    - `flutter analyze --fatal-infos`
    - `flutter test --coverage`
    - `dart pub publish --dry-run`
    - `pana` (fail on score regression)
-6. **Publishing (deferred together with CI)** (`.github/workflows/publish.yaml`): use pub.dev *automated publishing* through GitHub OIDC, triggered by `v*` tags. No personal credentials are needed. It needs a one-time admin setup on pub.dev. pub.dev can't auto-publish a package that doesn't exist yet, so the **first `gx_gauge` release must be published manually**.
+6. **Publishing (done together with CI)** (`.github/workflows/publish.yaml`): use pub.dev *automated publishing* through GitHub OIDC, triggered by `v*` tags. No personal credentials are needed. It needs a one-time admin setup on pub.dev. pub.dev can't auto-publish a package that doesn't exist yet, so the **first `gx_gauge` release must be published manually**.
 6a. **`.pubignore`**: keep `docs/`, `.github/`, `.fvm*`, `CLAUDE.md` and editor files out of the published archive.
 7. **Characterisation tests.** Before refactoring, add unit tests that pin the current *correct* behaviour of the pure math (see §6.1). They act as a safety net for phases 1–2.
 
@@ -78,7 +78,7 @@ Exit criteria: run locally, `dart format`, `flutter analyze --fatal-infos` and b
   - Dead files deleted: the painter copy, `bar_linear_gauge_model`, `BasePainter`, `AnimationUtils`, the commented-out `gauge_label`, and the logs.
   - `.gitignore` fixed and `.pubignore` added.
   - `.pubignore` also drops README-only images and `doc/api/` from the archive, which was 10 MB.
-- Deferred: CI and publish workflows (owner decision).
+- Deferred: CI and publish workflows (owner decision). Both were added after Phase 5.
   - 35 characterisation tests (1 skipped on purpose as the known bug CR Radial 1).
   - Example smoke test replaced.
   - pubspec description shortened, which fixes a pana penalty.
@@ -434,6 +434,15 @@ The README must not contain a manually maintained table of contents (pub.dev and
 - **Owner actions remaining:** everything in `docs/RELEASE.md`: rename the repo, tag and publish 1.0.0, release `girix_code_gauge` 0.0.7 from a `legacy` branch, mark the old package discontinued, and create the GitHub release.
 
 ---
+
+### CI (the item deferred from Phase 0)
+
+- `.github/workflows/ci.yaml` runs two jobs, with the Flutter version read from `.fvmrc`:
+  - **Format, analyze, test:** `dart format` (including `tool/` and `example/tool/`), `flutter analyze --fatal-infos` (which also compiles the README snippets), `flutter test --coverage`, the coverage gate `tool/coverage_gate.dart` (core ≥ 90%, overall ≥ 80%, verified to fail below target), and the example tests.
+  - **Package health:** `flutter pub publish --dry-run`, then pana with the `webp` tools installed and `--exit-code-threshold 0`, so any lost point fails the build.
+- `.github/workflows/publish.yaml` publishes on `v*` tags via OIDC. It checks that the tag matches the pubspec version and runs the tests before publishing. It needs the one-time pub.dev admin setup, and the first release is still manual (`docs/RELEASE.md`).
+- Every step was run locally on this commit and passes: the coverage gate reports 98.3% / 90.3%, the clean-tree dry run exits 0, pana exits 0 at 160/160, and the workflow YAML parses.
+- Not done: golden tests (§6.3), which can now be added on the Linux runner.
 
 ## 8. Execution order and PR slicing
 
