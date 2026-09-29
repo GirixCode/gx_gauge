@@ -7,8 +7,8 @@ import 'package:gx_gauge/src/linear/painters/linear_bar_painter.dart';
 import 'package:gx_gauge/src/linear/painters/scale_linear_gauge_painter.dart';
 import 'package:gx_gauge/src/radial/painters/radial_gauge_painter.dart';
 
-import 'helpers/configs.dart';
-import 'helpers/recording_canvas.dart';
+import '../helpers/configs.dart';
+import '../helpers/recording_canvas.dart';
 
 Shader _shader(Rect bounds) =>
     const LinearGradient(colors: <Color>[Colors.red, Colors.blue])
