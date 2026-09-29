@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The package is being rebuilt and republished as **`gx_gauge`**. `docs/PLAN.md` is the source of truth for the target API, the phase order and the PR slicing. `docs/code_review.md` lists the known defects that the plan cites as "CR <section> <n>".
 - Execute only the phase or PR you were asked to do. Don't pull later-phase work forward. The README rewrite is deliberately last.
 - The decisions in PLAN.md §1 (D1–D10) are settled defaults. Don't re-litigate them in code. If one needs changing, update PLAN.md first.
-- Phases 1 (rename), 2 (quality and correctness) and 3 (features) have landed. `doc/MIGRATION.md` maps every old name to its new one. When you change a public name or parameter, update MIGRATION.md and CHANGELOG.md in the same change.
+- All five phases are done: 1 rename, 2 quality and correctness, 3 features, 4 tests (required cases only; goldens skipped) and 5 README and release prep. The only remaining work is the owner release steps in `docs/RELEASE.md`. Record new work under `## [Unreleased]` in CHANGELOG.md. `doc/MIGRATION.md` maps every old name to its new one. When you change a public name or parameter, update MIGRATION.md and CHANGELOG.md in the same change.
 - Directory roles: `docs/` holds internal planning and review, which is not published. `doc/` holds user-facing docs such as `MIGRATION.md`, which is published with the package.
 
 ## Commands
@@ -25,6 +25,7 @@ fvm dart format lib test example/lib example/test     # keep everything formatte
 fvm flutter test                                      # all package tests
 fvm flutter test test/linear/needle_utils_test.dart   # single file
 fvm flutter test --plain-name "clamps values"         # single test by name
+fvm flutter test --coverage                           # coverage → coverage/lcov.info (targets: core ≥ 90%, overall ≥ 80%)
 (cd example && fvm flutter test)                      # example app smoke test
 fvm flutter pub publish --dry-run                     # package validation
 fvm dart doc --dry-run                                # must report 0 warnings
@@ -32,11 +33,14 @@ fvm dart doc --dry-run                                # must report 0 warnings
 # Demo app (depends on the package via `path: ../`)
 cd example && fvm flutter run                          # minimal demo (lib/main.dart)
 cd example && fvm flutter run -t lib/showcase/main.dart  # full showcase
+cd example && fvm flutter test tool/screenshots_test.dart  # re-render doc/screenshots/
 ```
+
+**README.** Every README code block comes from `example/lib/readme_snippets.dart` (between `// #docregion` markers), which `flutter analyze` compiles. The screenshots in `doc/screenshots/` are rendered from the quick-start regions with real fonts. When you change a snippet, change the matching README block too, and re-run the screenshot tool for anything visual. Look at the regenerated PNGs, because they catch layout bugs that tests don't.
 
 There is no CI yet (deferred, see PLAN.md Phase 0). Before handing work back, run format, `analyze --fatal-infos`, and both test suites locally.
 
-**Tests.** Painter tests draw into `test/helpers/recording_canvas.dart` (a `Canvas` that records calls) and assert on recorded arguments, e.g. `canvas.callsTo('drawArc')`. `test/widgets_smoke_test.dart` pumps every public gauge. `test/helpers/configs.dart` builds painter configs with fixed colors. `test/widgets_behavior_test.dart` covers animation, semantics, RTL, theming and sizing, and `test/models/model_equality_test.dart` is a table of one variant per field for every model; add a row when you add a field. A known bug gets a test with `skip: 'Known bug CR <ref> …'` rather than a test that pins the wrong behaviour; the phase that fixes the bug removes the `skip`. Compare colors read back from `Paint` with `toARGB32()`, not `==`. Test files mirror `lib/src/` without the `src/` segment. The target layout, including Linux-only goldens tagged `golden`, is in PLAN.md §6.
+**Tests.** Painter tests draw into `test/helpers/recording_canvas.dart` (a `Canvas` that records calls) and assert on recorded arguments, e.g. `canvas.callsTo('drawArc')`. Widget tests live in `test/widgets/`: `smoke_test.dart` pumps every public gauge, and `edge_cases_test.dart` runs every gauge through the size and value edge cases (min/max, 0×0, unbounded constraints, unmounting mid-animation). When you add a gauge or a major option, add it to `_gauges()` there. `test/helpers/configs.dart` builds painter configs with fixed colors. `test/widgets/behavior_test.dart` covers animation, semantics, RTL, theming and sizing, and `test/models/model_equality_test.dart` is a table of one variant per field for every model; add a row when you add a field. A known bug gets a test with `skip: 'Known bug CR <ref> …'` rather than a test that pins the wrong behaviour; the phase that fixes the bug removes the `skip`. Compare colors read back from `Paint` with `toARGB32()`, not `==`. Test files mirror `lib/src/` without the `src/` segment. The target layout, including Linux-only goldens tagged `golden`, is in PLAN.md §6.
 
 ## Architecture
 
@@ -66,7 +70,7 @@ There is no CI yet (deferred, see PLAN.md Phase 0). Before handing work back, ru
 
 **Interaction.** `onChanged` is opt-in. When it's null, no `GestureDetector` is added, so gauges are read-only by default. Drags follow the gauge's axis. Interactive gauges are adjustable semantics nodes.
 
-**Example app** (package `gx_gauge_example`). `example/lib/main.dart` is a deliberately minimal demo, because pub.dev shows it on the Example tab. Keep it short. The full showcase is `example/lib/showcase/`: `showcase_app.dart` lists `FeatureItem` demos, with one screen per gauge type under `showcase/screens/`, and `screens/features/` demonstrates the Phase 3 features. README images are served from `example/assets/images/` through raw GitHub URLs.
+**Example app** (package `gx_gauge_example`). `example/lib/main.dart` is a deliberately minimal demo, because pub.dev shows it on the Example tab. Keep it short. The full showcase is `example/lib/showcase/`: `showcase_app.dart` lists `FeatureItem` demos, with one screen per gauge type under `showcase/screens/`, and `screens/features/` demonstrates the Phase 3 features. `example/assets/images/features/` holds only the showcase's own thumbnails; README images live in `doc/screenshots/`.
 
 ## Conventions
 

@@ -477,7 +477,27 @@ class ScaleLinearGaugePainter extends CustomPainter {
     return style;
   }
 
+  /// Runs [draw] with the canvas moved to the axis band, and returns the
+  /// band's size, so needle positions (top/center/bottom) are relative to
+  /// the axis rather than to the whole gauge.
+  void _onAxis(Canvas canvas, Size size, void Function(Size band) draw) {
+    final double thickness = config.axisStyle.thickness;
+    canvas
+      ..save()
+      ..translate(0, size.height / 2 - thickness / 2);
+    draw(Size(size.width, thickness));
+    canvas.restore();
+  }
+
   void _drawMarkers(Canvas canvas, Size size, LinearTrack track) {
+    _onAxis(
+      canvas,
+      size,
+      (Size band) => _drawMarkerNeedles(canvas, band, track),
+    );
+  }
+
+  void _drawMarkerNeedles(Canvas canvas, Size size, LinearTrack track) {
     for (final GxLinearMarkerPointer marker in config.markers) {
       final GxLinearNeedle? needle = marker.needle;
       if (needle == null || !needle.enabled) {
@@ -505,20 +525,24 @@ class ScaleLinearGaugePainter extends CustomPainter {
     if (needle == null || !needle.enabled) {
       return;
     }
-    NeedleUtils.drawIt(
-      canvas: canvas,
-      size: size,
-      x: _x(track, value.value),
-      needle: needle,
-      thickness: math.sqrt(
-        math.pow(needle.size.width, 2) + math.pow(needle.size.height, 2),
+    _onAxis(
+      canvas,
+      size,
+      (Size band) => NeedleUtils.drawIt(
+        canvas: canvas,
+        size: band,
+        x: _x(track, value.value),
+        needle: needle,
+        thickness: math.sqrt(
+          math.pow(needle.size.width, 2) + math.pow(needle.size.height, 2),
+        ),
+        color: needle.color ?? config.needleColor,
+        needlePainter: config.needlePainter,
+        valueText: formatGaugeValue(config.scale.clamp(value.value)),
+        labelStyle: config.labelStyle,
+        textDirection: config.textDirection,
+        upright: config.vertical,
       ),
-      color: needle.color ?? config.needleColor,
-      needlePainter: config.needlePainter,
-      valueText: formatGaugeValue(config.scale.clamp(value.value)),
-      labelStyle: config.labelStyle,
-      textDirection: config.textDirection,
-      upright: config.vertical,
     );
   }
 }

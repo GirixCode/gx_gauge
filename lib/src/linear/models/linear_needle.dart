@@ -31,8 +31,8 @@ class GxLinearNeedle with Diagnosticable {
   /// gauge's `needlePainter`. Defaults to [GxNeedleShape.rectangle].
   final GxNeedleShape shape;
 
-  /// Above, below or centered on the track. Defaults to
-  /// [GxNeedlePosition.center].
+  /// Above, below or centered on the track (on a scale gauge: on the axis).
+  /// Defaults to [GxNeedlePosition.center].
   final GxNeedlePosition position;
 
   /// The needle's width and height. Defaults to 10×10.

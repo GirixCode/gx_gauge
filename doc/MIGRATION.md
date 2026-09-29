@@ -2,14 +2,14 @@
 
 `girix_code_gauge` is now published as **`gx_gauge`**. The API is the same set of gauges, with consistent `Gx`-prefixed names and a few cleaned-up parameters.
 
-This guide covers `gx_gauge` up to 1.0.0-dev.3.
+This guide covers `gx_gauge` 1.0.0.
 
 ## 1. Update the dependency and imports
 
 ```yaml
 # pubspec.yaml
 dependencies:
-  gx_gauge: ^1.0.0-dev.3   # was: girix_code_gauge: ^0.0.6
+  gx_gauge: ^1.0.0   # was: girix_code_gauge: ^0.0.6
 ```
 
 ```dart

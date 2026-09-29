@@ -1,8 +1,25 @@
 name: gx_gauge
 description: "Customizable Flutter gauges: linear progress, stepper, scale and bar gauges plus radial gauges with ranges, ticks, labels, needles and animation."
-version: 1.0.0-dev.3
+version: 1.0.0
 repository: https://github.com/GirixCode/gx-gauge
 issue_tracker: https://github.com/GirixCode/gx-gauge/issues
+screenshots:
+  - description: "All gx_gauge widgets: progress, stepper, scale, bar and radial gauges."
+    path: doc/screenshots/hero.png
+  - description: Radial gauge with ticks, labels and a needle.
+    path: doc/screenshots/radial.png
+  - description: Linear scale gauge with colored ranges and a needle.
+    path: doc/screenshots/linear_scale.png
+  - description: Linear bar gauge with gaps and a needle.
+    path: doc/screenshots/linear_bar.png
+  - description: Linear stepper gauge.
+    path: doc/screenshots/linear_stepper.png
+  - description: Linear progress gauge with a needle.
+    path: doc/screenshots/linear_progress.png
+  - description: Radial gauge with labelled ranges.
+    path: doc/screenshots/radial_ranges.png
+  - description: Vertical progress and scale gauges.
+    path: doc/screenshots/vertical.png
 topics:
   - gauge
   - chart

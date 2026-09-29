@@ -45,7 +45,7 @@ abstract final class NeedleUtils {
               ? size.height + height / 2
               : size.height + thickness / 2;
         } else {
-          y = size.height;
+          y = size.height + height / 2;
         }
       case GxNeedlePosition.center:
         break;

@@ -200,7 +200,7 @@ class RadialGaugePainter extends CustomPainter {
     _drawRanges(canvas, g);
     _drawTicksAndLabels(canvas, g);
     if (c.showValueAtCenter) {
-      _drawValueAtCenter(canvas, g.center);
+      _drawValueAtCenter(canvas, _valueAnchor(g));
     }
     final GxRadialNeedle? needle = c.needle;
     if (c.showNeedle && needle != null) {
@@ -293,10 +293,14 @@ class RadialGaugePainter extends CustomPainter {
           style: config.labelStyle.merge(label.style),
           textDirection: config.textDirection,
           position: (Size text) {
-            // Just outside the band, far enough that the text's corner
+            // Beside the band, on the side away from the gauge arc (inside
+            // for bands shifted inwards), far enough that the text's corner
             // clears it at any angle.
-            final double distance =
-                radius + range.height / 2 + 4 + text.longestSide / 2;
+            final double clearance =
+                range.height / 2 + 4 + text.longestSide / 2;
+            final double distance = range.offset < 0
+                ? radius - clearance
+                : radius + clearance;
             final Offset anchor =
                 g.pointAt(middle, distance) + (label.offset ?? Offset.zero);
             return anchor - Offset(text.width / 2, text.height / 2);
@@ -390,6 +394,12 @@ class RadialGaugePainter extends CustomPainter {
     );
   }
 
+  /// Where the value text is centered: the gauge's center, or below the
+  /// needle's hub when a needle is drawn, so the needle doesn't cover it.
+  Offset _valueAnchor(_Geometry g) => config.showNeedle && config.needle != null
+      ? g.center + Offset(0, g.radius * 0.45)
+      : g.center;
+
   void _drawValueAtCenter(Canvas canvas, Offset center) {
     paintText(
       canvas,
@@ -474,7 +484,7 @@ class RadialGaugePainter extends CustomPainter {
           ..style = PaintingStyle.fill,
       );
       if (config.showValueAtCenter) {
-        _drawValueAtCenter(canvas, g.center);
+        _drawValueAtCenter(canvas, _valueAnchor(g));
       }
     }
   }

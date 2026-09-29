@@ -198,7 +198,8 @@ class GxRadialRange with Diagnosticable {
   /// The value where the band ends.
   final double end;
 
-  /// Text drawn upright just outside the band, at its middle.
+  /// Text drawn upright beside the band, at its middle: outside it, or inside
+  /// it when [offset] moves the band inwards.
   final GxGaugeLabel? label;
 
   /// The band color. Null uses the gauge arc's color.

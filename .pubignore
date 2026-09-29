@@ -28,8 +28,5 @@ example/.dart_tool/
 # Generated API docs
 doc/api/
 
-# README-only images (served from GitHub raw URLs; the example app does not
-# load these subfolders). Moved to doc/screenshots/ in Phase 5.
-example/assets/images/banner/
-example/assets/images/features/linear/
-example/assets/images/features/radial/
+# Developer-only tooling in the example (renders doc/screenshots/).
+example/tool/
