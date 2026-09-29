@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.0.0-dev.3 (unreleased)
+
+### Added
+
+- **Vertical gauges.** Set `direction: Axis.vertical` on `GxLinearProgressGauge`, `GxLinearScaleGauge`, `GxLinearBarGauge` or `GxLinearStepperGauge`. Vertical gauges run bottom to top, fill the available height, and keep text upright.
+- **Interaction.** Set `onChanged`/`onChangeEnd` on the progress, scale, bar and radial gauges to make them respond to taps and drags, like a `Slider` (the radial gauge works like a knob). Interactive gauges are also adjustable by screen readers. On the stepper, `onStepTapped` reports the step nearest to a tap.
+- **Linear ranges.** `GxLinearScaleGauge.ranges` takes `GxLinearRange` bands with an optional label, gradient (`shaderCallback`), border, radius, thickness and position.
+- **Radial range labels and gradients.** `GxRadialRange.label` is now drawn (and optional), and `GxRadialRange.shaderCallback` paints the band with a shader.
+- **Needle labels.** `GxLinearNeedle.label` is drawn above (or below) the needle; `{value}` is replaced with the value the needle points at.
+- **Marker widgets.** `GxLinearMarkerPointer.marker` (any widget, e.g. an `Icon`) is drawn on the axis.
+- **Custom needles on the scale gauge.** `GxLinearScaleGauge.needlePainter` draws the value needle and marker needles whose shape is `GxNeedleShape.custom`.
+- **Bar pointer styling.** `GxLinearBarPointer` now applies `thickness` (size across the track), `position`, `offset` and `shaderCallback`, and adds `borderColor`/`borderWidth`.
+
+### Breaking
+
+- `GxLinearFillArea` and `GxLinearScaleGauge.fillAreas` are replaced by `GxLinearRange` and `ranges`, which do everything fill areas did and more.
+- `GxLinearStepperGauge.value` (a `GxGaugeValue`) is replaced by `currentStep` (an `int` index). `semanticValueFormatter` is removed from the stepper, which announces "Step N of M". `GxStepperStep.value` is replaced by `marker` (a `String`).
+- `GxLinearBarPointer` drops `paintingStyle` and `strokeCap`. For an outlined bar, use `color: Colors.transparent` with `borderColor`/`borderWidth`. `thickness` is now the bar's size across the track (null keeps the previous full-size default), not a stroke width.
+
+
 ## 1.0.0-dev.2 (unreleased)
 
 ### Breaking

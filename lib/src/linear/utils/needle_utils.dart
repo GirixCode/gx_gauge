@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/core/text_utils.dart';
 import 'package:gx_gauge/src/linear/models/linear_needle.dart';
 
 /// Draws a [GxLinearNeedle] on a horizontal track.
@@ -12,6 +13,11 @@ abstract final class NeedleUtils {
   /// instead of by its own height. [color] is the resolved needle color.
   /// For [GxNeedleShape.custom], [needlePainter] receives the anchor and the
   /// needle with its color resolved.
+  ///
+  /// When the needle has a label, it is drawn beyond the needle with
+  /// `{value}` replaced by [valueText], in [labelStyle] merged with the
+  /// label's own style. [upright] keeps the text readable on a vertical
+  /// gauge.
   static void drawIt({
     required Canvas canvas,
     required Size size,
@@ -21,6 +27,10 @@ abstract final class NeedleUtils {
     required Color color,
     bool dense = false,
     GxNeedlePainter? needlePainter,
+    String valueText = '',
+    TextStyle labelStyle = const TextStyle(),
+    TextDirection textDirection = TextDirection.ltr,
+    bool upright = false,
   }) {
     final double width = needle.size.width;
     final double height = needle.size.height;
@@ -82,5 +92,31 @@ abstract final class NeedleUtils {
           needle.color == null ? needle.copyWith(color: color) : needle,
         );
     }
+
+    final GxNeedleLabel? label = needle.label;
+    if (label == null) {
+      return;
+    }
+    final double halfExtent = switch (needle.shape) {
+      GxNeedleShape.circle ||
+      GxNeedleShape.triangle ||
+      GxNeedleShape.diamond => width / 2,
+      _ => height / 2,
+    };
+    final bool below = needle.position == GxNeedlePosition.bottom;
+    const double gap = 2;
+    paintText(
+      canvas,
+      text: label.label.replaceAll('{value}', valueText),
+      style: labelStyle.merge(label.textStyle),
+      textDirection: textDirection,
+      upright: upright,
+      position: (Size text) => Offset(
+        x - text.width / 2,
+        below
+            ? y + halfExtent + gap + label.offset
+            : y - halfExtent - gap - label.offset - text.height,
+      ),
+    );
   }
 }

@@ -40,6 +40,9 @@ class GxLinearBarGauge extends ImplicitlyAnimatedWidget {
     this.needlePainter,
     this.tooltip,
     this.reverse = false,
+    this.direction = Axis.horizontal,
+    this.onChanged,
+    this.onChangeEnd,
     this.semanticLabel,
     this.semanticValueFormatter,
     super.duration = Duration.zero,
@@ -53,7 +56,8 @@ class GxLinearBarGauge extends ImplicitlyAnimatedWidget {
   /// The bars, each covering `start..end` of the range.
   final List<GxLinearBarPointer> bars;
 
-  /// The bars' height. Defaults to 20.
+  /// The gauge's thickness across the track (its height when horizontal).
+  /// Defaults to 20.
   final double height;
 
   /// Space in logical pixels between adjacent bars. Defaults to 0.
@@ -72,6 +76,18 @@ class GxLinearBarGauge extends ImplicitlyAnimatedWidget {
   /// Runs from the end instead of the start. In a right-to-left locale the
   /// gauge already runs from the right, and [reverse] flips it back.
   final bool reverse;
+
+  /// The track's direction. Vertical gauges run bottom to top and fill the
+  /// available height. Defaults to [Axis.horizontal].
+  final Axis direction;
+
+  /// Makes the gauge interactive: called with the value under the pointer on
+  /// every tap and drag, like `Slider.onChanged`. Null (the default) keeps
+  /// the gauge read-only. Consider `duration: Duration.zero` while dragging.
+  final ValueChanged<double>? onChanged;
+
+  /// Called with the final value when a tap or drag ends.
+  final ValueChanged<double>? onChangeEnd;
 
   /// Describes the gauge to screen readers.
   final String? semanticLabel;
@@ -92,6 +108,16 @@ class GxLinearBarGauge extends ImplicitlyAnimatedWidget {
       ..add(DoubleProperty('height', height, defaultValue: 20.0))
       ..add(DoubleProperty('gapBetweenBars', gapBetweenBars, defaultValue: 0.0))
       ..add(FlagProperty('reverse', value: reverse, ifTrue: 'reversed'))
+      ..add(
+        EnumProperty<Axis>(
+          'direction',
+          direction,
+          defaultValue: Axis.horizontal,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
@@ -106,30 +132,38 @@ class _GxLinearBarGaugeState extends AnimatedGaugeState<GxLinearBarGauge> {
     final GaugeDefaults defaults = GaugeDefaults.of(context);
     final TextDirection direction =
         Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final GaugeScale scale = GaugeScale(w.value.min, w.value.max);
+    final bool reversed = linearReversed(context, w.direction, w.reverse);
 
-    return gaugeSemantics(
-      label: w.semanticLabel,
-      value: semanticValue(w.semanticValueFormatter, w.value.value),
-      child: LinearGaugeBox(
-        height: w.height,
-        child: CustomPaint(
-          painter: LinearBarPainter(
-            value: valueAnimation,
-            config: BarPainterConfig(
-              scale: GaugeScale(w.value.min, w.value.max),
-              bars: w.bars,
-              barColor: defaults.primary,
-              labelStyle: defaults.labelStyle,
-              needleColor: defaults.needle,
-              tooltipColor: defaults.tooltip,
-              tooltipTextColor: defaults.onTooltip,
-              reversed: (direction == TextDirection.rtl) != w.reverse,
-              textDirection: direction,
-              gap: w.gapBetweenBars,
-              needle: w.needle,
-              needlePainter: w.needlePainter,
-              tooltip: w.tooltip,
-            ),
+    return linearGaugeShell(
+      direction: w.direction,
+      thickness: w.height,
+      scale: scale,
+      value: w.value.value,
+      semanticLabel: w.semanticLabel,
+      semanticValueFormatter: w.semanticValueFormatter,
+      onChanged: w.onChanged,
+      onChangeEnd: w.onChangeEnd,
+      trackFor: (Size size) =>
+          LinearTrack(start: 0, end: size.width, reversed: reversed),
+      paint: CustomPaint(
+        painter: LinearBarPainter(
+          value: valueAnimation,
+          config: BarPainterConfig(
+            scale: scale,
+            bars: w.bars,
+            barColor: defaults.primary,
+            labelStyle: defaults.labelStyle,
+            needleColor: defaults.needle,
+            tooltipColor: defaults.tooltip,
+            tooltipTextColor: defaults.onTooltip,
+            reversed: reversed,
+            textDirection: direction,
+            gap: w.gapBetweenBars,
+            needle: w.needle,
+            needlePainter: w.needlePainter,
+            tooltip: w.tooltip,
+            vertical: w.direction == Axis.vertical,
           ),
         ),
       ),

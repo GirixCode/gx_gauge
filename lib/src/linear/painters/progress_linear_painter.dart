@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:gx_gauge/src/common/models/gauge_label.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
 import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/linear_frame.dart';
 import 'package:gx_gauge/src/core/painter_config.dart';
 import 'package:gx_gauge/src/core/text_utils.dart';
 import 'package:gx_gauge/src/linear/models/linear_needle.dart';
@@ -26,6 +27,7 @@ class ProgressPainterConfig extends PainterConfig {
     this.needlePainter,
     this.label,
     this.showLabel = false,
+    this.vertical = false,
   });
 
   /// The value range.
@@ -64,6 +66,9 @@ class ProgressPainterConfig extends PainterConfig {
   /// Whether [label] is drawn.
   final bool showLabel;
 
+  /// Whether the gauge is drawn bottom-to-top.
+  final bool vertical;
+
   @override
   List<Object?> get props => <Object?>[
     scale,
@@ -78,6 +83,7 @@ class ProgressPainterConfig extends PainterConfig {
     needlePainter,
     label,
     showLabel,
+    vertical,
   ];
 }
 
@@ -94,7 +100,14 @@ class ProgressLinearPainter extends CustomPainter {
   final Animation<double> value;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size screenSize) {
+    final LinearFrame frame = LinearFrame(
+      screenSize,
+      vertical: config.vertical,
+    );
+    final Size size = frame.logicalSize;
+    canvas.save();
+    frame.apply(canvas);
     final double fraction = config.scale.fractionOf(value.value);
     final LinearTrack track = LinearTrack(
       start: 0,
@@ -104,6 +117,7 @@ class ProgressLinearPainter extends CustomPainter {
     _drawGauge(canvas, size, track, fraction);
     _drawNeedle(canvas, size, track.xOf(fraction));
     _drawLabel(canvas, size);
+    canvas.restore();
   }
 
   @override
@@ -169,6 +183,10 @@ class ProgressLinearPainter extends CustomPainter {
       color: needle.color ?? config.needleColor,
       dense: config.style.dense,
       needlePainter: config.needlePainter,
+      valueText: formatGaugeValue(config.scale.clamp(value.value)),
+      labelStyle: config.labelStyle,
+      textDirection: config.textDirection,
+      upright: config.vertical,
     );
   }
 
@@ -188,6 +206,7 @@ class ProgressLinearPainter extends CustomPainter {
       style: config.labelStyle.merge(label.style),
       textDirection: config.textDirection,
       textAlign: align,
+      upright: config.vertical,
       position: (Size text) {
         final Offset offset = label.offset ?? Offset.zero;
         final double x = switch (align) {

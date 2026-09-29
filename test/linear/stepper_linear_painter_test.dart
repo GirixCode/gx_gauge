@@ -33,7 +33,7 @@ void main() {
     });
 
     test('colors reached and unreached steps', () {
-      final List<int> colors = _circles(stepperConfig(steps: _steps(3)), 50)
+      final List<int> colors = _circles(stepperConfig(steps: _steps(3)), 1)
           .map(
             (Invocation i) =>
                 (i.positionalArguments[2] as Paint).color.toARGB32(),

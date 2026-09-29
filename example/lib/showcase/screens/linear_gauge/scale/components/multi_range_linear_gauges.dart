@@ -39,7 +39,6 @@ class _MultiRangeScaleLinearGaugeBodyState
                 label: const GxGaugeLabel(label: 'Low'),
                 start: 0,
                 end: barValue,
-                thickness: 5,
                 color: Colors.brown,
               ),
               GxLinearBarPointer(
@@ -47,14 +46,12 @@ class _MultiRangeScaleLinearGaugeBodyState
                 color: Colors.yellow.shade700,
                 start: barValue * 1,
                 end: barValue * 2,
-                thickness: 5,
               ),
               GxLinearBarPointer(
                 label: const GxGaugeLabel(label: 'High'),
                 color: Colors.cyan.shade700,
                 start: barValue * 2,
                 end: barValue * 3,
-                thickness: 5,
               ),
             ],
           ),
@@ -82,7 +79,6 @@ class _MultiRangeScaleLinearGaugeBodyState
                 ),
                 start: 0,
                 end: barValue,
-                thickness: 5,
                 color: Colors.orangeAccent.shade400,
               ),
               GxLinearBarPointer(
@@ -93,7 +89,6 @@ class _MultiRangeScaleLinearGaugeBodyState
                 color: Colors.tealAccent,
                 start: barValue * 1,
                 end: barValue * 2,
-                thickness: 5,
               ),
               GxLinearBarPointer(
                 label: const GxGaugeLabel(
@@ -103,7 +98,6 @@ class _MultiRangeScaleLinearGaugeBodyState
                 color: Colors.orangeAccent,
                 start: barValue * 2,
                 end: barValue * 3,
-                thickness: 5,
               ),
             ],
           ),
@@ -123,20 +117,17 @@ class _MultiRangeScaleLinearGaugeBodyState
               GxLinearBarPointer(
                 start: 0,
                 end: barValue,
-                thickness: 5,
                 color: Colors.red.shade400,
               ),
               GxLinearBarPointer(
                 color: Colors.tealAccent.shade700,
                 start: barValue * 1,
                 end: barValue * 2,
-                thickness: 5,
               ),
               GxLinearBarPointer(
                 color: Colors.orangeAccent.shade400,
                 start: barValue * 2,
                 end: barValue * 3,
-                thickness: 5,
               ),
             ],
           ),
@@ -153,20 +144,17 @@ class _MultiRangeScaleLinearGaugeBodyState
               GxLinearBarPointer(
                 start: 0,
                 end: barValue,
-                thickness: 5,
                 color: Colors.red.shade400,
               ),
               GxLinearBarPointer(
                 color: Colors.tealAccent.shade700,
                 start: barValue * 1,
                 end: barValue * 2,
-                thickness: 5,
               ),
               GxLinearBarPointer(
                 color: Colors.orangeAccent.shade400,
                 start: barValue * 2,
                 end: barValue * 3,
-                thickness: 5,
               ),
             ],
           ),
@@ -184,20 +172,17 @@ class _MultiRangeScaleLinearGaugeBodyState
               GxLinearBarPointer(
                 start: 0,
                 end: barValue,
-                thickness: 5,
                 color: Colors.red.shade400,
               ),
               GxLinearBarPointer(
                 color: Colors.tealAccent.shade700,
                 start: barValue * 1,
                 end: barValue * 2,
-                thickness: 5,
               ),
               GxLinearBarPointer(
                 color: Colors.orangeAccent.shade400,
                 start: barValue * 2,
                 end: barValue * 3,
-                thickness: 5,
               ),
             ],
           ),

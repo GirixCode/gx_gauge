@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/gauge_label.dart';
 import 'package:gx_gauge/src/linear/models/linear_needle.dart';
 
 /// The axis line of a `GxLinearScaleGauge`.
@@ -114,90 +115,117 @@ class GxLinearTickStyle with Diagnosticable {
   }
 }
 
-/// A colored stretch of the axis between [start] and [end].
+/// A colored band along a `GxLinearScaleGauge` axis from [start] to [end],
+/// e.g. "normal" and "danger" zones, with an optional label.
 ///
 /// ```dart
-/// const GxLinearFillArea(start: 0, end: 40, color: Colors.green)
+/// const GxLinearRange(
+///   start: 80,
+///   end: 100,
+///   color: Colors.red,
+///   label: GxGaugeLabel(label: 'Danger'),
+/// )
 /// ```
 @immutable
-class GxLinearFillArea with Diagnosticable {
-  /// Creates a fill area from [start] to [end] (in gauge values).
-  const GxLinearFillArea({
+class GxLinearRange with Diagnosticable {
+  /// Creates a range from [start] to [end] (in gauge values).
+  const GxLinearRange({
     required this.start,
     required this.end,
-    required this.color,
-    this.thickness = 5.0,
+    this.color,
+    this.thickness,
     this.position = GxElementPosition.cross,
+    this.offset = 0,
     this.shaderCallback,
     this.borderColor,
-    this.borderWidth = 5.0,
-    this.offset = 0.0,
-  });
+    this.borderWidth = 1,
+    this.radius,
+    this.label,
+  }) : assert(
+         start <= end,
+         'start ($start) must not be greater than end ($end)',
+       );
 
-  /// The value where the area begins.
+  /// The value where the band begins.
   final double start;
 
-  /// The value where the area ends.
+  /// The value where the band ends.
   final double end;
 
-  /// The fill color.
-  final Color color;
+  /// The band color. Null uses the theme's `primary`.
+  final Color? color;
 
-  /// Line thickness. Defaults to 5.
-  final double thickness;
+  /// The band's extent across the axis. Null uses the axis thickness.
+  final double? thickness;
 
-  /// Not applied yet (docs/PLAN.md Phase 3).
+  /// Centered on the axis ([GxElementPosition.cross], the default), below it
+  /// ([GxElementPosition.inside]) or above it ([GxElementPosition.outside]).
   final GxElementPosition position;
 
-  /// Not applied yet (docs/PLAN.md Phase 3).
-  final ShaderCallback? shaderCallback;
-
-  /// Not applied yet (docs/PLAN.md Phase 3).
-  final Color? borderColor;
-
-  /// Not applied yet (docs/PLAN.md Phase 3).
-  final double borderWidth;
-
-  /// Not applied yet (docs/PLAN.md Phase 3).
+  /// Distance from the axis for [GxElementPosition.inside] and
+  /// [GxElementPosition.outside]. Defaults to 0.
   final double offset;
 
+  /// Paints the band with a shader (e.g. a gradient) instead of [color].
+  /// Receives the band's rectangle.
+  final ShaderCallback? shaderCallback;
+
+  /// Outline color. Null draws no outline.
+  final Color? borderColor;
+
+  /// Outline width when [borderColor] is set. Defaults to 1.
+  final double borderWidth;
+
+  /// Corner radius. Null draws square corners.
+  final Radius? radius;
+
+  /// Text centered over the band, on the side away from the axis (above it
+  /// for [GxElementPosition.cross]).
+  final GxGaugeLabel? label;
+
   /// Returns a copy with the given fields replaced.
-  GxLinearFillArea copyWith({
+  GxLinearRange copyWith({
     double? start,
     double? end,
     Color? color,
     double? thickness,
     GxElementPosition? position,
+    double? offset,
     ShaderCallback? shaderCallback,
     Color? borderColor,
     double? borderWidth,
-    double? offset,
+    Radius? radius,
+    GxGaugeLabel? label,
   }) {
-    return GxLinearFillArea(
+    return GxLinearRange(
       start: start ?? this.start,
       end: end ?? this.end,
       color: color ?? this.color,
       thickness: thickness ?? this.thickness,
       position: position ?? this.position,
+      offset: offset ?? this.offset,
       shaderCallback: shaderCallback ?? this.shaderCallback,
       borderColor: borderColor ?? this.borderColor,
       borderWidth: borderWidth ?? this.borderWidth,
-      offset: offset ?? this.offset,
+      radius: radius ?? this.radius,
+      label: label ?? this.label,
     );
   }
 
   @override
   bool operator ==(Object other) =>
-      other is GxLinearFillArea &&
+      other is GxLinearRange &&
       other.start == start &&
       other.end == end &&
       other.color == color &&
       other.thickness == thickness &&
       other.position == position &&
+      other.offset == offset &&
       other.shaderCallback == shaderCallback &&
       other.borderColor == borderColor &&
       other.borderWidth == borderWidth &&
-      other.offset == offset;
+      other.radius == radius &&
+      other.label == label;
 
   @override
   int get hashCode => Object.hash(
@@ -206,10 +234,12 @@ class GxLinearFillArea with Diagnosticable {
     color,
     thickness,
     position,
+    offset,
     shaderCallback,
     borderColor,
     borderWidth,
-    offset,
+    radius,
+    label,
   );
 
   @override
@@ -218,11 +248,14 @@ class GxLinearFillArea with Diagnosticable {
     properties
       ..add(DoubleProperty('start', start))
       ..add(DoubleProperty('end', end))
-      ..add(ColorProperty('color', color));
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<GxGaugeLabel>('label', label, defaultValue: null),
+      );
   }
 }
 
-/// An extra needle marking [value] on a `GxLinearScaleGauge`.
+/// An extra needle and/or widget marking [value] on a `GxLinearScaleGauge`.
 ///
 /// ```dart
 /// const GxLinearMarkerPointer(
@@ -238,7 +271,8 @@ class GxLinearMarkerPointer with Diagnosticable {
   /// The marked value.
   final double value;
 
-  /// Not drawn yet (docs/PLAN.md Phase 3).
+  /// A widget centered on the axis at [value], e.g. an `Icon`. Drawn above
+  /// the gauge's paint.
   final Widget? marker;
 
   /// The needle drawn at [value].

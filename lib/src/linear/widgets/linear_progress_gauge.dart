@@ -36,6 +36,9 @@ class GxLinearProgressGauge extends ImplicitlyAnimatedWidget {
     this.needlePainter,
     this.reverse = false,
     this.height,
+    this.direction = Axis.horizontal,
+    this.onChanged,
+    this.onChangeEnd,
     this.semanticLabel,
     this.semanticValueFormatter,
     super.duration = Duration.zero,
@@ -67,8 +70,21 @@ class GxLinearProgressGauge extends ImplicitlyAnimatedWidget {
   /// gauge already fills from the right, and [reverse] flips it back.
   final bool reverse;
 
-  /// The gauge's height. Null uses `style.thickness`.
+  /// The gauge's thickness across the track (its height when horizontal).
+  /// Null uses `style.thickness`.
   final double? height;
+
+  /// The track's direction. Vertical gauges run bottom to top and fill the
+  /// available height. Defaults to [Axis.horizontal].
+  final Axis direction;
+
+  /// Makes the gauge interactive: called with the value under the pointer on
+  /// every tap and drag, like `Slider.onChanged`. Null (the default) keeps
+  /// the gauge read-only. Consider `duration: Duration.zero` while dragging.
+  final ValueChanged<double>? onChanged;
+
+  /// Called with the final value when a tap or drag ends.
+  final ValueChanged<double>? onChangeEnd;
 
   /// Describes the gauge to screen readers, e.g. 'Download progress'.
   final String? semanticLabel;
@@ -95,6 +111,16 @@ class GxLinearProgressGauge extends ImplicitlyAnimatedWidget {
       )
       ..add(FlagProperty('reverse', value: reverse, ifTrue: 'reversed'))
       ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(
+        EnumProperty<Axis>(
+          'direction',
+          direction,
+          defaultValue: Axis.horizontal,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
@@ -111,30 +137,38 @@ class _GxLinearProgressGaugeState
     final TextDirection direction =
         Directionality.maybeOf(context) ?? TextDirection.ltr;
     final Color color = w.style.color ?? defaults.primary;
+    final GaugeScale scale = GaugeScale(w.value.min, w.value.max);
+    final bool reversed = linearReversed(context, w.direction, w.reverse);
 
-    return gaugeSemantics(
-      label: w.semanticLabel,
-      value: semanticValue(w.semanticValueFormatter, w.value.value),
-      child: LinearGaugeBox(
-        height: w.height ?? w.style.thickness,
-        child: CustomPaint(
-          painter: ProgressLinearPainter(
-            value: valueAnimation,
-            config: ProgressPainterConfig(
-              scale: GaugeScale(w.value.min, w.value.max),
-              style: w.style,
-              color: color,
-              backgroundColor:
-                  w.style.backgroundColor ?? color.withValues(alpha: 0.2),
-              reversed: (direction == TextDirection.rtl) != w.reverse,
-              textDirection: direction,
-              labelStyle: defaults.labelStyle,
-              needleColor: defaults.needle,
-              needle: w.needle,
-              needlePainter: w.needlePainter,
-              label: w.label,
-              showLabel: w.showLabel,
-            ),
+    return linearGaugeShell(
+      direction: w.direction,
+      thickness: w.height ?? w.style.thickness,
+      scale: scale,
+      value: w.value.value,
+      semanticLabel: w.semanticLabel,
+      semanticValueFormatter: w.semanticValueFormatter,
+      onChanged: w.onChanged,
+      onChangeEnd: w.onChangeEnd,
+      trackFor: (Size size) =>
+          LinearTrack(start: 0, end: size.width, reversed: reversed),
+      paint: CustomPaint(
+        painter: ProgressLinearPainter(
+          value: valueAnimation,
+          config: ProgressPainterConfig(
+            scale: scale,
+            style: w.style,
+            color: color,
+            backgroundColor:
+                w.style.backgroundColor ?? color.withValues(alpha: 0.2),
+            reversed: reversed,
+            textDirection: direction,
+            labelStyle: defaults.labelStyle,
+            needleColor: defaults.needle,
+            needle: w.needle,
+            needlePainter: w.needlePainter,
+            label: w.label,
+            showLabel: w.showLabel,
+            vertical: w.direction == Axis.vertical,
           ),
         ),
       ),

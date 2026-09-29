@@ -5,10 +5,10 @@ import 'package:gx_gauge/src/common/models/gauge_label.dart';
 
 /// A colored segment covering the values [start]..[end] of a linear gauge.
 ///
-/// Used by `GxLinearBarGauge` and `GxLinearScaleGauge.bars`.
+/// Used by `GxLinearBarGauge.bars` and `GxLinearScaleGauge.bars`.
 ///
 /// ```dart
-/// GxLinearBarPointer(start: 0, end: 40, color: Colors.green)
+/// const GxLinearBarPointer(start: 0, end: 40, color: Colors.green)
 /// ```
 @immutable
 class GxLinearBarPointer with Diagnosticable {
@@ -17,13 +17,13 @@ class GxLinearBarPointer with Diagnosticable {
     required this.start,
     required this.end,
     this.color,
-    this.thickness = 5.0,
-    this.position = GxElementPosition.cross,
-    this.shaderCallback,
-    this.radius,
+    this.thickness,
+    this.position,
     this.offset = 0.0,
-    this.paintingStyle = PaintingStyle.fill,
-    this.strokeCap = StrokeCap.butt,
+    this.shaderCallback,
+    this.borderColor,
+    this.borderWidth = 1.0,
+    this.radius,
     this.label,
   }) : assert(
          start <= end,
@@ -39,27 +39,34 @@ class GxLinearBarPointer with Diagnosticable {
   /// The bar color. Null uses the theme's `primary`.
   final Color? color;
 
-  /// Outline width when [paintingStyle] is [PaintingStyle.stroke]. Defaults
-  /// to 5. (Cross-axis sizing arrives in docs/PLAN.md Phase 3.)
-  final double thickness;
+  /// The bar's extent across the track. Null uses the gauge's default: the
+  /// full height of a `GxLinearBarGauge` (half of it when [position] is
+  /// inside or outside), or `barHeight` of a `GxLinearScaleGauge`.
+  final double? thickness;
 
-  /// Not applied yet (docs/PLAN.md Phase 3).
-  final GxElementPosition position;
+  /// Where the bar sits across the track: centered on it
+  /// ([GxElementPosition.cross]), below it ([GxElementPosition.inside]) or
+  /// above it ([GxElementPosition.outside]). Null uses the gauge's default
+  /// placement.
+  final GxElementPosition? position;
 
-  /// Not applied yet (docs/PLAN.md Phase 3).
+  /// Extra distance from the track's center line for inside and outside
+  /// bars. Defaults to 0.
+  final double offset;
+
+  /// Paints the bar with a shader (e.g. a gradient) instead of [color].
+  /// Receives the bar's rectangle.
   final ShaderCallback? shaderCallback;
+
+  /// Outline color. Null draws no outline. For an outlined-only bar, set
+  /// [color] to `Colors.transparent`.
+  final Color? borderColor;
+
+  /// Outline width when [borderColor] is set. Defaults to 1.
+  final double borderWidth;
 
   /// Corner radius. Null draws square corners.
   final Radius? radius;
-
-  /// Not applied yet (docs/PLAN.md Phase 3).
-  final double offset;
-
-  /// Filled or outlined bar. Defaults to [PaintingStyle.fill].
-  final PaintingStyle paintingStyle;
-
-  /// Stroke cap of an outlined bar. Defaults to [StrokeCap.butt].
-  final StrokeCap strokeCap;
 
   /// Text drawn inside the bar.
   final GxGaugeLabel? label;
@@ -71,11 +78,11 @@ class GxLinearBarPointer with Diagnosticable {
     Color? color,
     double? thickness,
     GxElementPosition? position,
-    ShaderCallback? shaderCallback,
-    Radius? radius,
     double? offset,
-    PaintingStyle? paintingStyle,
-    StrokeCap? strokeCap,
+    ShaderCallback? shaderCallback,
+    Color? borderColor,
+    double? borderWidth,
+    Radius? radius,
     GxGaugeLabel? label,
   }) {
     return GxLinearBarPointer(
@@ -84,11 +91,11 @@ class GxLinearBarPointer with Diagnosticable {
       color: color ?? this.color,
       thickness: thickness ?? this.thickness,
       position: position ?? this.position,
-      shaderCallback: shaderCallback ?? this.shaderCallback,
-      radius: radius ?? this.radius,
       offset: offset ?? this.offset,
-      paintingStyle: paintingStyle ?? this.paintingStyle,
-      strokeCap: strokeCap ?? this.strokeCap,
+      shaderCallback: shaderCallback ?? this.shaderCallback,
+      borderColor: borderColor ?? this.borderColor,
+      borderWidth: borderWidth ?? this.borderWidth,
+      radius: radius ?? this.radius,
       label: label ?? this.label,
     );
   }
@@ -101,11 +108,11 @@ class GxLinearBarPointer with Diagnosticable {
       other.color == color &&
       other.thickness == thickness &&
       other.position == position &&
-      other.shaderCallback == shaderCallback &&
-      other.radius == radius &&
       other.offset == offset &&
-      other.paintingStyle == paintingStyle &&
-      other.strokeCap == strokeCap &&
+      other.shaderCallback == shaderCallback &&
+      other.borderColor == borderColor &&
+      other.borderWidth == borderWidth &&
+      other.radius == radius &&
       other.label == label;
 
   @override
@@ -115,11 +122,11 @@ class GxLinearBarPointer with Diagnosticable {
     color,
     thickness,
     position,
-    shaderCallback,
-    radius,
     offset,
-    paintingStyle,
-    strokeCap,
+    shaderCallback,
+    borderColor,
+    borderWidth,
+    radius,
     label,
   );
 
@@ -130,6 +137,14 @@ class GxLinearBarPointer with Diagnosticable {
       ..add(DoubleProperty('start', start))
       ..add(DoubleProperty('end', end))
       ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(DoubleProperty('thickness', thickness, defaultValue: null))
+      ..add(
+        EnumProperty<GxElementPosition>(
+          'position',
+          position,
+          defaultValue: null,
+        ),
+      )
       ..add(
         DiagnosticsProperty<GxGaugeLabel>('label', label, defaultValue: null),
       );

@@ -3,8 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/gauge_label.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
 import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/linear_frame.dart';
 import 'package:gx_gauge/src/core/painter_config.dart';
 import 'package:gx_gauge/src/core/text_utils.dart';
 import 'package:gx_gauge/src/linear/models/linear_bar_pointer.dart';
@@ -45,10 +47,12 @@ class ScalePainterConfig extends PainterConfig {
     this.labelStyler,
     this.majorTickStyler,
     this.needle,
+    this.needlePainter,
     this.markers = const <GxLinearMarkerPointer>[],
-    this.fillAreas = const <GxLinearFillArea>[],
+    this.ranges = const <GxLinearRange>[],
     this.bars = const <GxLinearBarPointer>[],
     this.barHeight,
+    this.vertical = false,
   });
 
   /// The value range.
@@ -132,17 +136,23 @@ class ScalePainterConfig extends PainterConfig {
   /// The value needle.
   final GxLinearNeedle? needle;
 
+  /// Draws custom needles (the value needle and marker needles).
+  final GxNeedlePainter? needlePainter;
+
   /// Extra needles.
   final List<GxLinearMarkerPointer> markers;
 
-  /// Colored stretches of the axis.
-  final List<GxLinearFillArea> fillAreas;
+  /// Colored bands along the axis.
+  final List<GxLinearRange> ranges;
 
   /// Bars along the axis.
   final List<GxLinearBarPointer> bars;
 
   /// Bar height, or null for half the gauge's height.
   final double? barHeight;
+
+  /// Whether the gauge is drawn bottom-to-top.
+  final bool vertical;
 
   @override
   List<Object?> get props => <Object?>[
@@ -173,10 +183,12 @@ class ScalePainterConfig extends PainterConfig {
     labelStyler,
     majorTickStyler,
     needle,
+    needlePainter,
     markers,
-    fillAreas,
+    ranges,
     bars,
     barHeight,
+    vertical,
   ];
 }
 
@@ -192,16 +204,24 @@ class ScaleLinearGaugePainter extends CustomPainter {
   /// The current (animated) value.
   final Animation<double> value;
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final ScalePainterConfig c = config;
-    final double centerY = size.height / 2;
-    final LinearTrack track = LinearTrack(
-      start: c.axisSpaceExtent,
-      end: size.width - c.axisSpaceExtent,
-      reversed: c.reversed,
-    );
+  /// The axis track for a gauge of logical [size].
+  static LinearTrack trackFor(ScalePainterConfig config, Size size) =>
+      LinearTrack(
+        start: config.axisSpaceExtent,
+        end: size.width - config.axisSpaceExtent,
+        reversed: config.reversed,
+      );
 
+  @override
+  void paint(Canvas canvas, Size screenSize) {
+    final ScalePainterConfig c = config;
+    final LinearFrame frame = LinearFrame(screenSize, vertical: c.vertical);
+    final Size size = frame.logicalSize;
+    canvas.save();
+    frame.apply(canvas);
+
+    final double centerY = size.height / 2;
+    final LinearTrack track = trackFor(c, size);
     if (c.showAxisTrack && !c.applyBarColorOnAxisTick) {
       canvas.drawLine(
         Offset(track.start, centerY),
@@ -213,11 +233,12 @@ class ScaleLinearGaugePainter extends CustomPainter {
           ..strokeCap = c.axisStyle.strokeCap,
       );
     }
-    _drawFillAreas(canvas, track, centerY);
+    _drawRanges(canvas, track, centerY);
     _drawBars(canvas, size, track, centerY);
     _drawTicksAndLabels(canvas, track, centerY);
     _drawMarkers(canvas, size, track);
     _drawNeedle(canvas, size, track);
+    canvas.restore();
   }
 
   @override
@@ -227,18 +248,87 @@ class ScaleLinearGaugePainter extends CustomPainter {
   double _x(LinearTrack track, double value) =>
       track.xOf(config.scale.fractionOf(value));
 
-  void _drawFillAreas(Canvas canvas, LinearTrack track, double centerY) {
-    for (final GxLinearFillArea area in config.fillAreas) {
-      canvas.drawLine(
-        Offset(_x(track, area.start), centerY),
-        Offset(_x(track, area.end), centerY),
-        Paint()
-          ..color = area.color
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.butt
-          ..strokeWidth = area.thickness,
+  void _drawRanges(Canvas canvas, LinearTrack track, double centerY) {
+    final ScalePainterConfig c = config;
+    final double axisHalf = c.axisStyle.thickness / 2;
+    for (final GxLinearRange range in c.ranges) {
+      final double x1 = _x(track, range.start);
+      final double x2 = _x(track, range.end);
+      final double thickness = range.thickness ?? c.axisStyle.thickness;
+      final double top = switch (range.position) {
+        GxElementPosition.inside => centerY + axisHalf + range.offset,
+        GxElementPosition.outside =>
+          centerY - axisHalf - range.offset - thickness,
+        _ => centerY - thickness / 2,
+      };
+      final Rect rect = Rect.fromLTRB(
+        math.min(x1, x2),
+        top,
+        math.max(x1, x2),
+        top + thickness,
       );
+      if (rect.width <= 0) {
+        continue;
+      }
+      LinearBarUtils.paintBand(
+        canvas,
+        rect: rect,
+        color: range.color ?? c.barColor,
+        radius: range.radius,
+        shaderCallback: range.shaderCallback,
+        borderColor: range.borderColor,
+        borderWidth: range.borderWidth,
+      );
+
+      final GxGaugeLabel? label = range.label;
+      if (label != null) {
+        final bool below = range.position == GxElementPosition.inside;
+        paintText(
+          canvas,
+          text: label.label,
+          style: c.barLabelStyle.merge(label.style),
+          textDirection: c.textDirection,
+          upright: c.vertical,
+          position: (Size text) =>
+              Offset(
+                rect.center.dx - text.width / 2,
+                below ? rect.bottom + 2 : rect.top - 2 - text.height,
+              ) +
+              (label.offset ?? Offset.zero),
+        );
+      }
     }
+  }
+
+  /// Where [bar] sits across the axis. Without an explicit `position`, bars
+  /// sit on the opposite side of the axis from the ticks (centered for
+  /// [GxElementPosition.cross]).
+  BarPlacement _placeBar(GxLinearBarPointer bar, Size size, double centerY) {
+    final ScalePainterConfig c = config;
+    final double height = bar.thickness ?? c.barHeight ?? size.height / 2;
+    final GxElementPosition? explicit = bar.position;
+    if (explicit != null) {
+      final double axisHalf = c.axisStyle.thickness / 2;
+      return switch (explicit) {
+        GxElementPosition.inside => (
+          top: centerY + axisHalf + bar.offset,
+          height: height,
+        ),
+        GxElementPosition.outside => (
+          top: centerY - axisHalf - bar.offset - height,
+          height: height,
+        ),
+        _ => (top: centerY - height / 2, height: height),
+      };
+    }
+    final double offset =
+        (c.applyBarColorOnAxisTick ? -1 : c.barOffset) + bar.offset;
+    final double top = switch (c.tickPosition) {
+      GxElementPosition.inside => centerY - height - offset,
+      GxElementPosition.outside => centerY + offset,
+      _ => centerY - height / 2,
+    };
+    return (top: top, height: height);
   }
 
   void _drawBars(Canvas canvas, Size size, LinearTrack track, double centerY) {
@@ -246,24 +336,16 @@ class ScaleLinearGaugePainter extends CustomPainter {
     if (c.bars.isEmpty) {
       return;
     }
-    final double height = c.barHeight ?? size.height / 2;
-    final double offset = c.applyBarColorOnAxisTick ? -1 : c.barOffset;
-    // Bars sit on the opposite side of the axis from the ticks.
-    final double top = switch (c.tickPosition) {
-      GxElementPosition.inside => centerY - height - offset,
-      GxElementPosition.outside => centerY + offset,
-      _ => centerY - height / 2,
-    };
     LinearBarUtils.drawBars(
       canvas: canvas,
       scale: c.scale,
       track: track,
       bars: c.bars,
-      top: top,
-      height: height,
+      place: (GxLinearBarPointer bar) => _placeBar(bar, size, centerY),
       color: c.barColor,
       labelStyle: c.barLabelStyle,
       textDirection: c.textDirection,
+      upright: c.vertical,
     );
   }
 
@@ -338,6 +420,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
           text: c.labelFormatter?.call(tick, i) ?? formatGaugeValue(tick),
           style: style,
           textDirection: c.textDirection,
+          upright: c.vertical,
           position: (Size text) => Offset(
             x - text.width / 2,
             onTop
@@ -408,6 +491,11 @@ class ScaleLinearGaugePainter extends CustomPainter {
         thickness: needle.offset,
         color: needle.color ?? config.needleColor,
         dense: true,
+        needlePainter: config.needlePainter,
+        valueText: formatGaugeValue(marker.value),
+        labelStyle: config.labelStyle,
+        textDirection: config.textDirection,
+        upright: config.vertical,
       );
     }
   }
@@ -426,6 +514,11 @@ class ScaleLinearGaugePainter extends CustomPainter {
         math.pow(needle.size.width, 2) + math.pow(needle.size.height, 2),
       ),
       color: needle.color ?? config.needleColor,
+      needlePainter: config.needlePainter,
+      valueText: formatGaugeValue(config.scale.clamp(value.value)),
+      labelStyle: config.labelStyle,
+      textDirection: config.textDirection,
+      upright: config.vertical,
     );
   }
 }

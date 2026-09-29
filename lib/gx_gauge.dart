@@ -40,8 +40,8 @@ export 'src/linear/models/linear_progress_style.dart'
 export 'src/linear/models/linear_scale_models.dart'
     show
         GxLinearAxisStyle,
-        GxLinearFillArea,
         GxLinearMarkerPointer,
+        GxLinearRange,
         GxLinearTickStyle;
 export 'src/linear/models/stepper_step.dart' show GxStepperStep;
 export 'src/linear/widgets/linear_bar_gauge.dart' show GxLinearBarGauge;

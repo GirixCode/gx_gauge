@@ -22,7 +22,7 @@ class StepperLinearScreen extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(8.0),
               child: GxLinearStepperGauge(
-                value: GxGaugeValue(value: 77),
+                currentStep: 2,
                 steps: [
                   GxStepperStep(
                     label: GxGaugeLabel(label: 'Ordered', style: textStyle),
@@ -49,27 +49,27 @@ class StepperLinearScreen extends StatelessWidget {
                 height: 50,
                 offset: 20,
                 shape: GxStepperShape.rectangle,
-                value: GxGaugeValue(value: 79, min: 20, max: 100),
+                currentStep: 2,
                 style: GxLinearProgressStyle(color: Colors.red, thickness: 5),
                 steps: [
                   GxStepperStep(
-                    value: 20,
+                    marker: '20',
                     label: GxGaugeLabel(label: 'Ordered', style: textStyle),
                   ),
                   GxStepperStep(
-                    value: 40,
+                    marker: '40',
                     label: GxGaugeLabel(label: 'Packed', style: textStyle),
                   ),
                   GxStepperStep(
-                    value: 60,
+                    marker: '60',
                     label: GxGaugeLabel(label: 'Shipped', style: textStyle),
                   ),
                   GxStepperStep(
-                    value: 80,
+                    marker: '80',
                     label: GxGaugeLabel(label: 'Delivered', style: textStyle),
                   ),
                   GxStepperStep(
-                    value: 100,
+                    marker: '100',
                     label: GxGaugeLabel(label: 'Completed', style: textStyle),
                   ),
                 ],

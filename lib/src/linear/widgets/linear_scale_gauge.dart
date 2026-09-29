@@ -6,24 +6,26 @@ import 'package:gx_gauge/src/common/utils/typedef.dart';
 import 'package:gx_gauge/src/core/gauge_defaults.dart';
 import 'package:gx_gauge/src/core/gauge_scale.dart';
 import 'package:gx_gauge/src/core/gauge_widgets.dart';
+import 'package:gx_gauge/src/core/linear_frame.dart';
 import 'package:gx_gauge/src/core/semantics.dart';
 import 'package:gx_gauge/src/linear/models/linear_bar_pointer.dart';
 import 'package:gx_gauge/src/linear/models/linear_needle.dart';
 import 'package:gx_gauge/src/linear/models/linear_scale_models.dart';
 import 'package:gx_gauge/src/linear/painters/scale_linear_gauge_painter.dart';
 
-/// A horizontal scale with an axis, major and minor ticks, labels, and
-/// optional needle, marker pointers, fill areas and bars.
+/// A scale with an axis, major and minor ticks, labels, and optional
+/// needle, marker pointers, ranges and bars.
 ///
-/// Takes the full available width.
+/// Takes the full available width (or height, when vertical).
 ///
 /// ```dart
 /// GxLinearScaleGauge(
 ///   value: const GxGaugeValue(value: 40),
 ///   interval: 10,
 ///   needle: const GxLinearNeedle(shape: GxNeedleShape.triangle),
-///   fillAreas: const <GxLinearFillArea>[
-///     GxLinearFillArea(start: 0, end: 40, color: Colors.green),
+///   ranges: const <GxLinearRange>[
+///     GxLinearRange(start: 0, end: 60, color: Colors.green),
+///     GxLinearRange(start: 60, end: 100, color: Colors.red),
 ///   ],
 /// )
 /// ```
@@ -50,13 +52,17 @@ class GxLinearScaleGauge extends ImplicitlyAnimatedWidget {
     this.labelStyler,
     this.majorTickStyler,
     this.needle,
+    this.needlePainter,
     this.markers = const <GxLinearMarkerPointer>[],
-    this.fillAreas = const <GxLinearFillArea>[],
+    this.ranges = const <GxLinearRange>[],
     this.bars = const <GxLinearBarPointer>[],
     this.barHeight,
     this.barOffset = 0.5,
     this.applyBarColorOnAxisTick = false,
     this.reverse = false,
+    this.direction = Axis.horizontal,
+    this.onChanged,
+    this.onChangeEnd,
     this.semanticLabel,
     this.semanticValueFormatter,
     super.duration = Duration.zero,
@@ -76,7 +82,8 @@ class GxLinearScaleGauge extends ImplicitlyAnimatedWidget {
   /// Minor ticks between two major ticks. Defaults to 1.
   final int minorTicksPerInterval;
 
-  /// The gauge's height, including labels and needle. Defaults to 100.
+  /// The gauge's thickness across the axis, including labels and needle
+  /// (its height when horizontal). Defaults to 100.
   final double height;
 
   /// Horizontal inset of the axis from both edges, leaving room for the first
@@ -127,11 +134,15 @@ class GxLinearScaleGauge extends ImplicitlyAnimatedWidget {
   /// An optional needle at `value.value`.
   final GxLinearNeedle? needle;
 
-  /// Extra needles at fixed values.
+  /// Draws custom needles (for [needle] and marker needles) whose shape is
+  /// `GxNeedleShape.custom`. Pass a stable (top-level or static) function.
+  final GxNeedlePainter? needlePainter;
+
+  /// Extra needles and/or widgets at fixed values.
   final List<GxLinearMarkerPointer> markers;
 
-  /// Colored stretches of the axis.
-  final List<GxLinearFillArea> fillAreas;
+  /// Colored bands along the axis, drawn beneath bars, ticks and needles.
+  final List<GxLinearRange> ranges;
 
   /// Bars along the axis, drawn on the opposite side from the ticks (or
   /// centered on the axis for [GxElementPosition.cross]).
@@ -150,6 +161,18 @@ class GxLinearScaleGauge extends ImplicitlyAnimatedWidget {
   /// Runs from the end instead of the start. In a right-to-left locale the
   /// scale already runs from the right, and [reverse] flips it back.
   final bool reverse;
+
+  /// The axis direction. Vertical scales run bottom to top, with labels to
+  /// the right of the axis for [GxLabelPosition.bottomCenter]. Defaults to
+  /// [Axis.horizontal].
+  final Axis direction;
+
+  /// Makes the gauge interactive: called with the value under the pointer on
+  /// every tap and drag. Null (the default) keeps the gauge read-only.
+  final ValueChanged<double>? onChanged;
+
+  /// Called with the final value when a tap or drag ends.
+  final ValueChanged<double>? onChangeEnd;
 
   /// Describes the gauge to screen readers.
   final String? semanticLabel;
@@ -177,6 +200,16 @@ class GxLinearScaleGauge extends ImplicitlyAnimatedWidget {
         ),
       )
       ..add(FlagProperty('reverse', value: reverse, ifTrue: 'reversed'))
+      ..add(
+        EnumProperty<Axis>(
+          'direction',
+          direction,
+          defaultValue: Axis.horizontal,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
@@ -191,51 +224,112 @@ class _GxLinearScaleGaugeState extends AnimatedGaugeState<GxLinearScaleGauge> {
     final GaugeDefaults defaults = GaugeDefaults.of(context);
     final TextDirection direction =
         Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final GaugeScale scale = GaugeScale(w.value.min, w.value.max);
+    final bool vertical = w.direction == Axis.vertical;
 
-    return gaugeSemantics(
-      label: w.semanticLabel,
-      value: semanticValue(w.semanticValueFormatter, w.value.value),
-      child: LinearGaugeBox(
-        height: w.height,
-        child: CustomPaint(
-          painter: ScaleLinearGaugePainter(
-            value: valueAnimation,
-            config: ScalePainterConfig(
-              scale: GaugeScale(w.value.min, w.value.max),
-              interval: w.interval,
-              axisSpaceExtent: w.axisSpaceExtent,
-              axisStyle: w.axisTrackStyle,
-              axisColor: defaults.track,
-              majorTickStyle: w.majorTickStyle,
-              minorTickStyle: w.minorTickStyle,
-              tickColor: defaults.tick,
-              minorTicksPerInterval: w.minorTicksPerInterval,
-              labelStyle: defaults.labelStyle.merge(w.axisLabelStyle),
-              labelPosition: w.labelPosition,
-              tickPosition: w.tickPosition,
-              showMajorTicks: w.showMajorTicks,
-              showMinorTicks: w.showMinorTicks,
-              showAxisTrack: w.showAxisTrack,
-              showAxisLabel: w.showAxisLabel,
-              needleColor: defaults.needle,
-              barColor: defaults.primary,
-              barLabelStyle: defaults.labelStyle,
-              barOffset: w.barOffset,
-              applyBarColorOnAxisTick: w.applyBarColorOnAxisTick,
-              reversed: (direction == TextDirection.rtl) != w.reverse,
-              textDirection: direction,
-              labelFormatter: w.labelFormatter,
-              labelStyler: w.labelStyler,
-              majorTickStyler: w.majorTickStyler,
-              needle: w.needle,
-              markers: w.markers,
-              fillAreas: w.fillAreas,
-              bars: w.bars,
-              barHeight: w.barHeight,
+    final ScalePainterConfig config = ScalePainterConfig(
+      scale: scale,
+      interval: w.interval,
+      axisSpaceExtent: w.axisSpaceExtent,
+      axisStyle: w.axisTrackStyle,
+      axisColor: defaults.track,
+      majorTickStyle: w.majorTickStyle,
+      minorTickStyle: w.minorTickStyle,
+      tickColor: defaults.tick,
+      minorTicksPerInterval: w.minorTicksPerInterval,
+      labelStyle: defaults.labelStyle.merge(w.axisLabelStyle),
+      labelPosition: w.labelPosition,
+      tickPosition: w.tickPosition,
+      showMajorTicks: w.showMajorTicks,
+      showMinorTicks: w.showMinorTicks,
+      showAxisTrack: w.showAxisTrack,
+      showAxisLabel: w.showAxisLabel,
+      needleColor: defaults.needle,
+      barColor: defaults.primary,
+      barLabelStyle: defaults.labelStyle,
+      barOffset: w.barOffset,
+      applyBarColorOnAxisTick: w.applyBarColorOnAxisTick,
+      reversed: linearReversed(context, w.direction, w.reverse),
+      textDirection: direction,
+      labelFormatter: w.labelFormatter,
+      labelStyler: w.labelStyler,
+      majorTickStyler: w.majorTickStyler,
+      needle: w.needle,
+      needlePainter: w.needlePainter,
+      markers: w.markers,
+      ranges: w.ranges,
+      bars: w.bars,
+      barHeight: w.barHeight,
+      vertical: vertical,
+    );
+
+    Widget paint = CustomPaint(
+      painter: ScaleLinearGaugePainter(value: valueAnimation, config: config),
+    );
+    final List<GxLinearMarkerPointer> widgetMarkers = <GxLinearMarkerPointer>[
+      for (final GxLinearMarkerPointer m in w.markers)
+        if (m.marker != null) m,
+    ];
+    if (widgetMarkers.isNotEmpty) {
+      paint = Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          Positioned.fill(child: paint),
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final LinearFrame frame = LinearFrame(
+                  constraints.biggest,
+                  vertical: vertical,
+                );
+                final Size logical = frame.logicalSize;
+                final LinearTrack track = ScaleLinearGaugePainter.trackFor(
+                  config,
+                  logical,
+                );
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    for (final GxLinearMarkerPointer marker in widgetMarkers)
+                      _positioned(
+                        frame.toScreen(
+                          Offset(
+                            track.xOf(scale.fractionOf(marker.value)),
+                            logical.height / 2,
+                          ),
+                        ),
+                        marker.marker!,
+                      ),
+                  ],
+                );
+              },
             ),
           ),
-        ),
-      ),
+        ],
+      );
+    }
+
+    return linearGaugeShell(
+      direction: w.direction,
+      thickness: w.height,
+      scale: scale,
+      value: w.value.value,
+      semanticLabel: w.semanticLabel,
+      semanticValueFormatter: w.semanticValueFormatter,
+      onChanged: w.onChanged,
+      onChangeEnd: w.onChangeEnd,
+      trackFor: (Size size) => ScaleLinearGaugePainter.trackFor(config, size),
+      paint: paint,
     );
   }
+
+  /// Centers [child] on [center].
+  static Widget _positioned(Offset center, Widget child) => Positioned(
+    left: center.dx,
+    top: center.dy,
+    child: FractionalTranslation(
+      translation: const Offset(-0.5, -0.5),
+      child: child,
+    ),
+  );
 }

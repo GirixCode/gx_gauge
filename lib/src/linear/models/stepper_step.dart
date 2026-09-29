@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:gx_gauge/src/common/models/gauge_label.dart';
 
-/// One step of a `GxLinearStepperGauge`.
+/// One step of a `GxLinearStepperGauge`. Steps are evenly spaced.
 ///
 /// ```dart
 /// const GxStepperStep(label: GxGaugeLabel(label: 'Shipped'))
@@ -9,35 +9,35 @@ import 'package:gx_gauge/src/common/models/gauge_label.dart';
 @immutable
 class GxStepperStep with Diagnosticable {
   /// Creates a step.
-  const GxStepperStep({this.value, required this.label});
+  const GxStepperStep({required this.label, this.marker});
 
-  /// The number shown inside the step's marker. Null shows the step's
-  /// 1-based position. (Steps are always evenly spaced.)
-  final double? value;
+  /// Text shown inside the step's marker, e.g. '✓'. Null shows the step's
+  /// 1-based position.
+  final String? marker;
 
   /// The text shown under the step.
   final GxGaugeLabel label;
 
   /// Returns a copy with the given fields replaced.
-  GxStepperStep copyWith({double? value, GxGaugeLabel? label}) {
+  GxStepperStep copyWith({GxGaugeLabel? label, String? marker}) {
     return GxStepperStep(
-      value: value ?? this.value,
       label: label ?? this.label,
+      marker: marker ?? this.marker,
     );
   }
 
   @override
   bool operator ==(Object other) =>
-      other is GxStepperStep && other.value == value && other.label == label;
+      other is GxStepperStep && other.marker == marker && other.label == label;
 
   @override
-  int get hashCode => Object.hash(value, label);
+  int get hashCode => Object.hash(marker, label);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('marker', marker, defaultValue: null))
       ..add(DiagnosticsProperty<GxGaugeLabel>('label', label));
   }
 }
