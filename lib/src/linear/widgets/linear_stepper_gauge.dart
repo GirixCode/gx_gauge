@@ -1,167 +1,154 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:gx_gauge/src/common/models/models.dart';
-import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:gx_gauge/src/linear/models/stepper_linear_gauge_model.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/gauge_value.dart';
+import 'package:gx_gauge/src/core/gauge_defaults.dart';
+import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/gauge_widgets.dart';
+import 'package:gx_gauge/src/core/semantics.dart';
+import 'package:gx_gauge/src/linear/models/linear_progress_style.dart';
+import 'package:gx_gauge/src/linear/models/stepper_step.dart';
 import 'package:gx_gauge/src/linear/painters/stepper_linear_painter.dart';
+import 'package:gx_gauge/src/linear/utils/color_utils.dart';
 
-/// [GxLinearStepperGauge]: A linear gauge that displays the progress of a process in a linear manner with step-by-step progress indicators.
-class GxLinearStepperGauge extends StatelessWidget {
+/// A horizontal track of evenly spaced steps with a progress line.
+///
+/// A step counts as reached once the progress line gets to it. Takes the full
+/// available width.
+///
+/// ```dart
+/// GxLinearStepperGauge(
+///   value: const GxGaugeValue(value: 50),
+///   steps: const <GxStepperStep>[
+///     GxStepperStep(label: GxGaugeLabel(label: 'Ordered')),
+///     GxStepperStep(label: GxGaugeLabel(label: 'Shipped')),
+///     GxStepperStep(label: GxGaugeLabel(label: 'Delivered')),
+///   ],
+/// )
+/// ```
+class GxLinearStepperGauge extends ImplicitlyAnimatedWidget {
+  /// Creates a linear stepper gauge.
   const GxLinearStepperGauge({
     super.key,
     required this.value,
-    this.style = const GxLinearProgressStyle(color: Colors.blue, thickness: 5),
     required this.steps,
-    this.height,
-    this.size,
+    this.style = const GxLinearProgressStyle(thickness: 5),
+    this.height = 50,
     this.shape = GxStepperShape.circle,
     this.shapeSize = 20,
     this.offset = 10,
-    this.activeStyle = const TextStyle(color: Colors.white),
-    this.inActiveStyle = const TextStyle(color: Colors.black),
+    this.activeStyle,
+    this.inactiveStyle,
+    this.reverse = false,
+    this.semanticLabel,
+    this.semanticValueFormatter,
+    super.duration = Duration.zero,
+    super.curve = Curves.easeInOut,
+    super.onEnd,
   });
 
-  /// Specifies the value of the gauge.
-  /// The value should be between the minimum and maximum values of the gauge.
-  /// This value is used to calculate the position of the stepper pointers.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  value: GxGaugeValue(
-  ///   value: 50,
-  ///   min: 0,
-  ///   max: 100,
-  /// ),
-  /// ```
-  ///
+  /// The progress and its range.
   final GxGaugeValue value;
 
-  /// Specifies the height of the gauge.
-  /// If the height is not specified, the height of the gauge is calculated based on the size of the gauge.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  height: 50,
-  /// ),
-  /// ```
-  ///
-  final double? height;
-
-  /// Specifies the style of the gauge.
-  /// The style includes the color and thickness of the gauge.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  style: GxLinearProgressStyle(
-  ///    color: Colors.blue,
-  ///    thickness: 5,
-  ///  ),
-  /// ),
-  /// ```
-  ///
-  final GxLinearProgressStyle style;
-
-  /// Specifies the list of stepper pointers.
-  /// Each stepper pointer represents a step in the process. The stepper pointer includes the value and label of the step.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///   steps: [
-  ///     GxStepperStep(
-  ///       value: 20, // Optional
-  ///       label: GxGaugeLabel(
-  ///         label: 'Ordered',
-  ///         style: TextStyle(color: Colors.black),
-  ///       ),
-  ///     ),
-  ///     GxStepperStep(
-  ///       value: 40,
-  ///       label: GxGaugeLabel(
-  ///         label: 'Packed',
-  ///         style: TextStyle(color: Colors.black),
-  ///       ),
-  ///     ),
-  ///   ],
-  /// ),
-  /// ```
-  ///
+  /// The steps, from first to last.
   final List<GxStepperStep> steps;
 
-  /// Specifies the size of the gauge.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  size: Size(200, 50),
-  /// ),
-  /// ```
-  ///
-  final Size? size;
+  /// Line color and thickness. `style.backgroundColor` colors the track and
+  /// the steps not yet reached.
+  final GxLinearProgressStyle style;
 
-  /// Specifies the shape of the stepper pointers. The shape can be a circle, rectangle, or diamond.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  shape: GxStepperShape.circle,
-  /// ),
-  /// ```
+  /// The gauge's height, including the labels. Defaults to 50.
+  final double height;
+
+  /// The step marker shape. Defaults to [GxStepperShape.circle].
   final GxStepperShape shape;
 
-  /// Specifies the size of the stepper pointers.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///   shapeSize: 20,
-  /// ),
-  /// ```
-  ///
+  /// The step marker size. Defaults to 20.
   final double shapeSize;
 
-  /// Specifies the style of the active stepper pointers.
-  /// The active style includes the color and thickness of the stepper pointers.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  activeStyle: TextStyle(color: Colors.white),
-  /// ),
-  /// ```
-  ///
-  final TextStyle activeStyle;
-
-  /// Specifies the style of the inactive stepper pointers.
-  /// The inactive style includes the color and thickness of the stepper pointers.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  inActiveStyle: TextStyle(color: Colors.black),
-  /// ),
-  /// ```
-  ///
-  final TextStyle inActiveStyle;
-
-  /// Specifies the offset between the gauge and the stepper pointers.
-  ///
-  /// ```dart
-  /// GxLinearStepperGauge(
-  ///  offset: 10,
-  /// ),
-  /// ```
-  ///
+  /// Distance between the track and the step labels. Defaults to 10.
   final double offset;
+
+  /// Style of the numbers in reached steps, merged onto the theme's label
+  /// style in `onPrimary`.
+  final TextStyle? activeStyle;
+
+  /// Style of the numbers in steps not yet reached, merged onto the theme's
+  /// label style in `onSurface`.
+  final TextStyle? inactiveStyle;
+
+  /// Runs from the end instead of the start. In a right-to-left locale the
+  /// gauge already runs from the right, and [reverse] flips it back.
+  final bool reverse;
+
+  /// Describes the gauge to screen readers.
+  final String? semanticLabel;
+
+  /// Formats the value announced by screen readers.
+  final GxSemanticValueFormatter? semanticValueFormatter;
+
+  @override
+  AnimatedGaugeState<GxLinearStepperGauge> createState() =>
+      _GxLinearStepperGaugeState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<GxGaugeValue>('value', value))
+      ..add(IntProperty('steps', steps.length))
+      ..add(EnumProperty<GxStepperShape>('shape', shape))
+      ..add(FlagProperty('reverse', value: reverse, ifTrue: 'reversed'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
+}
+
+class _GxLinearStepperGaugeState
+    extends AnimatedGaugeState<GxLinearStepperGauge> {
+  @override
+  double get targetValue => widget.value.value;
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: height != null
-          ? Size.fromHeight(height!)
-          : size ?? const Size.fromHeight(50),
-      painter: StepperLinearPainter(
-        gaugeValue: value,
-        steps: steps,
-        shapeSize: shapeSize,
-        style: style,
-        shape: shape,
-        offset: offset,
-        activeStyle: activeStyle,
-        inActiveStyle: inActiveStyle,
+    final GxLinearStepperGauge w = widget;
+    final GaugeDefaults defaults = GaugeDefaults.of(context);
+    final TextDirection direction =
+        Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final Color color = w.style.color ?? defaults.primary;
+
+    return gaugeSemantics(
+      label: w.semanticLabel,
+      value: semanticValue(w.semanticValueFormatter, w.value.value),
+      child: LinearGaugeBox(
+        height: w.height,
+        child: CustomPaint(
+          painter: StepperLinearPainter(
+            value: valueAnimation,
+            config: StepperPainterConfig(
+              scale: GaugeScale(w.value.min, w.value.max),
+              steps: w.steps,
+              style: w.style,
+              color: color,
+              trackColor:
+                  w.style.backgroundColor ?? color.withValues(alpha: 0.2),
+              inactiveColor:
+                  w.style.backgroundColor ??
+                  ColorUtils.getMaterialColor(color).shade100,
+              shape: w.shape,
+              shapeSize: w.shapeSize,
+              offset: w.offset,
+              activeStyle: defaults.labelStyle
+                  .copyWith(color: defaults.onPrimary)
+                  .merge(w.activeStyle),
+              inactiveStyle: defaults.labelStyle
+                  .copyWith(color: defaults.onSurface)
+                  .merge(w.inactiveStyle),
+              labelStyle: defaults.labelStyle,
+              reversed: (direction == TextDirection.rtl) != w.reverse,
+              textDirection: direction,
+            ),
+          ),
+        ),
       ),
     );
   }

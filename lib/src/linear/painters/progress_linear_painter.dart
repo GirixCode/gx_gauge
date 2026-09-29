@@ -1,213 +1,203 @@
-// lib/src/linear/painters/linear_gauge_painter.dart
-
-import 'package:flutter/material.dart';
-import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:flutter/animation.dart';
+import 'package:flutter/rendering.dart';
+import 'package:gx_gauge/src/common/models/gauge_label.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
-import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/painter_config.dart';
+import 'package:gx_gauge/src/core/text_utils.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle.dart';
+import 'package:gx_gauge/src/linear/models/linear_progress_style.dart';
 import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 
-/// [ProgressLinearPainter] is a custom painter class that is used to paint the GxLinearProgressGauge widget.
-///
-/// It extends the [CustomPainter] class from Flutter.
-///
-/// The [ProgressLinearPainter] class contains the following properties:
-///
-/// - [gaugeValue]: An instance of the [GxGaugeValue] class that holds the value of the gauge.
-///
-/// - [style]: An instance of the [GxLinearProgressStyle] class that holds the style properties of the gauge.
-///
-class ProgressLinearPainter extends CustomPainter {
-  ProgressLinearPainter({
-    required this.gaugeValue,
+/// Everything [ProgressLinearPainter] draws with, with theme defaults
+/// already resolved.
+class ProgressPainterConfig extends PainterConfig {
+  /// Creates a progress painter configuration.
+  const ProgressPainterConfig({
+    required this.scale,
+    required this.style,
+    required this.color,
+    required this.backgroundColor,
+    required this.reversed,
+    required this.textDirection,
+    required this.labelStyle,
+    required this.needleColor,
     this.needle,
     this.needlePainter,
-    this.reverse = false,
-    this.showLabel = false,
-    this.height,
-    required this.style,
     this.label,
+    this.showLabel = false,
   });
-  final GxGaugeValue gaugeValue;
+
+  /// The value range.
+  final GaugeScale scale;
+
+  /// Track shape and sizing.
   final GxLinearProgressStyle style;
-  final GxGaugeLabel? label;
+
+  /// Resolved progress color.
+  final Color color;
+
+  /// Resolved track color.
+  final Color backgroundColor;
+
+  /// Whether progress fills from the right.
+  final bool reversed;
+
+  /// Direction for text and `start`/`end` alignment.
+  final TextDirection textDirection;
+
+  /// Base style that the label's style merges onto.
+  final TextStyle labelStyle;
+
+  /// Resolved needle color.
+  final Color needleColor;
+
+  /// The optional needle.
   final GxLinearNeedle? needle;
+
+  /// Draws a custom needle.
   final GxNeedlePainter? needlePainter;
-  final bool reverse;
+
+  /// The optional label.
+  final GxGaugeLabel? label;
+
+  /// Whether [label] is drawn.
   final bool showLabel;
-  final double? height;
+
+  @override
+  List<Object?> get props => <Object?>[
+    scale,
+    style,
+    color,
+    backgroundColor,
+    reversed,
+    textDirection,
+    labelStyle,
+    needleColor,
+    needle,
+    needlePainter,
+    label,
+    showLabel,
+  ];
+}
+
+/// Paints a linear progress gauge.
+class ProgressLinearPainter extends CustomPainter {
+  /// Creates a painter that repaints whenever [value] ticks.
+  ProgressLinearPainter({required this.config, required this.value})
+    : super(repaint: value);
+
+  /// What to draw.
+  final ProgressPainterConfig config;
+
+  /// The current (animated) value.
+  final Animation<double> value;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw the gauge
-    _drawGauge(canvas, size);
-    _drawNeedle(canvas, size);
-
-    // Draw Label
+    final double fraction = config.scale.fractionOf(value.value);
+    final LinearTrack track = LinearTrack(
+      start: 0,
+      end: size.width,
+      reversed: config.reversed,
+    );
+    _drawGauge(canvas, size, track, fraction);
+    _drawNeedle(canvas, size, track.xOf(fraction));
     _drawLabel(canvas, size);
   }
 
   @override
-  bool shouldRepaint(covariant ProgressLinearPainter oldDelegate) {
-    final bool shouldRepaint =
-        oldDelegate.gaugeValue != gaugeValue ||
-        oldDelegate.style != style ||
-        oldDelegate.needle != needle ||
-        oldDelegate.reverse != reverse ||
-        oldDelegate.showLabel != showLabel ||
-        oldDelegate.height != height;
+  bool shouldRepaint(covariant ProgressLinearPainter oldDelegate) =>
+      oldDelegate.config != config || oldDelegate.value != value;
 
-    return shouldRepaint;
-  }
-
-  // Draw the gauge
-  void _drawGauge(Canvas canvas, Size size) {
-    // Style Properties: Background
-    final double thicknessBg = style.thickness;
-    final Color backgroundColor =
-        style.backgroundColor ?? style.color.withValues(alpha: 0.2);
-    final double barWidth = size.width;
-    final double barHeight = size.height;
-
-    // Style Properties: Foreground
-
-    final Color color = style.color;
-
-    // Value Properties
-    final double minValue = gaugeValue.min;
-    final double maxValue = gaugeValue.max;
-    final double value = gaugeValue.value;
-
-    // Calculate progress ratio
-    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
-      0.0,
-      1.0,
-    );
-
-    final double progressWidth = size.width * progress;
-
-    // Paint Background
-    final Paint backgroundPaint = Paint()
-      ..color = backgroundColor
+  void _drawGauge(
+    Canvas canvas,
+    Size size,
+    LinearTrack track,
+    double fraction,
+  ) {
+    final GxLinearProgressStyle style = config.style;
+    final Paint background = Paint()
+      ..color = config.backgroundColor
       ..style = style.paintingStyle
-      ..strokeWidth = thicknessBg
+      ..strokeWidth = style.thickness
       ..strokeCap = style.strokeCap;
-
-    // Paint Foreground
-    final Paint foregroundPaint = Paint()
-      ..color = color
+    final Paint foreground = Paint()
+      ..color = config.color
       ..style = PaintingStyle.fill
       ..strokeWidth = style.thickness
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = style.strokeCap;
 
+    final double centerY = size.height / 2;
+    final double x0 = track.xOf(0);
+    final double x = track.xOf(fraction);
+
     if (style.dense) {
-      // Draw the background line (full width)
-      canvas.drawLine(
-        Offset(0, size.height / 2),
-        Offset(size.width, size.height / 2),
-        backgroundPaint,
-      );
-      // Draw Foreground
-      // Draw the progress line
-      // P2 x: (size.width * progress) this value can be used directly
-      // P1 x: (size.width * progress) - (foregroundStyle.thickness / 2) due to the thickness provided
-
-      if (reverse) {
-        canvas.drawLine(
-          Offset(size.width, size.height / 2),
-          Offset(size.width - progressWidth, size.height / 2),
-          foregroundPaint,
-        );
-      } else {
-        canvas.drawLine(
-          Offset(0, size.height / 2),
-          Offset(progressWidth, size.height / 2),
-          foregroundPaint,
-        );
-      }
-    } else {
-      final Rect rect = Rect.fromLTWH(0, 0, barWidth, barHeight);
-      final RRect rrect = RRect.fromRectAndRadius(
-        rect,
-        style.radius ?? Radius.zero,
-      );
-      canvas.drawRRect(rrect, backgroundPaint);
-
-      final double frontWidth = progress * barWidth;
-      late final Rect valueRect;
-      if (reverse) {
-        valueRect = Rect.fromLTWH(
-          barWidth - frontWidth,
-          0,
-          frontWidth,
-          barHeight,
-        );
-      } else {
-        valueRect = Rect.fromLTWH(0, 0, frontWidth, barHeight);
-      }
-
-      final RRect valueRRect = RRect.fromRectAndRadius(
-        valueRect,
-        style.radius ?? Radius.zero,
-      );
-
-      canvas.drawRRect(valueRRect, foregroundPaint);
+      canvas
+        ..drawLine(Offset(0, centerY), Offset(size.width, centerY), background)
+        ..drawLine(Offset(x0, centerY), Offset(x, centerY), foreground);
+      return;
     }
+
+    final Radius radius = style.radius ?? Radius.zero;
+    canvas
+      ..drawRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, radius),
+        background,
+      )
+      ..drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTRB(x0 < x ? x0 : x, 0, x0 < x ? x : x0, size.height),
+          radius,
+        ),
+        foreground,
+      );
+  }
+
+  void _drawNeedle(Canvas canvas, Size size, double x) {
+    final GxLinearNeedle? needle = config.needle;
+    if (needle == null || !needle.enabled) {
+      return;
+    }
+    NeedleUtils.drawIt(
+      canvas: canvas,
+      size: size,
+      x: x,
+      needle: needle,
+      thickness: config.style.thickness,
+      color: needle.color ?? config.needleColor,
+      dense: config.style.dense,
+      needlePainter: config.needlePainter,
+    );
   }
 
   void _drawLabel(Canvas canvas, Size size) {
-    final double val = gaugeValue.value;
-    if (label != null && showLabel) {
-      final TextPainter textPainter = TextPainter(
-        text: TextSpan(
-          text: label!.label.replaceAll('{value}', val.toString()),
-          style: label?.style,
-        ),
-        textAlign: label?.textAlign ?? TextAlign.center,
-        textDirection: TextDirection.ltr,
-      )..layout();
-      final Offset offset = label!.offset ?? Offset.zero;
-
-      double x;
-      if (label?.textAlign == TextAlign.right) {
-        x = size.width - textPainter.width + offset.dx - label!.spaceExtent;
-      } else if (label?.textAlign == TextAlign.left) {
-        x = offset.dx + label!.spaceExtent;
-      } else {
-        x = size.width / 2 - textPainter.width / 2 + offset.dx;
-      }
-      final double y = size.height / 2 - textPainter.height / 2 + offset.dy;
-
-      // Paint the text on the canvas
-      textPainter.paint(canvas, Offset(x, y));
+    final GxGaugeLabel? label = config.label;
+    if (label == null || !config.showLabel) {
+      return;
     }
-  }
-
-  void _drawNeedle(Canvas canvas, Size size) {
-    if (needle != null && needle!.enabled) {
-      // Draw the needle
-      // NeedleUtils.drawNeedle(
-      //     canvas: canvas,
-      //     size: size,
-      //     gaugeValue: gaugeValue,
-      //     dense: style.dense,
-      //     style: style,
-      //     needlePainter: needlePainter,
-      //     needle: needle!);
-
-      // Draw the needle
-      NeedleUtils.drawIt(
-        dense: style.dense,
-        canvas: canvas,
-        size: size,
-        minValue: gaugeValue.min,
-        maxValue: gaugeValue.max,
-        value: gaugeValue.value,
-        needle: needle!,
-        thickness: style.thickness,
-        needlePainter: needlePainter,
-      );
-    }
+    final String value = formatGaugeValue(config.scale.clamp(this.value.value));
+    final TextAlign align = resolveTextAlign(
+      label.textAlign,
+      config.textDirection,
+    );
+    paintText(
+      canvas,
+      text: label.label.replaceAll('{value}', value),
+      style: config.labelStyle.merge(label.style),
+      textDirection: config.textDirection,
+      textAlign: align,
+      position: (Size text) {
+        final Offset offset = label.offset ?? Offset.zero;
+        final double x = switch (align) {
+          TextAlign.right =>
+            size.width - text.width + offset.dx - label.spaceExtent,
+          TextAlign.left => offset.dx + label.spaceExtent,
+          _ => size.width / 2 - text.width / 2 + offset.dx,
+        };
+        return Offset(x, size.height / 2 - text.height / 2 + offset.dy);
+      },
+    );
   }
 }

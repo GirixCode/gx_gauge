@@ -1,89 +1,69 @@
-import 'package:flutter/material.dart';
-import 'package:gx_gauge/src/common/models/models.dart';
+import 'package:flutter/painting.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/gauge_tooltip.dart';
+import 'package:gx_gauge/src/core/text_utils.dart';
 
-class TooltipUtils {
+/// Draws a [GxGaugeTooltip] for a linear gauge.
+abstract final class TooltipUtils {
+  /// Draws [tooltip] showing [text] at horizontal position [x].
+  ///
+  /// The bubble is kept inside the gauge's width. [color] and [textColor]
+  /// are the resolved bubble and default text colors.
   static void drawTooltip({
     required Canvas canvas,
     required Size size,
+    required double x,
     required GxGaugeTooltip tooltip,
-    required double minValue,
-    required double maxValue,
-    required double value,
+    required String text,
+    required Color color,
+    required Color textColor,
+    required TextDirection textDirection,
   }) {
-    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
-      0.0,
-      1.0,
-    );
-
-    final Color strokeColor = tooltip.borderColor ?? tooltip.color;
-
+    final Color strokeColor = tooltip.borderColor ?? color;
     final Paint paint = Paint()
       ..color = tooltip.paintingStyle == PaintingStyle.stroke
           ? strokeColor
-          : tooltip.color
+          : color
       ..strokeWidth = tooltip.thickness
       ..strokeCap = tooltip.strokeCap
       ..style = tooltip.paintingStyle;
 
-    // Tooltip Size
-    final double tooltipWidth = tooltip.size.width;
-    final double tooltipHeight = tooltip.size.height;
+    final double width = tooltip.size.width;
+    final double height = tooltip.size.height;
 
-    // Tooltip Position in ---X----
-    double tooltipX = size.width * progress;
-    //                     |
-    // Tooltip Position in Y
-    //                     |
-    double tooltipY = size.height / 2;
-
-    Offset tooltipBarStart = Offset(tooltipX, 0);
-    Offset tooltipBarEnd = Offset(tooltipX, 0);
-
-    if (tooltip.position == GxTooltipPosition.top) {
-      tooltipY = -size.height / 2 - tooltip.offset;
-      tooltipBarEnd = Offset(tooltipX, tooltipY + tooltipHeight / 2);
-    } else if (tooltip.position == GxTooltipPosition.bottom) {
-      tooltipY = size.height + size.height / 2 + tooltip.offset;
-      tooltipBarStart = Offset(tooltipX, size.height);
-      tooltipBarEnd = Offset(tooltipX, tooltipY - tooltipHeight / 2);
+    double centerY = size.height / 2;
+    Offset pointerStart = Offset(x, 0);
+    Offset pointerEnd = Offset(x, 0);
+    switch (tooltip.position) {
+      case GxTooltipPosition.top:
+        centerY = -size.height / 2 - tooltip.offset;
+        pointerEnd = Offset(x, centerY + height / 2);
+      case GxTooltipPosition.bottom:
+        centerY = size.height + size.height / 2 + tooltip.offset;
+        pointerStart = Offset(x, size.height);
+        pointerEnd = Offset(x, centerY - height / 2);
     }
 
-    Rect tooltipRect = Rect.fromLTWH(
-      tooltipX - tooltipWidth / 2,
-      tooltipY - tooltipHeight / 2,
-      tooltipWidth,
-      tooltipHeight,
+    // Keep the bubble within the gauge's width.
+    final double maxLeft = size.width - width;
+    final double left = maxLeft <= 0
+        ? (size.width - width) / 2
+        : (x - width / 2).clamp(0.0, maxLeft);
+    final Rect bubble = Rect.fromLTWH(
+      left,
+      centerY - height / 2,
+      width,
+      height,
     );
 
-    // check Overflow
-    final bool isOverflowRight = tooltipRect.right > size.width;
-    final bool isOverflowLeft = tooltipRect.left < 0;
-    if (isOverflowRight) {
-      tooltipRect = Rect.fromLTWH(
-        size.width - tooltipWidth,
-        tooltipY - tooltipHeight / 2,
-        tooltipWidth,
-        tooltipHeight,
-      );
-    } else if (isOverflowLeft) {
-      tooltipRect = Rect.fromLTWH(
-        0,
-        tooltipY - tooltipHeight / 2,
-        tooltipWidth,
-        tooltipHeight,
-      );
-    }
-
-    final RRect rRect = RRect.fromRectAndRadius(
-      tooltipRect,
-      tooltip.radius ?? Radius.zero,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(bubble, tooltip.radius ?? Radius.zero),
+      paint,
     );
-
-    canvas.drawRRect(rRect, paint);
     if (tooltip.type == GxTooltipType.normal && tooltip.showPointer) {
       canvas.drawLine(
-        tooltipBarStart,
-        tooltipBarEnd,
+        pointerStart,
+        pointerEnd,
         Paint()
           ..color = strokeColor
           ..strokeCap = tooltip.strokeCap
@@ -91,41 +71,18 @@ class TooltipUtils {
       );
     }
 
-    // Tooltip text painter
-    // Based on the Tooltip Size, we can adjust the Text Size
-    final double? textSize = tooltip.textStyle.fontSize;
-    final Color textColor = tooltip.textStyle.color ?? strokeColor;
-    late final String tooltipText;
-    if (tooltip.label == null) {
-      tooltipText = value.toString();
-    } else {
-      if (tooltip.label!.contains('{value}')) {
-        tooltipText = tooltip.label!.replaceAll('{value}', value.toString());
-      } else {
-        tooltipText = tooltip.label.toString();
-      }
-    }
-
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(
-        text: tooltipText,
-        style: tooltip.textStyle.copyWith(fontSize: textSize, color: textColor),
-      ),
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.center,
-    )..layout();
-    final double textWidth = textPainter.width;
-    final double textHeight = textPainter.height;
-
-    if (isOverflowRight) {
-      tooltipX = size.width - tooltipWidth / 2;
-    } else if (isOverflowLeft) {
-      tooltipX = tooltipWidth / 2;
-    }
-
-    final double textX = tooltipX - textWidth / 2;
-    final double textY = tooltipY - textHeight / 2;
-
-    textPainter.paint(canvas, Offset(textX, textY));
+    paintText(
+      canvas,
+      text: text,
+      style: TextStyle(
+        color: tooltip.paintingStyle == PaintingStyle.fill
+            ? textColor
+            : strokeColor,
+      ).merge(tooltip.textStyle),
+      textDirection: textDirection,
+      maxWidth: width,
+      position: (Size textSize) =>
+          bubble.center - Offset(textSize.width / 2, textSize.height / 2),
+    );
   }
 }

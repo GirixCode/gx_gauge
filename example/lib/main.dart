@@ -55,12 +55,13 @@ class _GaugeDemoPageState extends State<GaugeDemoPage> {
               position: GxNeedlePosition.top,
               color: Colors.indigo,
             ),
-            size: const Size.fromHeight(60),
+            height: 60,
           ),
           const SizedBox(height: 48),
           Center(
             child: GxRadialGauge(
               value: value,
+              diameter: 220,
               startAngleInDegree: 135,
               sweepAngleInDegree: 270,
               style: const GxRadialGaugeStyle(color: Colors.indigo),
