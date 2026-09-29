@@ -19,7 +19,7 @@ class GradientRadialGaugeBody extends StatelessWidget {
           child: Center(
             child: GxRadialGauge(
               showValueAtCenter: true,
-              size: twinSize,
+              diameter: twinSize.width,
               value: GxGaugeValue(value: value),
               showLabels: false,
               labelTickStyle: const GxRadialTickLabelStyle(padding: 30),
@@ -52,7 +52,7 @@ class GradientRadialGaugeBody extends StatelessWidget {
                 showValueAtCenter: false,
                 startAngleInDegree: 180,
                 sweepAngleInDegree: 180,
-                size: twinSize,
+                diameter: twinSize.width,
                 value: GxGaugeValue(value: value),
                 showLabels: true,
                 showMajorTicks: true,
@@ -62,7 +62,7 @@ class GradientRadialGaugeBody extends StatelessWidget {
                   shape: GxRadialNeedleShape.taperedLine,
                   thickness: 18,
                   alignment: GxRadialElementAlignment.end,
-                  circle: GxNeedleCap(radius: 15),
+                  cap: GxNeedleCap(radius: 15),
                   gradient: LinearGradient(
                     colors: [
                       Colors.yellow,
@@ -118,7 +118,7 @@ class GradientRadialGaugeBody extends StatelessWidget {
               showValueAtCenter: false,
               startAngleInDegree: 90,
               // sweepAngleInDegree: 300,
-              size: twinSize,
+              diameter: twinSize.width,
               value: const GxGaugeValue(value: 100),
               showLabels: true,
               interval: 25,

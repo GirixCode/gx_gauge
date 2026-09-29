@@ -30,7 +30,7 @@ class DefaultRadialPointer extends StatelessWidget {
               GxRadialGauge(
                 showValueAtCenter: false,
                 startAngleInDegree: 270,
-                size: twinSize,
+                diameter: twinSize.width,
                 value: GxGaugeValue(value: ratioValue, min: 0, max: 144),
                 showLabels: true,
                 labelTickStyle: const GxRadialTickLabelStyle(padding: 20),
@@ -69,7 +69,7 @@ class DefaultRadialPointer extends StatelessWidget {
                     ),
                     needle: const GxRadialNeedle(
                       thickness: 3.5,
-                      topOffest: -30,
+                      topOffset: -30,
                       color: Colors.black,
                       shape: GxRadialNeedleShape.line,
                       alignment: GxRadialElementAlignment.end,
@@ -82,7 +82,7 @@ class DefaultRadialPointer extends StatelessWidget {
                       thickness: 2.5,
                       color: Colors.indigo,
                       shape: GxRadialNeedleShape.line,
-                      topOffest: -10,
+                      topOffset: -10,
                       alignment: GxRadialElementAlignment.end,
                     ),
                   ),
@@ -93,7 +93,7 @@ class DefaultRadialPointer extends StatelessWidget {
                       thickness: 2,
                       color: Colors.indigo,
                       shape: GxRadialNeedleShape.line,
-                      topOffest: -28,
+                      topOffset: -28,
                       bottomOffset: 10,
                       alignment: GxRadialElementAlignment.end,
                     ),
@@ -102,7 +102,7 @@ class DefaultRadialPointer extends StatelessWidget {
               ),
               GxRadialGauge(
                 showValueAtCenter: false,
-                size: twinSize,
+                diameter: twinSize.width,
                 startAngleInDegree: 180,
                 value: GxGaugeValue(value: value),
                 interval: 20,
@@ -137,7 +137,7 @@ class DefaultRadialPointer extends StatelessWidget {
                     needle: const GxRadialNeedle(
                       thickness: 2,
                       bottomOffset: 20,
-                      circle: GxNeedleCap(
+                      cap: GxNeedleCap(
                         color: Colors.pinkAccent,
                         strokeWidth: 3,
                         paintingStyle: PaintingStyle.stroke,

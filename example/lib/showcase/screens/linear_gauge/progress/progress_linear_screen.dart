@@ -223,13 +223,14 @@ class _MyProgressLinearGaugeState extends State<MyProgressLinearGauge> {
           ItemCard(
             height: 80,
             title: 'Animated Progress Linear Gauge',
-            child: GxAnimatedLinearProgressGauge(
-              value: 60,
+            child: GxLinearProgressGauge(
+              value: const GxGaugeValue(value: 60),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.linear,
               style: GxLinearProgressStyle(
                 color: Colors.deepOrange.shade100,
                 thickness: 10,
               ),
-              animationType: GxAnimationType.linear,
               needle: const GxLinearNeedle(
                 position: GxNeedlePosition.bottom,
                 size: Size(20, 20),

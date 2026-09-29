@@ -5,14 +5,9 @@
 ///
 /// Everything under `lib/src/` that isn't exported here, such as painters and
 /// geometry helpers, is an implementation detail and may change at any time.
-// The library name works around a dartdoc 9.0.x stack overflow that occurs
-// when this barrel uses an unnamed `library;` directive. Remove the name once
-// dartdoc is fixed (tracked in docs/PLAN.md, Phase 2).
-// ignore: unnecessary_library_name
-library gx_gauge;
+library;
 
-// Shared value, label, tooltip and bar models.
-export 'src/common/animations/animation_types.dart' show GxAnimationType;
+// Shared models.
 export 'src/common/models/enums.dart'
     show
         GxElementPosition,
@@ -26,27 +21,29 @@ export 'src/common/models/enums.dart'
         GxStepperShape,
         GxTooltipPosition,
         GxTooltipType;
-export 'src/common/models/linear_gauge_common_model.dart'
-    show GxGaugeLabel, GxGaugeTooltip, GxGaugeValue, GxLinearBarPointer;
+export 'src/common/models/gauge_label.dart' show GxGaugeLabel;
+export 'src/common/models/gauge_tooltip.dart' show GxGaugeTooltip;
+export 'src/common/models/gauge_value.dart' show GxGaugeValue;
 export 'src/common/utils/typedef.dart'
     show
         GxNeedlePainter,
         GxValueLabelFormatter,
         GxValueLabelStyler,
         GxValueTickStyler;
+export 'src/core/semantics.dart' show GxSemanticValueFormatter;
 // Linear gauges.
-export 'src/linear/models/linear_gauge_style.dart' show GxLinearProgressStyle;
-export 'src/linear/models/linear_needle_model.dart'
+export 'src/linear/models/linear_bar_pointer.dart' show GxLinearBarPointer;
+export 'src/linear/models/linear_needle.dart'
     show GxLinearNeedle, GxNeedleLabel;
-export 'src/linear/models/scale_linear_gauge_model.dart'
+export 'src/linear/models/linear_progress_style.dart'
+    show GxLinearProgressStyle;
+export 'src/linear/models/linear_scale_models.dart'
     show
         GxLinearAxisStyle,
         GxLinearFillArea,
         GxLinearMarkerPointer,
         GxLinearTickStyle;
-export 'src/linear/models/stepper_linear_gauge_model.dart' show GxStepperStep;
-export 'src/linear/widgets/animated_linear_progress_gauge.dart'
-    show GxAnimatedLinearProgressGauge;
+export 'src/linear/models/stepper_step.dart' show GxStepperStep;
 export 'src/linear/widgets/linear_bar_gauge.dart' show GxLinearBarGauge;
 export 'src/linear/widgets/linear_progress_gauge.dart'
     show GxLinearProgressGauge;
