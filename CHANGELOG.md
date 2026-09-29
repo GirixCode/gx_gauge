@@ -60,7 +60,8 @@ The first release under the name `gx_gauge`. **The package was previously publis
 - **Repainting:** painters now repaint whenever anything they draw changes.
 - **Animated progress gauge:** it leaked listeners, asserted on overshooting curves and snapped back when interrupted.
 - **Stepper:** it divided by zero with one step.
-- **Tooltip:** a filled tooltip's text was invisible.
+- **Tooltip:** a filled tooltip's text was invisible, and tooltip text now uses the theme's label style (including its font).
+- **Stepper labels:** the first and last step labels now stay inside the gauge instead of spilling past its edges.
 - **Needles:** rectangle needles ignored their height, and outlined needles were hairlines by default.
 - **`copyWith`:** `RadialTickStyle.copyWith` dropped `alignment` and `position`.
 

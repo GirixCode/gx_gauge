@@ -1,13 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:gx_gauge_example/showcase/screens/features/features_screen.dart';
-import 'package:gx_gauge_example/showcase/screens/linear_gauge/bar/bar_linear_gauge_screen.dart';
-import 'package:gx_gauge_example/showcase/screens/linear_gauge/progress/progress_linear_screen.dart';
-import 'package:gx_gauge_example/showcase/screens/linear_gauge/scale/scale_linear_gauge_screen.dart';
-import 'package:gx_gauge_example/showcase/screens/linear_gauge/stepper/stepper_linear_gauge.dart';
-import 'package:gx_gauge_example/showcase/screens/radial/radial_gauge_screen.dart';
+import 'package:gx_gauge/gx_gauge.dart';
+import 'package:gx_gauge_example/showcase/screens/bar_screen.dart';
+import 'package:gx_gauge_example/showcase/screens/playground_screen.dart';
+import 'package:gx_gauge_example/showcase/screens/progress_screen.dart';
+import 'package:gx_gauge_example/showcase/screens/radial_screen.dart';
+import 'package:gx_gauge_example/showcase/screens/scale_screen.dart';
+import 'package:gx_gauge_example/showcase/screens/stepper_screen.dart';
+import 'package:gx_gauge_example/showcase/widgets/showcase_settings.dart';
 
+/// The full gx_gauge showcase: one screen per gauge, each with tabs covering
+/// every option, plus a playground.
 class ShowcaseApp extends StatefulWidget {
   const ShowcaseApp({super.key});
 
@@ -15,197 +17,212 @@ class ShowcaseApp extends StatefulWidget {
   State<ShowcaseApp> createState() => _ShowcaseAppState();
 }
 
-class FeatureItem {
-  final String title;
-  final String? description;
-  final Widget Function() widget;
-  final Widget? leading;
-  final String code;
-  final String? imagePath;
-
-  FeatureItem({
-    required this.title,
-    this.description,
-    required this.widget,
-    this.leading,
-    required this.code,
-    this.imagePath,
-  });
-}
-
 class _ShowcaseAppState extends State<ShowcaseApp> {
-  bool reRender = true;
+  final ShowcaseSettings _settings = ShowcaseSettings();
 
-  late final ScrollController _scrollController;
-
-  final List<dynamic> _items = [
-    "Features",
-    FeatureItem(
-      title: 'Interactive, vertical, ranges and markers',
-      description: 'Tap and drag gauges, vertical orientation, labelled ranges, gradient bars, marker widgets and custom needles.',
-      widget: () => const FeaturesScreen(),
-      code: 'FeaturesScreen()',
-      leading: const Icon(Icons.auto_awesome),
-    ),
-    "Linear Gauge",
-    FeatureItem(
-      title: 'Progress Linear Gauge',
-      description: 'The Progress Linear Gauge is used to display a linear gauge with progress.',
-      widget: () => const MyProgressLinearGauge(),
-      code: 'MyProgressLinearGauge()',
-      leading: const Icon(Icons.linear_scale_rounded),
-      imagePath: 'assets/images/features/linear_progress_gauge.jpeg',
-    ),
-    FeatureItem(
-      title: 'Scale Linear Gauge',
-      description: 'The Scale Linear Gauge is used to display a linear gauge with scale.',
-      widget: () => const MyScaleLinearGaugeScreen(),
-      code: 'MyScaleLinearGaugeScreen()',
-      leading: const Icon(Icons.linear_scale),
-      imagePath: 'assets/images/features/linear_scale_gauge.jpeg',
-    ),
-    FeatureItem(
-      title: 'Bar Linear Gauge',
-      description:
-          'The Bar Linear Gauge is used to display a linear gauge with bars.',
-      widget: () => const MyBarLinearGaugeScreen(),
-      code: 'MyBarLinearGaugeScreen()',
-      leading: const Icon(Icons.bar_chart_sharp),
-      imagePath: 'assets/images/features/linear_bar_gauge.jpeg',
-    ),
-    FeatureItem(
-      title: 'Stepper Linear Gauge',
-      description: 'The Stepper Linear Gauge is used to display a linear gauge with steps.',
-      widget: () => const StepperLinearScreen(),
-      code: 'StepperLinearScreen()',
-      leading: const Icon(Icons.bar_chart_sharp),
-      imagePath: 'assets/images/features/linear_stepper_gauge.png',
-    ),
-    "Radial Gauge",
-    FeatureItem(
-      title: 'Radial Gauge',
-      description: 'The Radial Gauge is used to display a radial gauge.',
-      widget: () => const RadialGuageScreen(),
-      code: 'RadialGuageScreen()',
-      imagePath: 'assets/images/features/radial_gauge.png',
-      leading: const Icon(
-        Icons.pie_chart_rounded,
-        size: 70,
-        color: Colors.blue,
-      ),
-    ),
-  ];
+  @override
+  void dispose() {
+    _settings.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'GirixCode: Gauges Example',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('GirixCode: Gauges Example'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                refreshPage();
-              },
-            ),
-          ],
+    return ShowcaseScope(
+      settings: _settings,
+      child: ListenableBuilder(
+        listenable: _settings,
+        builder: (BuildContext context, Widget? _) => MaterialApp(
+          title: 'gx_gauge showcase',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(colorSchemeSeed: Colors.indigo),
+          darkTheme: ThemeData(
+            colorSchemeSeed: Colors.indigo,
+            brightness: Brightness.dark,
+          ),
+          themeMode: _settings.themeMode,
+          builder: (BuildContext context, Widget? child) => Directionality(
+            textDirection: _settings.rtl
+                ? TextDirection.rtl
+                : TextDirection.ltr,
+            child: child!,
+          ),
+          home: const HomeScreen(),
         ),
-        body: reRender
-            ? ListView.builder(
-                controller: _scrollController,
-                itemCount: _items.length,
-                itemBuilder: (context, index) {
-                  if (_items[index] is String) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      padding: const EdgeInsets.all(10),
-                      child: Text(
-                        _items[index],
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                    );
-                  }
-                  final FeatureItem item = _items[index];
-                  return Card(
-                    elevation: 0,
-                    margin: const EdgeInsets.all(8),
-                    child: ListTile(
-                      title: Text(
-                        item.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: item.description != null
-                          ? Text(item.description!)
-                          : null,
-                      leading: item.imagePath != null
-                          ? Image.asset(
-                              item.imagePath!,
-                              width: 80,
-                              height: 110,
-                              fit: BoxFit.cover,
-                            )
-                          : item.leading,
-                      minLeadingWidth: 10,
-                      // contentPadding: EdgeInsets.zero,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => item.widget(),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              )
-            : const Center(
-                child: Text('Click on the refresh icon to reload the page'),
-              ),
       ),
     );
   }
+}
+
+/// One entry on the home screen.
+class _Destination {
+  const _Destination({
+    required this.title,
+    required this.description,
+    required this.preview,
+    required this.page,
+  });
+
+  final String title;
+  final String description;
+  final Widget preview;
+  final Widget Function() page;
+}
+
+const GxGaugeValue _preview = GxGaugeValue(value: 64);
+const GxLinearNeedle _pointer = GxLinearNeedle(
+  shape: GxNeedleShape.triangle,
+  position: GxNeedlePosition.top,
+  size: Size(12, 12),
+);
+
+final List<_Destination> _destinations = <_Destination>[
+  _Destination(
+    title: 'Linear progress',
+    description: 'Bars and lines, needles, labels, animation, vertical.',
+    preview: const GxLinearProgressGauge(
+      value: _preview,
+      needle: GxLinearNeedle(
+        shape: GxNeedleShape.triangle,
+        position: GxNeedlePosition.bottom,
+        size: Size(12, 12),
+      ),
+    ),
+    page: () => const ProgressScreen(),
+  ),
+  _Destination(
+    title: 'Linear stepper',
+    description: 'Shapes, markers, tappable steps, vertical.',
+    preview: const GxLinearStepperGauge(
+      currentStep: 1,
+      height: 46,
+      shapeSize: 18,
+      steps: <GxStepperStep>[
+        GxStepperStep(label: GxGaugeLabel(label: 'Order')),
+        GxStepperStep(label: GxGaugeLabel(label: 'Pack')),
+        GxStepperStep(label: GxGaugeLabel(label: 'Ship')),
+      ],
+    ),
+    page: () => const StepperScreen(),
+  ),
+  _Destination(
+    title: 'Linear scale',
+    description: 'Ticks, labels, needles, markers, ranges, bars.',
+    preview: const GxLinearScaleGauge(
+      value: _preview,
+      height: 56,
+      interval: 20,
+      needle: _pointer,
+      ranges: <GxLinearRange>[
+        GxLinearRange(start: 0, end: 60, color: Colors.green),
+        GxLinearRange(start: 60, end: 85, color: Colors.orange),
+        GxLinearRange(start: 85, end: 100, color: Colors.red),
+      ],
+    ),
+    page: () => const ScaleScreen(),
+  ),
+  _Destination(
+    title: 'Linear bar',
+    description: 'Segments, gradients, borders, tooltip, needle.',
+    preview: const GxLinearBarGauge(
+      value: _preview,
+      height: 16,
+      gapBetweenBars: 3,
+      needle: _pointer,
+      bars: <GxLinearBarPointer>[
+        GxLinearBarPointer(start: 0, end: 50, color: Colors.green),
+        GxLinearBarPointer(start: 50, end: 80, color: Colors.orange),
+        GxLinearBarPointer(start: 80, end: 100, color: Colors.red),
+      ],
+    ),
+    page: () => const BarScreen(),
+  ),
+  _Destination(
+    title: 'Radial',
+    description: 'Arcs, ticks, needles, pointers, ranges, knob, clock.',
+    preview: const Center(
+      child: GxRadialGauge(
+        value: _preview,
+        diameter: 110,
+        startAngleInDegree: 135,
+        sweepAngleInDegree: 270,
+        showNeedle: true,
+        needle: GxRadialNeedle(thickness: 6),
+      ),
+    ),
+    page: () => const RadialScreen(),
+  ),
+  _Destination(
+    title: 'Playground',
+    description: 'Every gauge driven by the same live controls.',
+    preview: const Center(child: Icon(Icons.tune, size: 56)),
+    page: () => const PlaygroundScreen(),
+  ),
+];
+
+/// Lists every showcase screen with a live preview.
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
-  void initState() {
-    _scrollController = ScrollController();
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollToBottom();
-    });
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('gx_gauge showcase'),
+        actions: settingsActions(context),
+      ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final int columns = (constraints.maxWidth / 360).floor().clamp(1, 3);
+          return GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              mainAxisExtent: 220,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: _destinations.length,
+            itemBuilder: (BuildContext context, int index) =>
+                _DestinationCard(_destinations[index]),
+          );
+        },
+      ),
+    );
   }
+}
 
-  void refreshPage() {
-    setState(() {
-      reRender = !reRender;
-    });
+class _DestinationCard extends StatelessWidget {
+  const _DestinationCard(this.destination);
 
-    Timer(const Duration(milliseconds: 500), () {
-      setState(() {
-        reRender = !reRender;
-      });
+  final _Destination destination;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        scrollToBottom();
-      });
-    });
-  }
-
-  // Scroll to the last item in the list
-  void scrollToBottom() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOut,
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme text = Theme.of(context).textTheme;
+    return Card.outlined(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => destination.page(),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(destination.title, style: text.titleMedium),
+              const SizedBox(height: 2),
+              Text(destination.description, style: text.bodySmall),
+              Expanded(
+                child: IgnorePointer(child: Center(child: destination.preview)),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
