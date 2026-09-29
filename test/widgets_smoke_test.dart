@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gx_gauge/gx_gauge.dart';
 
-/// Characterisation tests: every public gauge builds and paints its common
-/// configurations without throwing. They guard the Phase 1 rename and the
-/// Phase 2 refactors (see docs/PLAN.md).
+/// Every public gauge builds and paints its common configurations without
+/// throwing.
 Future<void> _pump(WidgetTester tester, Widget gauge) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -17,6 +16,12 @@ Future<void> _pump(WidgetTester tester, Widget gauge) async {
   expect(tester.takeException(), isNull);
   expect(find.byType(CustomPaint), findsWidgets);
 }
+
+const List<GxLinearBarPointer> _bars = <GxLinearBarPointer>[
+  GxLinearBarPointer(start: 0, end: 30, color: Colors.green),
+  GxLinearBarPointer(start: 30, end: 60, color: Colors.orange),
+  GxLinearBarPointer(start: 60, end: 100, color: Colors.red),
+];
 
 void main() {
   testWidgets('GxLinearProgressGauge (dense, needle, label)', (
@@ -47,19 +52,6 @@ void main() {
     );
   });
 
-  testWidgets('GxAnimatedLinearProgressGauge animates to its value', (
-    WidgetTester tester,
-  ) async {
-    await _pump(
-      tester,
-      const GxAnimatedLinearProgressGauge(
-        value: 60,
-        style: GxLinearProgressStyle(),
-        duration: Duration(milliseconds: 100),
-      ),
-    );
-  });
-
   testWidgets('GxLinearStepperGauge', (WidgetTester tester) async {
     await _pump(
       tester,
@@ -74,7 +66,7 @@ void main() {
     );
   });
 
-  testWidgets('GxLinearScaleGauge (ticks, labels, needle)', (
+  testWidgets('GxLinearScaleGauge (ticks, labels, needle, bars)', (
     WidgetTester tester,
   ) async {
     await _pump(
@@ -83,44 +75,28 @@ void main() {
         value: GxGaugeValue(value: 30),
         interval: 10,
         needle: GxLinearNeedle(),
-        size: Size(300, 60),
+        bars: _bars,
+        markers: <GxLinearMarkerPointer>[
+          GxLinearMarkerPointer(value: 80, needle: GxLinearNeedle()),
+        ],
+        fillAreas: <GxLinearFillArea>[
+          GxLinearFillArea(start: 0, end: 30, color: Colors.green),
+        ],
       ),
     );
   });
 
-  testWidgets('GxLinearScaleGauge (bar pointers inside)', (
+  testWidgets('GxLinearBarGauge (needle, tooltip, gaps)', (
     WidgetTester tester,
   ) async {
     await _pump(
       tester,
-      GxLinearScaleGauge(
-        interval: 20,
-        tickPosition: GxElementPosition.inside,
-        barHeight: 10,
-        bars: <GxLinearBarPointer>[
-          GxLinearBarPointer(value: 30, color: Colors.green),
-          GxLinearBarPointer(value: 40, color: Colors.orange),
-        ],
-        size: const Size(300, 60),
-      ),
-    );
-  });
-
-  testWidgets('GxLinearBarGauge (needle, tooltip)', (
-    WidgetTester tester,
-  ) async {
-    await _pump(
-      tester,
-      GxLinearBarGauge(
-        value: const GxGaugeValue(value: 45),
-        size: const Size(300, 20),
-        needle: const GxLinearNeedle(),
-        tooltip: const GxGaugeTooltip(),
-        bars: <GxLinearBarPointer>[
-          GxLinearBarPointer(value: 30, color: Colors.green),
-          GxLinearBarPointer(value: 30, color: Colors.orange),
-          GxLinearBarPointer(value: 40, color: Colors.red),
-        ],
+      const GxLinearBarGauge(
+        value: GxGaugeValue(value: 45),
+        bars: _bars,
+        gapBetweenBars: 4,
+        needle: GxLinearNeedle(),
+        tooltip: GxGaugeTooltip(),
       ),
     );
   });
@@ -129,9 +105,7 @@ void main() {
     await _pump(tester, const GxRadialGauge(value: GxGaugeValue(value: 30)));
   });
 
-  testWidgets('GxRadialGauge (ticks, labels, needle, 270° sweep)', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('GxRadialGauge (everything on)', (WidgetTester tester) async {
     await _pump(
       tester,
       const GxRadialGauge(
@@ -142,6 +116,13 @@ void main() {
         showMinorTicks: true,
         showLabels: true,
         showNeedle: true,
+        needle: GxRadialNeedle(
+          cap: GxNeedleCap(paintingStyle: PaintingStyle.stroke),
+        ),
+        pointers: <GxRadialPointer>[GxRadialPointer(value: 20)],
+        ranges: <GxRadialRange>[
+          GxRadialRange(start: 0, end: 40, label: GxGaugeLabel(label: 'Low')),
+        ],
       ),
     );
   });

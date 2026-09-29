@@ -1,189 +1,194 @@
-import 'package:flutter/material.dart';
-import 'package:gx_gauge/src/common/models/models.dart';
-import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
-import 'package:gx_gauge/src/linear/models/stepper_linear_gauge_model.dart';
-import 'package:gx_gauge/src/linear/utils/color_utils.dart';
+import 'package:flutter/animation.dart';
+import 'package:flutter/rendering.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/painter_config.dart';
+import 'package:gx_gauge/src/core/text_utils.dart';
+import 'package:gx_gauge/src/linear/models/linear_progress_style.dart';
+import 'package:gx_gauge/src/linear/models/stepper_step.dart';
 
-class StepperLinearPainter extends CustomPainter {
-  StepperLinearPainter({
-    required this.gaugeValue,
+/// Everything [StepperLinearPainter] draws with, with theme defaults
+/// already resolved.
+class StepperPainterConfig extends PainterConfig {
+  /// Creates a stepper painter configuration.
+  const StepperPainterConfig({
+    required this.scale,
     required this.steps,
     required this.style,
+    required this.color,
+    required this.trackColor,
+    required this.inactiveColor,
     required this.shape,
     required this.shapeSize,
+    required this.offset,
     required this.activeStyle,
-    this.offset = 10,
-    required this.inActiveStyle,
-    this.onPointerTap,
+    required this.inactiveStyle,
+    required this.labelStyle,
+    required this.reversed,
+    required this.textDirection,
   });
-  final GxGaugeValue gaugeValue;
+
+  /// The value range.
+  final GaugeScale scale;
+
+  /// The steps, evenly spaced along the track.
   final List<GxStepperStep> steps;
+
+  /// Line thickness and caps.
   final GxLinearProgressStyle style;
+
+  /// Resolved color of the progress line and reached steps.
+  final Color color;
+
+  /// Resolved color of the track line.
+  final Color trackColor;
+
+  /// Resolved color of steps not yet reached.
+  final Color inactiveColor;
+
+  /// Step marker shape.
   final GxStepperShape shape;
+
+  /// Step marker size.
   final double shapeSize;
-  final TextStyle activeStyle;
-  final TextStyle inActiveStyle;
+
+  /// Distance from the track to the step labels.
   final double offset;
-  final Function? onPointerTap;
-  late Size? size;
-  bool checkListEquality(List<GxStepperStep> list1, List<GxStepperStep> list2) {
-    if (list1.length != list2.length) {
-      return false;
-    }
-    for (int i = 0; i < list1.length; i++) {
-      if (list1[i].value != list2[i].value) {
-        return false;
-      }
-    }
-    return true;
-  }
+
+  /// Resolved text style of reached step numbers.
+  final TextStyle activeStyle;
+
+  /// Resolved text style of unreached step numbers.
+  final TextStyle inactiveStyle;
+
+  /// Base style that step labels merge onto.
+  final TextStyle labelStyle;
+
+  /// Whether steps run right to left.
+  final bool reversed;
+
+  /// Direction for text.
+  final TextDirection textDirection;
 
   @override
-  bool hitTest(Offset position) {
-    // Find out the nearest value based on the position
-    // if (size != null) {
-    //   final double rem = position.dx / size!.width;
+  List<Object?> get props => <Object?>[
+    scale,
+    steps,
+    style,
+    color,
+    trackColor,
+    inactiveColor,
+    shape,
+    shapeSize,
+    offset,
+    activeStyle,
+    inactiveStyle,
+    labelStyle,
+    reversed,
+    textDirection,
+  ];
+}
 
-    // }
+/// Paints a linear stepper gauge.
+class StepperLinearPainter extends CustomPainter {
+  /// Creates a painter that repaints whenever [value] ticks.
+  StepperLinearPainter({required this.config, required this.value})
+    : super(repaint: value);
 
-    return true;
-  }
+  /// What to draw.
+  final StepperPainterConfig config;
+
+  /// The current (animated) value.
+  final Animation<double> value;
 
   @override
   void paint(Canvas canvas, Size size) {
-    this.size = size;
-    _drawAxis(canvas, size);
+    final StepperPainterConfig c = config;
+    final double half = c.shapeSize / 2;
+    final double y = size.height / 2;
+    final LinearTrack track = LinearTrack(
+      start: half,
+      end: size.width - half,
+      reversed: c.reversed,
+    );
+    final double fraction = c.scale.fractionOf(value.value);
+
+    Paint linePaint(Color color) => Paint()
+      ..color = color
+      ..strokeWidth = c.style.thickness
+      ..style = c.style.paintingStyle
+      ..strokeCap = c.style.strokeCap;
+    canvas
+      ..drawLine(
+        Offset(track.start, y),
+        Offset(track.end, y),
+        linePaint(c.trackColor),
+      )
+      ..drawLine(
+        Offset(track.xOf(0), y),
+        Offset(track.xOf(fraction), y),
+        linePaint(c.color),
+      );
+
+    final int count = c.steps.length;
+    final double spacing = count > 1 ? track.length / (count - 1) : size.width;
+    for (int i = 0; i < count; i++) {
+      final double stepFraction = count > 1 ? i / (count - 1) : 0;
+      final double x = track.xOf(stepFraction);
+      final bool reached = stepFraction <= fraction + 1e-9;
+      _drawMarker(canvas, Offset(x, y), reached ? c.color : c.inactiveColor);
+
+      final GxStepperStep step = c.steps[i];
+      paintText(
+        canvas,
+        text: (step.value?.toInt() ?? i + 1).toString(),
+        style: reached ? c.activeStyle : c.inactiveStyle,
+        textDirection: c.textDirection,
+        maxWidth: c.shapeSize,
+        position: (Size text) =>
+            Offset(x - text.width / 2, y - text.height / 2),
+      );
+      paintText(
+        canvas,
+        text: step.label.label,
+        style: c.labelStyle.merge(step.label.style),
+        textDirection: c.textDirection,
+        maxWidth: spacing,
+        position: (Size text) =>
+            Offset(x - text.width / 2, y + c.offset + 5) +
+            (step.label.offset ?? Offset.zero),
+      );
+    }
+  }
+
+  void _drawMarker(Canvas canvas, Offset center, Color color) {
+    final double size = config.shapeSize;
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = config.style.thickness
+      ..style = config.style.paintingStyle;
+    switch (config.shape) {
+      case GxStepperShape.circle:
+        canvas.drawCircle(center, size / 2, paint);
+      case GxStepperShape.rectangle:
+        canvas.drawRect(
+          Rect.fromCenter(center: center, width: size, height: size),
+          paint,
+        );
+      case GxStepperShape.diamond:
+        canvas.drawPath(
+          Path()
+            ..moveTo(center.dx, center.dy - size / 2)
+            ..lineTo(center.dx - size / 2, center.dy)
+            ..lineTo(center.dx, center.dy + size / 2)
+            ..lineTo(center.dx + size / 2, center.dy)
+            ..close(),
+          paint,
+        );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant StepperLinearPainter oldDelegate) {
-    final bool isRepent =
-        gaugeValue != oldDelegate.gaugeValue ||
-        !checkListEquality(steps, oldDelegate.steps) ||
-        style != oldDelegate.style ||
-        shape != oldDelegate.shape ||
-        shapeSize != oldDelegate.shapeSize ||
-        activeStyle != oldDelegate.activeStyle;
-    return isRepent;
-  }
-
-  void _drawAxis(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = style.backgroundColor ?? style.color.withValues(alpha: 0.2)
-      ..strokeWidth = style.thickness
-      ..style = style.paintingStyle
-      ..strokeCap = style.strokeCap;
-
-    final double axisHeight = size.height;
-    final double axisWidth = size.width;
-    final double minValue = gaugeValue.min;
-    final double maxValue = gaugeValue.max;
-    final double value = gaugeValue.value;
-
-    /// Actual progress of the stepper
-    final double actualProgress =
-        ((value - minValue) / (maxValue - minValue)) * axisWidth;
-
-    /// Progress of the stepper without the shape size
-    final double progress = actualProgress;
-
-    final int actualInterval = steps.length;
-
-    // Draw axis Line
-    final Offset axisStart = Offset(
-      shapeSize / 2,
-      axisHeight / 2,
-    ); // Start the axis from the shape size
-    final Offset axisEnd = Offset(
-      axisWidth - (shapeSize / 2),
-      axisHeight / 2,
-    ); // Remove the shape size from the axis width
-    canvas.drawLine(axisStart, axisEnd, paint);
-
-    // Progress Line
-    final Paint progressPaint = Paint()
-      ..color = style.color
-      ..strokeWidth = style.thickness
-      ..style = style.paintingStyle
-      ..strokeCap = style.strokeCap;
-    final Offset progressStart = Offset(shapeSize / 2, axisHeight / 2);
-    final Offset progressEnd = Offset(
-      progress - (shapeSize / 2),
-      axisHeight / 2,
-    );
-
-    // Draw the progress line
-    canvas.drawLine(progressStart, progressEnd, progressPaint);
-
-    // Draw the Stepper Pointer
-    final double stepWidth = axisWidth / (actualInterval - 1);
-
-    for (int i = 0; i <= actualInterval - 1; i++) {
-      final double x = i * stepWidth;
-      final double y = axisHeight / 2;
-      final Offset startPoint = Offset(x, y);
-      final Offset endPoint = Offset(x, y + offset);
-
-      // Check if the stepper pointer is in the progress line
-      final bool isPointerInLine = x <= progress;
-
-      final Paint stepperPaint = Paint()
-        ..color = isPointerInLine
-            ? style.color
-            : style.backgroundColor ??
-                  ColorUtils.getMaterialColor(style.color).shade100
-        ..strokeWidth = style.thickness
-        ..style = style.paintingStyle;
-
-      final GxStepperStep pointer = steps[i];
-      if (shape == GxStepperShape.circle) {
-        canvas.drawCircle(startPoint, shapeSize / 2, stepperPaint);
-      } else if (shape == GxStepperShape.rectangle) {
-        canvas.drawRect(
-          Rect.fromCenter(
-            center: startPoint,
-            width: shapeSize,
-            height: shapeSize,
-          ),
-          stepperPaint,
-        );
-      } else if (shape == GxStepperShape.diamond) {
-        final Path diamondPath = Path()
-          ..moveTo(x, y - shapeSize / 2)
-          ..lineTo(x - shapeSize / 2, y)
-          ..lineTo(x, y + shapeSize / 2)
-          ..lineTo(x + shapeSize / 2, y)
-          ..close();
-        canvas.drawPath(diamondPath, stepperPaint);
-      } else {
-        canvas.drawLine(startPoint, endPoint, stepperPaint);
-      }
-
-      // Draw the pointer Index
-      final TextPainter textIndexPainter = TextPainter(
-        text: TextSpan(
-          text: (pointer.value?.toInt() ?? i + 1).toString(),
-          style: isPointerInLine ? activeStyle : inActiveStyle,
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: stepWidth);
-      textIndexPainter.paint(
-        canvas,
-        Offset(x - textIndexPainter.width / 2, y / 1.5),
-      );
-
-      // Draw the Stepper Pointer Label
-      final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: pointer.label.label, style: pointer.label.style),
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: stepWidth);
-      textPainter.paint(
-        canvas,
-        Offset(x - textPainter.width / 2, y + offset + 5),
-      ); // 10 is the height of the stepper pointer
-
-      // On Pointer Tap
-      if (onPointerTap != null) {}
-    }
-  }
+  bool shouldRepaint(covariant StepperLinearPainter oldDelegate) =>
+      oldDelegate.config != config || oldDelegate.value != value;
 }

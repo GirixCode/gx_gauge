@@ -12,7 +12,6 @@ class MyBarLinearGaugeScreen extends StatefulWidget {
 class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
     return Scaffold(
       appBar: AppBar(title: const Text('Bar Linear Gauge')),
       body: ListView(
@@ -20,18 +19,25 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: 'Default Linear Bar Gauge',
             child: GxLinearBarGauge(
-              size: Size(width, 40),
+              height: 40,
               value: const GxGaugeValue(value: 60, max: 99),
               bars: [
-                GxLinearBarPointer(value: 33, thickness: 5, color: Colors.teal),
+                GxLinearBarPointer(
+                  start: 0,
+                  end: 33,
+                  thickness: 5,
+                  color: Colors.teal,
+                ),
                 GxLinearBarPointer(
                   color: Colors.lightBlue,
-                  value: 33,
+                  start: 33,
+                  end: 66,
                   thickness: 5,
                 ),
                 GxLinearBarPointer(
                   color: Colors.cyanAccent,
-                  value: 33,
+                  start: 66,
+                  end: 99,
                   thickness: 5,
                 ),
               ],
@@ -41,25 +47,28 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: 'With Labels',
             child: GxLinearBarGauge(
-              size: Size(width, 40),
+              height: 40,
               value: const GxGaugeValue(value: 60, min: 0, max: 120),
               bars: [
                 GxLinearBarPointer(
                   label: const GxGaugeLabel(label: 'Low'),
-                  value: 33,
+                  start: 0,
+                  end: 33,
                   thickness: 5,
                   color: Colors.deepOrangeAccent,
                 ),
                 GxLinearBarPointer(
                   label: const GxGaugeLabel(label: 'Medium'),
                   color: Colors.yellow.shade800,
-                  value: 54,
+                  start: 33,
+                  end: 87,
                   thickness: 5,
                 ),
                 GxLinearBarPointer(
                   label: const GxGaugeLabel(label: 'High'),
                   color: Colors.greenAccent.shade700,
-                  value: 33,
+                  start: 87,
+                  end: 120,
                   thickness: 5,
                 ),
               ],
@@ -69,28 +78,32 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: "With Gap Between Bars",
             child: GxLinearBarGauge(
-              size: const Size(410, 40),
+              height: 40,
               value: const GxGaugeValue(value: 60, min: 0, max: 100),
               gapBetweenBars: 6,
               bars: [
                 GxLinearBarPointer(
-                  value: 25,
+                  start: 0,
+                  end: 25,
                   thickness: 5,
                   color: Colors.blueGrey.shade100,
                 ),
                 GxLinearBarPointer(
                   color: Colors.blueGrey.shade200,
-                  value: 25,
+                  start: 25,
+                  end: 50,
                   thickness: 5,
                 ),
                 GxLinearBarPointer(
                   color: Colors.blueGrey.shade300,
-                  value: 25,
+                  start: 50,
+                  end: 75,
                   thickness: 5,
                 ),
                 GxLinearBarPointer(
                   color: Colors.blueGrey,
-                  value: 25,
+                  start: 75,
+                  end: 100,
                   thickness: 5,
                 ),
               ],
@@ -102,12 +115,13 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: "Customized Bar Gauge Style with Gap",
             child: GxLinearBarGauge(
-              size: const Size.fromHeight(40),
+              height: 40,
               value: const GxGaugeValue(value: 30, min: 0, max: 100),
               gapBetweenBars: 10,
               bars: [
                 GxLinearBarPointer(
-                  value: 30,
+                  start: 0,
+                  end: 30,
                   label: const GxGaugeLabel(label: '30'),
                   thickness: 2,
                   color: Colors.orange,
@@ -117,7 +131,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                 ),
                 GxLinearBarPointer(
                   color: Colors.orange,
-                  value: 40,
+                  start: 30,
+                  end: 70,
                   thickness: 2,
                   label: const GxGaugeLabel(
                     label: '40',
@@ -129,7 +144,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                 ),
                 GxLinearBarPointer(
                   color: Colors.orange,
-                  value: 30,
+                  start: 70,
+                  end: 100,
                   label: const GxGaugeLabel(label: '30'),
                   thickness: 2,
                   strokeCap: StrokeCap.round,
@@ -143,10 +159,9 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: "With a needle, \ntooltip and inside bar",
             child: GxLinearBarGauge(
-              size: const Size(410, 25),
+              height: 25,
               value: const GxGaugeValue(value: 70, min: 0, max: 100),
               gapBetweenBars: 5,
-              showNeedleInsideBar: true,
               tooltip: const GxGaugeTooltip(
                 label: 'REC {value}',
                 offset: 20,
@@ -175,18 +190,20 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                   // strokeCap: StrokeCap.square,
                   // paintingStyle: PaintingStyle.stroke,
                   radius: const Radius.circular(5),
-                  value: 75,
+                  start: 0,
+                  end: 75,
                   thickness: 5,
                   color: Colors.blueGrey.shade300,
                 ),
                 GxLinearBarPointer(
                   radius: const Radius.circular(5),
                   color: Colors.blueGrey,
-                  value: 25,
+                  start: 75,
+                  end: 100,
                   thickness: 5,
                 ),
                 // GxLinearBarPointer(
-                //     color: Colors.blueGrey.shade600, value: 50, thickness: 5),
+                //     color: Colors.blueGrey.shade600, start: 100, end: 150, thickness: 5),
               ],
             ),
           ),
@@ -194,7 +211,7 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: 'With TextAlign and Offset of Labels',
             child: GxLinearBarGauge(
-              size: Size(width, 40),
+              height: 40,
               value: const GxGaugeValue(value: 60, min: 0, max: 120),
               gapBetweenBars: 5,
               bars: [
@@ -204,7 +221,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                     label: 'TextAlign label',
                     textAlign: TextAlign.center,
                   ),
-                  value: 40,
+                  start: 0,
+                  end: 40,
                   thickness: 2,
                   paintingStyle: PaintingStyle.stroke,
                   color: Colors.black45,
@@ -218,7 +236,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                     textAlign: TextAlign.center,
                   ),
                   color: Colors.black45,
-                  value: 40,
+                  start: 40,
+                  end: 80,
                   thickness: 2,
                 ),
                 GxLinearBarPointer(
@@ -228,7 +247,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                     style: TextStyle(color: Colors.black87),
                   ),
                   color: Colors.black45,
-                  value: 40,
+                  start: 80,
+                  end: 120,
                   thickness: 2,
                 ),
               ],
@@ -241,7 +261,7 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
             title: 'With Tooltip',
             height: 120,
             child: GxLinearBarGauge(
-              size: Size(width, 40),
+              height: 40,
               value: const GxGaugeValue(value: 95, min: 0, max: 100),
               // gapBetweenBars: 5,
               tooltip: const GxGaugeTooltip(
@@ -263,7 +283,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                     style: TextStyle(color: Colors.black87),
                     label: 'Documents',
                   ),
-                  value: 33,
+                  start: 0,
+                  end: 33,
                   thickness: 2,
                   paintingStyle: PaintingStyle.stroke,
                   color: Colors.black45,
@@ -276,7 +297,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                     textAlign: TextAlign.center,
                   ),
                   color: Colors.black45,
-                  value: 34,
+                  start: 33,
+                  end: 67,
                   thickness: 2,
                 ),
                 GxLinearBarPointer(
@@ -286,7 +308,8 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                     style: TextStyle(color: Colors.black87),
                   ),
                   color: Colors.black45,
-                  value: 33,
+                  start: 67,
+                  end: 100,
                   thickness: 2,
                 ),
               ],
@@ -296,10 +319,9 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
           ItemCard(
             title: "With a custom painter needle",
             child: GxLinearBarGauge(
-              size: const Size(410, 25),
+              height: 25,
               value: const GxGaugeValue(value: 70, min: 0, max: 100),
               gapBetweenBars: 5,
-              showNeedleInsideBar: true,
               needle: const GxLinearNeedle(
                 enabled: true,
                 color: Colors.orange,
@@ -313,18 +335,20 @@ class _MyBarLinearGaugeScreenState extends State<MyBarLinearGaugeScreen> {
                   // strokeCap: StrokeCap.square,
                   // paintingStyle: PaintingStyle.stroke,
                   radius: const Radius.circular(5),
-                  value: 75,
+                  start: 0,
+                  end: 75,
                   thickness: 5,
                   color: Colors.blueGrey.shade300,
                 ),
                 GxLinearBarPointer(
                   radius: const Radius.circular(5),
                   color: Colors.blueGrey,
-                  value: 25,
+                  start: 75,
+                  end: 100,
                   thickness: 5,
                 ),
                 // GxLinearBarPointer(
-                //     color: Colors.blueGrey.shade600, value: 50, thickness: 5),
+                //     color: Colors.blueGrey.shade600, start: 100, end: 150, thickness: 5),
               ],
             ),
           ),

@@ -1,431 +1,241 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:gx_gauge/src/common/models/models.dart';
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/gauge_value.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
-import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
-import 'package:gx_gauge/src/linear/models/scale_linear_gauge_model.dart';
+import 'package:gx_gauge/src/core/gauge_defaults.dart';
+import 'package:gx_gauge/src/core/gauge_scale.dart';
+import 'package:gx_gauge/src/core/gauge_widgets.dart';
+import 'package:gx_gauge/src/core/semantics.dart';
+import 'package:gx_gauge/src/linear/models/linear_bar_pointer.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle.dart';
+import 'package:gx_gauge/src/linear/models/linear_scale_models.dart';
 import 'package:gx_gauge/src/linear/painters/scale_linear_gauge_painter.dart';
 
-/// A horizontal linear gauge with an axis, major and minor ticks, labels,
-/// and optional needle, bar pointers, marker pointers and fill areas.
+/// A horizontal scale with an axis, major and minor ticks, labels, and
+/// optional needle, marker pointers, fill areas and bars.
+///
+/// Takes the full available width.
 ///
 /// ```dart
 /// GxLinearScaleGauge(
 ///   value: const GxGaugeValue(value: 40),
 ///   interval: 10,
 ///   needle: const GxLinearNeedle(shape: GxNeedleShape.triangle),
-///   fillAreas: <GxLinearFillArea>[
-///     GxLinearFillArea(startValue: 0, endValue: 40, color: Colors.green),
+///   fillAreas: const <GxLinearFillArea>[
+///     GxLinearFillArea(start: 0, end: 40, color: Colors.green),
 ///   ],
 /// )
 /// ```
-class GxLinearScaleGauge extends StatelessWidget {
+class GxLinearScaleGauge extends ImplicitlyAnimatedWidget {
+  /// Creates a linear scale gauge.
   const GxLinearScaleGauge({
     super.key,
     this.value = const GxGaugeValue(value: 0),
     this.interval,
-    this.axisSpaceExtent = 0.0,
-    this.axisLabelStyle,
-    this.axisTrackStyle = const GxLinearAxisStyle(),
     this.minorTicksPerInterval = 1,
+    this.height = 100,
+    this.axisSpaceExtent = 0.0,
+    this.axisTrackStyle = const GxLinearAxisStyle(),
+    this.axisLabelStyle,
     this.majorTickStyle = const GxLinearTickStyle(),
     this.minorTickStyle = const GxLinearTickStyle(),
-    this.bars,
-    this.barHeight,
-    this.markers,
-    this.size,
-    this.labelFormatter,
     this.labelPosition = GxLabelPosition.bottomCenter,
     this.tickPosition = GxElementPosition.cross,
     this.showMajorTicks = true,
     this.showMinorTicks = true,
     this.showAxisTrack = true,
     this.showAxisLabel = true,
+    this.labelFormatter,
+    this.labelStyler,
     this.majorTickStyler,
     this.needle,
-    this.fillAreas,
-    this.labelStyler,
+    this.markers = const <GxLinearMarkerPointer>[],
+    this.fillAreas = const <GxLinearFillArea>[],
+    this.bars = const <GxLinearBarPointer>[],
+    this.barHeight,
     this.barOffset = 0.5,
     this.applyBarColorOnAxisTick = false,
-  }) : // BarHeight can not be null when barPoints are not null
-       assert(
-         bars != null || barHeight == null,
-         'barHeight can not be null when barPoints are not null',
-       );
+    this.reverse = false,
+    this.semanticLabel,
+    this.semanticValueFormatter,
+    super.duration = Duration.zero,
+    super.curve = Curves.easeInOut,
+    super.onEnd,
+  });
 
-  /// The gauge's value and its `min`..`max` range.
-  ///
-  /// The needle points at `value.value`, and the axis runs from `value.min`
-  /// to `value.max`. Defaults to `GxGaugeValue(value: 0)` on a 0..100 axis.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///   value: const GxGaugeValue(value: 25, min: -50, max: 50),
-  /// )
-  /// ```
+  /// The needle's value and the axis range (`value.min` to `value.max`).
+  /// Defaults to 0 on a 0..100 axis.
   final GxGaugeValue value;
 
-  /// Specifies the interval of the gauge.
-  ///
-  /// The default value is 10.0
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  /// interval: 10.0,
-  /// )
-  /// ```
-  ///
+  /// The step between major ticks. Null uses a tenth of the range. When the
+  /// range isn't a multiple of it, the last tick is the last multiple below
+  /// `value.max`.
   final double? interval;
 
-  /// Specifies the extent of the axis track of the gauge such as the amount of size of the axis track from the axis line.
-  ///
-  /// The default value is 0.0.
-  ///
-  /// Example:
-  ///
-  /// When 0: SizeStart<-AxisTrack ->SizeEnd
-  ///
-  /// When 10: SizeStart__10__AxisTrack__10__SizeEnd
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  /// axisSpaceExtent: 0.0,
-  /// )
-  /// ```
-  ///
-  final double axisSpaceExtent;
-
-  /// Specifies the style of the axis label of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  /// axisLabelStyle: TextStyle(color: Colors.black, fontSize: 12),
-  /// )
-  /// ```
-  ///
-  final TextStyle? axisLabelStyle;
-
-  /// Specifies the style of the axis track of the gauge.
-  ///
-  /// The default value is [GxLinearAxisStyle()].
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  /// axisTrackStyle: const GxLinearAxisStyle(
-  ///   thickness = 5.0,
-  ///   color = Colors.grey,
-  ///  ),
-  /// )
-  /// ```
-  ///
-  final GxLinearAxisStyle axisTrackStyle;
-
-  /// Specifies the number of minor ticks per interval of the gauge axis. such as the number of minor ticks between two major ticks.
-  ///
-  /// The default value is 1.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///   minorTicksPerInterval: 1,
-  /// )
-  /// ```
-  ///
+  /// Minor ticks between two major ticks. Defaults to 1.
   final int minorTicksPerInterval;
 
-  /// Specifies the style of the major tick of the gauge axis such as the color, thickness, and length of the major tick.
-  ///
-  /// The default value is [GxLinearTickStyle()].
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///   majorTickStyle: const GxLinearTickStyle(
-  ///     length = 8.0,
-  ///     thickness = 1.0,
-  ///     color = Colors.black,
-  ///   ),
-  /// )
-  /// ```
-  ///
+  /// The gauge's height, including labels and needle. Defaults to 100.
+  final double height;
+
+  /// Horizontal inset of the axis from both edges, leaving room for the first
+  /// and last labels. Defaults to 0.
+  final double axisSpaceExtent;
+
+  /// The axis line.
+  final GxLinearAxisStyle axisTrackStyle;
+
+  /// Tick label style, merged onto the theme's label style.
+  final TextStyle? axisLabelStyle;
+
+  /// Major ticks.
   final GxLinearTickStyle majorTickStyle;
 
-  /// Specifies the style of the minor tick of the gauge axis such as the color, thickness, and length of the minor tick.
-  ///
-  /// The default value is [GxLinearTickStyle()].
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  minorTickStyle: const GxLinearTickStyle(
-  ///   length = 8.0,
-  ///   thickness = 1.0,
-  ///   color = Colors.black,
-  ///   ),
-  /// )
-  /// ```
-  ///
+  /// Minor ticks.
   final GxLinearTickStyle minorTickStyle;
 
-  /// Specifies the list of bar pointers of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///   bars: [
-  ///     GxLinearBarPointer(
-  ///       value: 50.0,
-  ///       color: Colors.red,
-  ///       thickness: 10.0,
-  ///     ),
-  ///   ],
-  /// )
-  /// ```
-  ///
-  final List<GxLinearBarPointer>? bars;
-
-  /// Specifies the size of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  size: Size(300, 100),
-  /// )
-  /// ```
-  ///
-  final double? barHeight;
-
-  /// Specifies the offset position of the bar pointer. Default is 0.5.
-  final double barOffset;
-
-  /// Specifies the list of marker pointers of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  markers: [
-  ///   GxLinearMarkerPointer(
-  ///       value: 50.0,
-  ///       marker: Icon(Icons.star, color: Colors.yellow),
-  ///     ),
-  ///   ],
-  /// )
-  /// ```
-  ///
-  final List<GxLinearMarkerPointer>? markers;
-
-  /// Specifies the width of the gauge.
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  size: Size.fromWidth(300),
-  /// )
-  /// ```
-  ///
-  final Size? size;
-
-  /// Specifies the value to label format callback of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  labelFormatter: (value) => value.toStringAsFixed(0),
-  /// )
-  /// ```
-  ///
-  final GxValueLabelFormatter? labelFormatter;
-
-  /// Specifies the label position of the gauge.
-  ///
-  /// The default value is [GxLabelPosition.bottomCenter].
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///   labelPosition: GxLabelPosition.bottomCenter,
-  /// )
-  /// ```
-  ///
+  /// Labels above or below the axis. Defaults to
+  /// [GxLabelPosition.bottomCenter].
   final GxLabelPosition labelPosition;
 
-  /// Specifies the tick position of the gauge.
-  ///
-  /// The default value is [GxElementPosition.cross].
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  tickPosition: GxElementPosition.cross,
-  /// )
-  /// ```
-  ///
+  /// Where ticks sit relative to the axis. Defaults to
+  /// [GxElementPosition.cross].
   final GxElementPosition tickPosition;
 
-  /// Specifies whether to show the major ticks of the gauge.
-  ///
-  /// The default value is true.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  showMajorTicks: true,
-  /// )
-  /// ```
-  ///
+  /// Whether major ticks are drawn. Defaults to true.
   final bool showMajorTicks;
 
-  /// Specifies whether to show the minor ticks of the gauge.
-  ///
-  /// The default value is true.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  showMinorTicks: true,
-  /// )
-  /// ```
-  ///
+  /// Whether minor ticks are drawn. Defaults to true.
   final bool showMinorTicks;
 
-  /// Specifies whether to show the axis track of the gauge.
-  ///
-  /// The default value is true.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  showAxisTrack: true,
-  /// )
-  /// ```
-  ///
+  /// Whether the axis line is drawn. Defaults to true.
   final bool showAxisTrack;
 
-  /// Specifies whether to show the axis label of the gauge.
-  ///
-  /// The default value is true.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  showAxisLabel: true,
-  /// )
-  /// ```
+  /// Whether tick labels are drawn. Defaults to true.
   final bool showAxisLabel;
 
-  /// Specifies the value to major tick style callback of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  ///  The [majorTickStyle] argument will be ignored if the [majorTickStyler] is not null.
-  ///
-  /// ```dart
-  /// GxLinearTickStyle majorTickStyle(double value, int index) {
-  ///  return GxLinearTickStyle(
-  ///   length: 20,
-  ///   thickness: 2,
-  ///   color: Colors.blue,
-  /// );
-  /// }
-  /// ```
-  ///
-  final GxValueTickStyler<GxLinearTickStyle>? majorTickStyler;
+  /// Formats each tick label, e.g. `(v, i) => '${v.toInt()}°'`.
+  final GxValueLabelFormatter? labelFormatter;
 
-  /// Specifies the needle of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///   needle: GxLinearNeedle(
-  ///      enabled: true,
-  ///      position: GxNeedlePosition.bottom,
-  ///      size: const Size(20, 20),
-  ///      color: Colors.blueGrey,
-  ///     shape: GxNeedleShape.triangle),
-  /// )
-  /// ```
-  ///
-  final GxLinearNeedle? needle;
-
-  /// Specifies the list of fill area pointer of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  fillAreas: [
-  ///    GxLinearFillArea(
-  ///     startValue: 0.0,
-  ///     endValue: 50.0,
-  ///     color: Colors.green,
-  ///     thickness: 10.0,
-  ///   ),
-  ///  ],
-  /// )
-  /// ```
-  ///
-  final List<GxLinearFillArea>? fillAreas;
-
-  /// Specifies the value to label style callback of the gauge.
-  ///
-  /// The default value is null.
-  ///
-  /// ```dart
-  /// TextStyle valueToLabelStyle(double value) {
-  ///   return TextStyle(
-  ///   color: Colors.black,
-  ///   fontSize: 12,
-  ///  );
-  /// }
-  /// ```
-  ///
+  /// Styles each tick label; the result merges onto [axisLabelStyle].
   final GxValueLabelStyler<TextStyle>? labelStyler;
 
-  /// Specifies whether to apply the bar color on the axis and the ticks.
-  ///
-  /// This will be applied only when the `bars` are not null.
-  ///
-  /// ``barOffset`` and `axis` will be ignored when this is set to true.
-  ///
-  /// The default value is `false`.
-  ///
-  /// ```dart
-  /// GxLinearScaleGauge(
-  ///  applyBarColorOnAxisTick: true,
-  /// )
-  /// ```
-  ///
+  /// Styles each major tick, replacing [majorTickStyle].
+  final GxValueTickStyler<GxLinearTickStyle>? majorTickStyler;
+
+  /// An optional needle at `value.value`.
+  final GxLinearNeedle? needle;
+
+  /// Extra needles at fixed values.
+  final List<GxLinearMarkerPointer> markers;
+
+  /// Colored stretches of the axis.
+  final List<GxLinearFillArea> fillAreas;
+
+  /// Bars along the axis, drawn on the opposite side from the ticks (or
+  /// centered on the axis for [GxElementPosition.cross]).
+  final List<GxLinearBarPointer> bars;
+
+  /// Bar height. Null uses half the gauge's height.
+  final double? barHeight;
+
+  /// Gap between the axis and the bars. Defaults to 0.5.
+  final double barOffset;
+
+  /// Whether ticks take the color of the bar they fall on. Hides the axis
+  /// line and ignores [barOffset]. Defaults to false.
   final bool applyBarColorOnAxisTick;
+
+  /// Runs from the end instead of the start. In a right-to-left locale the
+  /// scale already runs from the right, and [reverse] flips it back.
+  final bool reverse;
+
+  /// Describes the gauge to screen readers.
+  final String? semanticLabel;
+
+  /// Formats the value announced by screen readers.
+  final GxSemanticValueFormatter? semanticValueFormatter;
+
+  @override
+  AnimatedGaugeState<GxLinearScaleGauge> createState() =>
+      _GxLinearScaleGaugeState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<GxGaugeValue>('value', value))
+      ..add(DoubleProperty('interval', interval, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 100.0))
+      ..add(EnumProperty<GxElementPosition>('tickPosition', tickPosition))
+      ..add(
+        DiagnosticsProperty<GxLinearNeedle>(
+          'needle',
+          needle,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('reverse', value: reverse, ifTrue: 'reversed'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
+}
+
+class _GxLinearScaleGaugeState extends AnimatedGaugeState<GxLinearScaleGauge> {
+  @override
+  double get targetValue => widget.value.value;
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: ScaleLinearGaugePainter(
-        minimum: value.min,
-        maximum: value.max,
-        interval: interval,
-        axisSpaceExtent: axisSpaceExtent,
-        axisLabelStyle: axisLabelStyle,
-        axisTrackStyle: axisTrackStyle,
-        minorTicksPerInterval: minorTicksPerInterval,
-        majorTickStyle: majorTickStyle,
-        minorTickStyle: minorTickStyle,
-        bars: bars,
-        markers: markers,
-        labelFormatter: labelFormatter,
-        labelPosition: labelPosition,
-        tickPosition: tickPosition,
-        showMajorTicks: showMajorTicks,
-        showMinorTicks: showMinorTicks,
-        showAxisTrack: showAxisTrack,
-        showAxisLabel: showAxisLabel,
-        majorTickStyler: majorTickStyler,
-        value: value.value,
-        needle: needle,
-        fillAreas: fillAreas,
-        labelStyler: labelStyler,
-        barHeight: barHeight,
-        barOffset: barOffset,
-        applyBarColorOnAxisTick: applyBarColorOnAxisTick,
+    final GxLinearScaleGauge w = widget;
+    final GaugeDefaults defaults = GaugeDefaults.of(context);
+    final TextDirection direction =
+        Directionality.maybeOf(context) ?? TextDirection.ltr;
+
+    return gaugeSemantics(
+      label: w.semanticLabel,
+      value: semanticValue(w.semanticValueFormatter, w.value.value),
+      child: LinearGaugeBox(
+        height: w.height,
+        child: CustomPaint(
+          painter: ScaleLinearGaugePainter(
+            value: valueAnimation,
+            config: ScalePainterConfig(
+              scale: GaugeScale(w.value.min, w.value.max),
+              interval: w.interval,
+              axisSpaceExtent: w.axisSpaceExtent,
+              axisStyle: w.axisTrackStyle,
+              axisColor: defaults.track,
+              majorTickStyle: w.majorTickStyle,
+              minorTickStyle: w.minorTickStyle,
+              tickColor: defaults.tick,
+              minorTicksPerInterval: w.minorTicksPerInterval,
+              labelStyle: defaults.labelStyle.merge(w.axisLabelStyle),
+              labelPosition: w.labelPosition,
+              tickPosition: w.tickPosition,
+              showMajorTicks: w.showMajorTicks,
+              showMinorTicks: w.showMinorTicks,
+              showAxisTrack: w.showAxisTrack,
+              showAxisLabel: w.showAxisLabel,
+              needleColor: defaults.needle,
+              barColor: defaults.primary,
+              barLabelStyle: defaults.labelStyle,
+              barOffset: w.barOffset,
+              applyBarColorOnAxisTick: w.applyBarColorOnAxisTick,
+              reversed: (direction == TextDirection.rtl) != w.reverse,
+              textDirection: direction,
+              labelFormatter: w.labelFormatter,
+              labelStyler: w.labelStyler,
+              majorTickStyler: w.majorTickStyler,
+              needle: w.needle,
+              markers: w.markers,
+              fillAreas: w.fillAreas,
+              bars: w.bars,
+              barHeight: w.barHeight,
+            ),
+          ),
+        ),
       ),
-      size: size ?? const Size.fromHeight(100),
     );
   }
 }
