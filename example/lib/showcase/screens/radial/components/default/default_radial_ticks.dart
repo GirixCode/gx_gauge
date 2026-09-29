@@ -22,7 +22,7 @@ class DefaultRadialTicks extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               GxRadialGauge(
-                diameter: twinSize.width,
+                size: twinSize,
                 startAngleInDegree: 135,
                 sweepAngleInDegree: 270,
                 value: GxGaugeValue(value: value),
@@ -41,7 +41,7 @@ class DefaultRadialTicks extends StatelessWidget {
                 ),
               ),
               GxRadialGauge(
-                diameter: twinSize.width,
+                size: twinSize,
                 startAngleInDegree: 180,
                 value: GxGaugeValue(value: value),
                 showMajorTicks: true,
@@ -71,7 +71,7 @@ class DefaultRadialTicks extends StatelessWidget {
             children: [
               GxRadialGauge(
                 showValueAtCenter: true,
-                diameter: twinSize.width,
+                size: twinSize,
                 // startAngleInDegree: 135,
                 // sweepAngleInDegree: 270,
                 value: GxGaugeValue(value: value),
@@ -106,7 +106,7 @@ class DefaultRadialTicks extends StatelessWidget {
               ),
               GxRadialGauge(
                 showValueAtCenter: false,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 showMajorTicks: true,
                 showMinorTicks: true,

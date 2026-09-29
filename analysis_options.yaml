@@ -16,6 +16,8 @@ analyzer:
     - build/**
 
 # Rules on top of package:flutter_lints. Keep this list alphabetical.
+# `public_member_api_docs` is enabled in Phase 2 of docs/PLAN.md, once every
+# public member is documented.
 linter:
   rules:
     - always_declare_return_types
@@ -63,7 +65,6 @@ linter:
     - prefer_null_aware_method_calls
     - prefer_single_quotes
     - provide_deprecation_message
-    - public_member_api_docs
     - sort_child_properties_last
     - sort_constructors_first
     - sort_unnamed_constructors_first

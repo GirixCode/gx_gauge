@@ -1,494 +1,694 @@
+// lib/src/radial/painters/radial_gauge_painter.dart
 import 'dart:math' as math;
 
-import 'package:flutter/animation.dart';
-import 'package:flutter/rendering.dart';
-import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:flutter/material.dart';
+import 'package:gx_gauge/src/common/models/models.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
-import 'package:gx_gauge/src/core/gauge_scale.dart';
-import 'package:gx_gauge/src/core/painter_config.dart';
-import 'package:gx_gauge/src/core/text_utils.dart';
 import 'package:gx_gauge/src/radial/models/radial_gauge_style.dart';
 import 'package:gx_gauge/src/radial/utils/angle_utils.dart';
 
-/// Everything [RadialGaugePainter] draws with, with theme defaults already
-/// resolved.
-class RadialPainterConfig extends PainterConfig {
-  /// Creates a radial painter configuration.
-  const RadialPainterConfig({
-    required this.scale,
+/// The [RadialGaugePainter] is used to paint the radial gauge.
+///
+/// The [RadialGaugePainter] class extends the [CustomPainter] class from Flutter.
+///
+/// The [RadialGaugePainter] class contains the following properties:
+///
+/// - [value]: An instance of the [GxGaugeValue] class that holds the value of the gauge.
+///
+/// - [style]: An instance of the [GxRadialGaugeStyle] class that holds the style properties of the gauge.
+///
+class RadialGaugePainter extends CustomPainter {
+  RadialGaugePainter({
+    required this.value,
     required this.style,
-    required this.color,
-    required this.trackColor,
-    required this.startAngleInDegree,
-    required this.sweepAngleInDegree,
-    required this.interval,
-    required this.minorTicksPerInterval,
     required this.showMajorTicks,
     required this.showMinorTicks,
     required this.showLabels,
     required this.majorTickStyle,
     required this.minorTickStyle,
-    required this.tickColor,
     required this.labelTickStyle,
-    required this.labelStyle,
+    required this.interval,
+    required this.minorTicksPerInterval,
+    required this.startAngleInDegree,
+    required this.sweepAngleInDegree,
     required this.showValueAtCenter,
-    required this.valueStyle,
     required this.showNeedle,
-    required this.needleColor,
-    required this.pointerColor,
-    required this.rangeColor,
-    required this.capInnerColor,
-    required this.textDirection,
+    required this.needleCircleInnerColor,
     this.needle,
-    this.pointers = const <GxRadialPointer>[],
-    this.ranges = const <GxRadialRange>[],
+    this.pointers,
+    this.majorTickStyler,
     this.labelFormatter,
     this.labelStyler,
-    this.majorTickStyler,
+    this.ranges,
   });
-
-  /// The value range.
-  final GaugeScale scale;
-
-  /// Arc style.
+  final GxGaugeValue value;
   final GxRadialGaugeStyle style;
-
-  /// Resolved value-arc color.
-  final Color color;
-
-  /// Resolved track-arc color.
-  final Color trackColor;
-
-  /// Where the arc starts, in degrees clockwise from 3 o'clock.
-  final double startAngleInDegree;
-
-  /// How far the arc sweeps, in degrees.
-  final double sweepAngleInDegree;
-
-  /// Major tick step, or null for a tenth of the range.
-  final double? interval;
-
-  /// Minor ticks between two major ticks.
-  final int minorTicksPerInterval;
-
-  /// Whether major ticks are drawn.
-  final bool showMajorTicks;
-
-  /// Whether minor ticks are drawn.
-  final bool showMinorTicks;
-
-  /// Whether tick labels are drawn.
-  final bool showLabels;
-
-  /// Major tick style.
   final GxRadialTickStyle majorTickStyle;
-
-  /// Minor tick style.
   final GxRadialTickStyle minorTickStyle;
-
-  /// Resolved fallback tick color.
-  final Color tickColor;
-
-  /// Tick label placement.
   final GxRadialTickLabelStyle labelTickStyle;
-
-  /// Resolved base style for tick labels.
-  final TextStyle labelStyle;
-
-  /// Whether the value is written at the center.
+  final int interval;
+  final int minorTicksPerInterval;
+  final double startAngleInDegree;
+  final double sweepAngleInDegree;
+  final bool showMajorTicks;
+  final bool showMinorTicks;
+  final bool showLabels;
   final bool showValueAtCenter;
-
-  /// Resolved style of the center value.
-  final TextStyle valueStyle;
-
-  /// Whether [needle] is drawn.
   final bool showNeedle;
-
-  /// Resolved fallback needle color.
-  final Color needleColor;
-
-  /// Resolved fallback pointer color.
-  final Color pointerColor;
-
-  /// Resolved fallback range color.
-  final Color rangeColor;
-
-  /// Resolved fill inside an outlined needle cap.
-  final Color capInnerColor;
-
-  /// Direction for text.
-  final TextDirection textDirection;
-
-  /// The value needle.
   final GxRadialNeedle? needle;
-
-  /// Extra markers and needles.
-  final List<GxRadialPointer> pointers;
-
-  /// Colored bands along the arc.
-  final List<GxRadialRange> ranges;
-
-  /// Formats tick labels.
+  final Color needleCircleInnerColor;
+  // Marker Pointer
+  final List<GxRadialPointer>? pointers;
+  // Callbacks
   final GxValueLabelFormatter? labelFormatter;
-
-  /// Styles tick labels per value.
-  final GxValueLabelStyler<GxRadialTickLabelStyle>? labelStyler;
-
-  /// Styles major ticks per value.
   final GxValueTickStyler<GxRadialTickStyle>? majorTickStyler;
-
-  @override
-  List<Object?> get props => <Object?>[
-    scale,
-    style,
-    color,
-    trackColor,
-    startAngleInDegree,
-    sweepAngleInDegree,
-    interval,
-    minorTicksPerInterval,
-    showMajorTicks,
-    showMinorTicks,
-    showLabels,
-    majorTickStyle,
-    minorTickStyle,
-    tickColor,
-    labelTickStyle,
-    labelStyle,
-    showValueAtCenter,
-    valueStyle,
-    showNeedle,
-    needleColor,
-    pointerColor,
-    rangeColor,
-    capInnerColor,
-    textDirection,
-    needle,
-    pointers,
-    ranges,
-    labelFormatter,
-    labelStyler,
-    majorTickStyler,
-  ];
-}
-
-/// Paints a radial gauge.
-class RadialGaugePainter extends CustomPainter {
-  /// Creates a painter that repaints whenever [value] ticks.
-  RadialGaugePainter({required this.config, required this.value})
-    : super(repaint: value);
-
-  /// What to draw.
-  final RadialPainterConfig config;
-
-  /// The current (animated) value.
-  final Animation<double> value;
+  final GxValueLabelStyler<GxRadialTickLabelStyle>? labelStyler;
+  List<GxRadialRange>? ranges;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final RadialPainterConfig c = config;
-    final _Geometry g = _Geometry(
-      center: Offset(size.width / 2, size.height / 2),
-      radius: math.min(size.width, size.height) / 2 - c.style.thickness / 2,
-      startAngle: AngleUtils.degreesToRadians(c.startAngleInDegree),
-      sweepAngle: AngleUtils.degreesToRadians(c.sweepAngleInDegree),
-      scale: c.scale,
-    );
+    final double radius =
+        (math.min(size.width, size.height) / 2) - style.thickness / 2;
+    final Offset center = Offset(size.width / 2, size.height / 2);
 
-    _drawArcs(canvas, g);
-    _drawRanges(canvas, g);
-    _drawTicksAndLabels(canvas, g);
-    if (c.showValueAtCenter) {
-      _drawValueAtCenter(canvas, g.center);
+    final double startAngle = AngleUtils.degreesToRadians(startAngleInDegree);
+    final double sweepAngle = AngleUtils.degreesToRadians(sweepAngleInDegree);
+
+    // Painting logic for radial gauge
+    _drawRadialGauge(canvas, size, radius, center, startAngle, sweepAngle);
+
+    // Optionally, draw ticks and labels
+    if (showMajorTicks || showLabels) {
+      _drawTicksAndLabels(canvas, center, radius, startAngle, sweepAngle);
     }
-    final GxRadialNeedle? needle = c.needle;
-    if (c.showNeedle && needle != null) {
-      _drawNeedle(canvas, size, g, value.value, needle);
+
+    if (showValueAtCenter) {
+      _drawValueAtCenter(canvas, center, size);
     }
-    _drawPointers(canvas, size, g);
+
+    if (showNeedle && needle != null) {
+      _drawNeedle(
+        canvas: canvas,
+        size: size,
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        sweepAngle: sweepAngle,
+        needleValue: value.value,
+        needle: needle!,
+      );
+    }
+
+    if (pointers != null && pointers!.isNotEmpty) {
+      _drawPointers(
+        canvas: canvas,
+        size: size,
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        sweepAngle: sweepAngle,
+      );
+    }
+
+    if (ranges != null && ranges!.isNotEmpty) {
+      _drawBarLabels(
+        canvas: canvas,
+        size: size,
+        center: center,
+        radius: radius,
+        startAngle: startAngle,
+        sweepAngle: sweepAngle,
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant RadialGaugePainter oldDelegate) =>
-      oldDelegate.config != config || oldDelegate.value != value;
-
-  void _drawArcs(Canvas canvas, _Geometry g) {
-    final GxRadialGaugeStyle style = config.style;
-    final Rect rect = Rect.fromCircle(center: g.center, radius: g.radius);
-    final Paint track = Paint()
-      ..color = config.trackColor
-      ..strokeWidth = style.thickness
-      ..style = style.paintingStyle
-      ..strokeCap = style.strokeCap
-      ..shader = (style.backgroundGradient ?? style.gradient)?.createShader(
-        rect,
-      );
-    final Paint arc = Paint()
-      ..color = config.color
-      ..strokeWidth = style.thickness
-      ..style = style.paintingStyle
-      ..strokeCap = style.strokeCap
-      ..shader = style.gradient?.createShader(rect);
-    final double fraction = config.scale.fractionOf(value.value);
-    canvas
-      ..drawArc(rect, g.startAngle, g.sweepAngle, false, track)
-      ..drawArc(rect, g.startAngle, fraction * g.sweepAngle, false, arc);
+  bool shouldRepaint(covariant RadialGaugePainter oldDelegate) {
+    return oldDelegate.value != value || oldDelegate.style != style;
   }
 
-  void _drawRanges(Canvas canvas, _Geometry g) {
-    for (final GxRadialRange range in config.ranges) {
-      final double start = g.angleOf(range.start);
-      final double end = g.angleOf(range.end);
+  // Draw Labels
+  void _drawBarLabels({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+  }) {
+    for (final GxRadialRange bar in ranges!) {
+      final double startValue = bar.startValue;
+      final double endValue = bar.endValue;
+      final Color? color = bar.color;
+      final double height = bar.height;
+      final double offset = bar.offset; // Offset from the Radial Gauge Arc
+
+      final double startBarAngle =
+          startAngle + (startValue / value.max) * sweepAngle;
+      final double endBarAngle =
+          startAngle + (endValue / value.max) * sweepAngle;
+
+      final double barRadius = radius + offset;
+
+      // Draw the bar
+      final Paint barPaint = Paint()
+        ..color = color ?? style.color
+        ..strokeWidth = height
+        ..style = PaintingStyle.stroke;
+
+      // Draw arc
+      final Rect rect = Rect.fromCircle(center: center, radius: barRadius);
       canvas.drawArc(
-        Rect.fromCircle(center: g.center, radius: g.radius + range.offset),
-        start,
-        end - start,
+        rect,
+        startBarAngle,
+        endBarAngle - startBarAngle,
         false,
-        Paint()
-          ..color = range.color ?? config.rangeColor
-          ..strokeWidth = range.height
-          ..style = PaintingStyle.stroke,
+        barPaint,
       );
+
+      // Draw Label
+      // final double labelAngle = (startBarAngle + endBarAngle) / 2;
+      // final double labelRadius = barRadius + height / 2 + 10;
+
+      // final double labelX = center.dx + labelRadius * math.cos(labelAngle);
+      // final double labelY = center.dy + labelRadius * math.sin(labelAngle);
+
+      // final TextPainter textPainter = TextPainter(
+      //   text: TextSpan(
+      //     text: labelText,
+      //     style: bar.label.style,
+      //   ),
+      //   textAlign: TextAlign.end,
+      //   textDirection: TextDirection.ltr,
+      // );
+
+      // textPainter.layout();
+
+      // final Offset labelOffset = Offset(
+      //   labelX - textPainter.width / 2,
+      //   labelY - textPainter.height / 2,
+      // );
+
+      // // Rotate and align the label text with the bar
+      // final double angle = AngleUtils.radiansToDegrees(labelAngle);
+      // final Matrix4 matrix = Matrix4.identity()..translate(labelX, labelY);
+      // // ..rotateZ(angle + math.pi / 180);
+
+      // canvas.save();
+      // canvas.transform(matrix.storage);
+
+      // textPainter.paint(canvas, labelOffset);
+
+      // canvas.restore();
     }
   }
 
-  void _drawTicksAndLabels(Canvas canvas, _Geometry g) {
-    final RadialPainterConfig c = config;
-    if (!c.showMajorTicks && !c.showMinorTicks && !c.showLabels) {
-      return;
-    }
-    final List<double> ticks = c.scale.ticks(c.interval);
-    for (int i = 0; i < ticks.length; i++) {
-      final double tick = ticks[i];
-      final double angle = g.angleOf(tick);
-      final GxRadialTickStyle major =
-          c.majorTickStyler?.call(tick, i) ?? c.majorTickStyle;
+  // Draw Minor Ticks
+  void _drawMinorTicks({
+    required Canvas canvas,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+    required double angle,
+    required double tickLength,
+    required double nextAngle,
+  }) {
+    final int totalMinorTicks = minorTicksPerInterval + 1; // +1 for major tick
+    final double minorTickLength = minorTickStyle.length;
 
-      if (c.showMajorTicks) {
-        _drawTick(canvas, g, angle, major);
+    for (int i = 1; i <= totalMinorTicks; i++) {
+      final double minorAngle =
+          angle + (i / totalMinorTicks) * (nextAngle - angle);
+      // Ignore i==totalMinorTicks as it is already drawn as major tick
+      if (i == totalMinorTicks) {
+        continue;
       }
-      if (c.showMinorTicks && i < ticks.length - 1) {
-        final double next = g.angleOf(ticks[i + 1]);
-        final int count = c.minorTicksPerInterval;
-        for (int j = 1; j <= count; j++) {
-          _drawTick(
-            canvas,
-            g,
-            angle + (next - angle) * j / (count + 1),
-            c.minorTickStyle,
-          );
-        }
-      }
-      if (c.showLabels) {
-        _drawTickLabel(canvas, g, angle, tick, major.length, i);
-      }
-    }
-  }
+      double x1 = center.dx + (radius - minorTickLength) * math.cos(minorAngle);
+      double y1 = center.dy + (radius - minorTickLength) * math.sin(minorAngle);
+      double x2 = center.dx + (radius * math.cos(minorAngle));
+      double y2 = center.dy + radius * math.sin(minorAngle);
 
-  void _drawTick(
-    Canvas canvas,
-    _Geometry g,
-    double angle,
-    GxRadialTickStyle style,
-  ) {
-    final double half = config.style.thickness / 2;
-    final double length = style.length;
-    final (double from, double to) = switch (style.alignment) {
-      GxRadialElementAlignment.end => (g.radius - half, g.radius - length),
-      GxRadialElementAlignment.start => (g.radius + half, g.radius + length),
-      GxRadialElementAlignment.center =>
-        style.position == GxRadialElementPosition.outside
-            ? (g.radius + length, g.radius)
-            : (g.radius - length, g.radius),
-    };
-    canvas.drawLine(
-      g.pointAt(angle, from),
-      g.pointAt(angle, to),
-      Paint()
-        ..color = style.color ?? config.tickColor
-        ..strokeWidth = style.thickness
+      if (minorTickStyle.position == GxRadialElementPosition.outside) {
+        x1 = center.dx + (radius + minorTickLength) * math.cos(minorAngle);
+        y1 = center.dy + (radius + minorTickLength) * math.sin(minorAngle);
+      } else {
+        x1 = center.dx + (radius - minorTickLength) * math.cos(minorAngle);
+        y1 = center.dy + (radius - minorTickLength) * math.sin(minorAngle);
+      }
+
+      // End point depends on the alignment
+
+      if (minorTickStyle.alignment == GxRadialElementAlignment.center) {
+        x2 = center.dx + (radius * math.cos(minorAngle));
+        y2 = center.dy + radius * math.sin(minorAngle);
+      } else if (minorTickStyle.alignment == GxRadialElementAlignment.end) {
+        x1 = center.dx + (radius - style.thickness / 2) * math.cos(minorAngle);
+        y1 = center.dy + (radius - style.thickness / 2) * math.sin(minorAngle);
+        x2 = center.dx + (radius - minorTickLength) * math.cos(minorAngle);
+        y2 = center.dy + (radius - minorTickLength) * math.sin(minorAngle);
+      } else if (minorTickStyle.alignment == GxRadialElementAlignment.start) {
+        x1 = center.dx + (radius + style.thickness / 2) * math.cos(minorAngle);
+        y1 = center.dy + (radius + style.thickness / 2) * math.sin(minorAngle);
+        x2 = center.dx + (radius + minorTickLength) * math.cos(minorAngle);
+        y2 = center.dy + (radius + minorTickLength) * math.sin(minorAngle);
+      }
+
+      final Paint minorTickPaint = Paint()
+        ..color = minorTickStyle.color
+        ..strokeWidth = minorTickStyle.thickness
         ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke,
-    );
+        ..style = PaintingStyle.stroke;
+
+      canvas.drawLine(Offset(x1, y1), Offset(x2, y2), minorTickPaint);
+    }
   }
 
-  void _drawTickLabel(
-    Canvas canvas,
-    _Geometry g,
-    double angle,
-    double value,
-    double tickLength,
-    int index,
-  ) {
-    final GxRadialTickLabelStyle label =
-        config.labelStyler?.call(value, index) ?? config.labelTickStyle;
-    final double distance = label.position == GxRadialElementPosition.outside
-        ? g.radius + tickLength + label.padding
-        : g.radius - tickLength - label.padding;
-    final Offset anchor = g.pointAt(angle, distance);
-    paintText(
-      canvas,
-      text:
-          config.labelFormatter?.call(value, index) ?? formatGaugeValue(value),
-      style: config.labelStyle.merge(label.style),
-      textDirection: config.textDirection,
-      position: (Size text) => anchor - Offset(text.width / 2, text.height / 2),
-    );
-  }
+  // Draw Needle for the Radial Gauge
+  void _drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+    required double needleValue,
+    required GxRadialNeedle needle,
+  }) {
+    /// Needle Value and Style
 
-  void _drawValueAtCenter(Canvas canvas, Offset center) {
-    paintText(
-      canvas,
-      text: formatGaugeValue(config.scale.clamp(value.value)),
-      style: config.valueStyle,
-      textDirection: config.textDirection,
-      position: (Size text) => center - Offset(text.width / 2, text.height / 2),
-    );
-  }
+    final double needleAngle =
+        startAngle + (needleValue / value.max) * sweepAngle;
 
-  void _drawNeedle(
-    Canvas canvas,
-    Size size,
-    _Geometry g,
-    double needleValue,
-    GxRadialNeedle needle,
-  ) {
-    final double angle = g.angleOf(needleValue);
-    final Color color = needle.color ?? config.needleColor;
-    final double half = config.style.thickness / 2;
-    final double top = needle.topOffset ?? 0;
-    final double tipDistance = switch (needle.alignment) {
-      GxRadialElementAlignment.start => top + g.radius + half,
-      GxRadialElementAlignment.end => top + g.radius - half,
-      GxRadialElementAlignment.center => g.radius,
-    };
-    final double baseDistance =
-        (needle.bottomOffset != null ? -needle.bottomOffset! : 1) - 1.5;
-    final Offset base = g.pointAt(angle, baseDistance);
-    final Offset tip = g.pointAt(angle, tipDistance);
-    final Shader? shader = needle.gradient?.createShader(
-      Rect.fromLTWH(0, 0, size.width, needle.thickness),
+    final double needleLength = needle.bottomOffset != null
+        ? (-needle.bottomOffset!)
+        : 1;
+
+    // Offset the start point to avoid overlap with the circle stroke
+    final GxNeedleCap needleCircle = needle.circle;
+    final double needleThickness = needle.thickness;
+
+    /// Needle Offsets
+    const double startOffset = 0;
+    final double topOffeset = needle.topOffest ?? 0;
+
+    final Offset needleStart = Offset(
+      center.dx + ((needleLength + startOffset - 1.5) * math.cos(needleAngle)),
+      center.dy + ((needleLength + startOffset - 1.5) * math.sin(needleAngle)),
     );
 
-    switch (needle.shape) {
-      case GxRadialNeedleShape.line:
-        canvas.drawLine(
-          base,
-          tip,
-          Paint()
-            ..color = color
-            ..strokeWidth = needle.thickness
-            ..style = PaintingStyle.stroke
-            ..strokeCap = needle.strokeCap
-            ..shader = shader,
-        );
-      case GxRadialNeedleShape.taperedLine:
-        final Offset side = Offset(
-          -math.sin(angle) * needle.thickness / 2,
-          math.cos(angle) * needle.thickness / 2,
-        );
-        canvas.drawPath(
-          Path()
-            ..moveTo(base.dx, base.dy)
-            ..lineTo(g.center.dx + side.dx, g.center.dy + side.dy)
-            ..lineTo(tip.dx, tip.dy)
-            ..lineTo(g.center.dx - side.dx, g.center.dy - side.dy)
-            ..close(),
-          Paint()
-            ..color = color
-            ..style = PaintingStyle.fill
-            ..shader = shader,
-        );
+    late double needleEndX;
+    late double needleEndY;
+    late double needleLeftX;
+    late double needleLeftY;
+    late double needleRightX;
+    late double needleRightY;
+
+    // Calculate the points for the needle path with constant width
+    if (needle.alignment == GxRadialElementAlignment.start) {
+      needleEndX =
+          center.dx +
+          (topOffeset + radius + style.thickness / 2) * math.cos(needleAngle);
+      needleEndY =
+          center.dy +
+          (topOffeset + radius + style.thickness / 2) * math.sin(needleAngle);
+    } else if (needle.alignment == GxRadialElementAlignment.end) {
+      needleEndX =
+          center.dx +
+          (topOffeset + radius - style.thickness / 2) * math.cos(needleAngle);
+      needleEndY =
+          center.dy +
+          (topOffeset + radius - style.thickness / 2) * math.sin(needleAngle);
+    } else {
+      needleEndX = center.dx + (radius * math.cos(needleAngle));
+      needleEndY = center.dy + (radius * math.sin(needleAngle));
     }
 
-    final GxNeedleCap cap = needle.cap;
-    canvas.drawCircle(
-      g.center,
-      cap.radius,
-      Paint()
-        ..color = cap.color ?? color
-        ..strokeWidth = cap.strokeWidth
-        ..style = cap.paintingStyle,
-    );
-    // An outlined cap is filled so the needle's base doesn't show through.
-    if (cap.paintingStyle == PaintingStyle.stroke) {
+    /// Needle Offset Path
+    final Offset needleEnd = Offset(needleEndX, needleEndY);
+
+    if (needle.shape == GxRadialNeedleShape.line) {
+      final Paint needlePaint = Paint()
+        ..color = needle.color
+        ..strokeWidth = needleThickness
+        ..style = PaintingStyle.stroke
+        ..strokeCap = needle.strokeCap
+        ..shader = needle.gradient?.createShader(
+          Rect.fromLTWH(0, 0, size.width, needle.thickness),
+        );
+
+      canvas.drawLine(needleStart, needleEnd, needlePaint);
+    } else if (needle.shape == GxRadialNeedleShape.taperedLine) {
+      needleLeftX = center.dx - ((needleThickness / 2) * math.sin(needleAngle));
+      needleLeftY = center.dy + ((needleThickness / 2) * math.cos(needleAngle));
+
+      needleRightX =
+          center.dx + ((needleThickness / 2) * math.sin(needleAngle));
+      needleRightY =
+          center.dy - ((needleThickness / 2) * math.cos(needleAngle));
+      final Offset leftSide = Offset(needleLeftX, needleLeftY);
+      final Offset rightSide = Offset(needleRightX, needleRightY);
+
+      final Path needlePath = Path()
+        ..moveTo(needleStart.dx, needleStart.dy)
+        ..lineTo(leftSide.dx, leftSide.dy)
+        ..lineTo(needleEnd.dx, needleEnd.dy)
+        ..lineTo(rightSide.dx, rightSide.dy)
+        ..close();
+
+      final Paint needlePaint = Paint()
+        ..color = needle.color
+        ..strokeWidth = needleThickness
+        ..style = PaintingStyle.fill
+        ..shader = needle.gradient?.createShader(
+          Rect.fromLTWH(0, 0, size.width, needle.thickness),
+        );
+      canvas.drawPath(needlePath, needlePaint);
+    }
+
+    final Paint needleCirclePaint = Paint()
+      ..color = needleCircle.color ?? needle.color
+      ..strokeWidth = needleCircle.strokeWidth
+      ..style = needleCircle.paintingStyle;
+
+    canvas.drawCircle(center, needleCircle.radius, needleCirclePaint);
+
+    // Handle Circle Stroke Overalap Issue:
+    // [Temporary Fix] by adding a small circle excluding the radius of the needle
+    if (needleCircle.paintingStyle == PaintingStyle.stroke) {
+      final Paint needleCircleStrokePaint = Paint()
+        ..color = needleCircle.innerColor ?? needleCircleInnerColor
+        ..strokeWidth = needleCircle.strokeWidth
+        ..style = PaintingStyle.fill;
+
       canvas.drawCircle(
-        g.center,
-        cap.radius - cap.strokeWidth / 2,
-        Paint()
-          ..color = cap.innerColor ?? config.capInnerColor
-          ..style = PaintingStyle.fill,
+        center,
+        needleCircle.radius - (needleCircle.strokeWidth / 2),
+        needleCircleStrokePaint,
       );
-      if (config.showValueAtCenter) {
-        _drawValueAtCenter(canvas, g.center);
+
+      if (showValueAtCenter) {
+        _drawValueAtCenter(canvas, center, size);
       }
     }
   }
 
-  void _drawPointers(Canvas canvas, Size size, _Geometry g) {
-    final double thickness = config.style.thickness;
-    for (final GxRadialPointer pointer in config.pointers) {
-      final GxRadialNeedle? needle = pointer.needle;
-      if (needle != null && pointer.showNeedle) {
-        _drawNeedle(canvas, size, g, pointer.value, needle);
+  // Draw Pointers for the Radial Gauge
+  void _drawPointers({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double radius,
+    required double startAngle,
+    required double sweepAngle,
+  }) {
+    for (final GxRadialPointer pointer in pointers!) {
+      final double pointerValue = pointer.value;
+
+      // Check Needle in Pointer
+      if (pointer.needle != null && pointer.showNeedle) {
+        _drawNeedle(
+          canvas: canvas,
+          size: size,
+          center: center,
+          radius: radius,
+          startAngle: startAngle,
+          sweepAngle: sweepAngle,
+          needleValue: pointerValue,
+          needle: pointer.needle!,
+        );
       }
+
       if (!pointer.showPointer) {
         continue;
       }
 
-      final double angle = g.angleOf(pointer.value);
-      final double distance =
-          g.radius +
-          switch (pointer.alignment) {
-            GxRadialElementAlignment.start => thickness / 2,
-            GxRadialElementAlignment.end => -thickness,
-            GxRadialElementAlignment.center => 0,
-          };
-      final GxRadialPointerStyle style = pointer.style;
-      final Paint paint = Paint()
-        ..color = style.color ?? config.pointerColor
-        ..strokeWidth = style.thickness
-        ..style = style.paintingStyle;
+      // Draw Pointers shape
+      final double pointerAngle =
+          startAngle + (pointerValue / value.max) * sweepAngle;
+      final GxRadialPointerShape shape = pointer.shape;
+      final Color pointerColor = pointer.style.color;
+      final double pointerThickness = pointer.style.thickness;
+      final PaintingStyle pointerPaintingStyle = pointer.style.paintingStyle;
+      final double pointerSize = pointer.style.size;
+      final GxRadialElementAlignment alignment = pointer.alignment;
+      final double gaugeThickness = style.thickness;
 
-      switch (pointer.shape) {
-        case GxRadialPointerShape.circle:
-          canvas.drawCircle(g.pointAt(angle, distance), style.size, paint);
-        case GxRadialPointerShape.triangle:
-          final Offset p1 = g.pointAt(angle, distance);
-          final Offset p2 = g.pointAt(angle + 0.1, distance + style.size);
-          final Offset p3 = g.pointAt(angle - 0.1, distance + style.size);
-          canvas.drawPath(
-            Path()
-              ..moveTo(p1.dx, p1.dy)
-              ..lineTo(p2.dx, p2.dy)
-              ..lineTo(p3.dx, p3.dy)
-              ..close(),
-            paint,
-          );
+      final Paint pointerPaint = Paint()
+        ..color = pointerColor
+        ..strokeWidth = pointerThickness
+        ..style = pointerPaintingStyle;
+
+      double offsetValue = 0;
+
+      if (alignment == GxRadialElementAlignment.start) {
+        offsetValue = gaugeThickness / 2;
+      } else if (alignment == GxRadialElementAlignment.end) {
+        offsetValue = -gaugeThickness;
+      }
+
+      if (shape == GxRadialPointerShape.circle) {
+        final double x =
+            center.dx + (radius + offsetValue) * math.cos(pointerAngle);
+        final double y =
+            center.dy + (radius + offsetValue) * math.sin(pointerAngle);
+
+        canvas.drawCircle(Offset(x, y), pointerSize, pointerPaint);
+      } else if (shape == GxRadialPointerShape.triangle) {
+        final double x1 =
+            center.dx + (radius + offsetValue) * math.cos(pointerAngle);
+        final double y1 =
+            center.dy + (radius + offsetValue) * math.sin(pointerAngle);
+
+        final double x2 =
+            center.dx +
+            (radius + offsetValue + pointerSize) * math.cos(pointerAngle + 0.1);
+        final double y2 =
+            center.dy +
+            (radius + offsetValue + pointerSize) * math.sin(pointerAngle + 0.1);
+
+        final double x3 =
+            center.dx +
+            (radius + offsetValue + pointerSize) * math.cos(pointerAngle - 0.1);
+        final double y3 =
+            center.dy +
+            (radius + offsetValue + pointerSize) * math.sin(pointerAngle - 0.1);
+
+        final Path pointerPath = Path()
+          ..moveTo(x1, y1)
+          ..lineTo(x2, y2)
+          ..lineTo(x3, y3)
+          ..close();
+
+        canvas.drawPath(pointerPath, pointerPaint);
+        // final double x =
+        //     center.dx + ((radius + offsetValue) * math.cos(pointerAngle));
+        // final double y =
+        //     center.dy + ((radius + offsetValue) * math.sin(pointerAngle));
+        // final double halfSize = pointerSize / 2;
+        // final Path path = Path()
+        //   ..moveTo(x, y - halfSize)
+        //   ..lineTo(x + halfSize, y + halfSize)
+        //   ..lineTo(x - halfSize, y + halfSize)
+        //   ..close();
+        // canvas.drawPath(path, pointerPaint);
       }
     }
   }
-}
 
-/// Center, radius and the value→angle mapping for one paint pass.
-class _Geometry {
-  const _Geometry({
-    required this.center,
-    required this.radius,
-    required this.startAngle,
-    required this.sweepAngle,
-    required this.scale,
-  });
+  void _drawRadialGauge(
+    Canvas canvas,
+    Size size,
+    double radius,
+    Offset center,
+    double startAngle,
+    double sweepAngle,
+  ) {
+    // Draw graident background if gradient is provided
 
-  final Offset center;
-  final double radius;
-  final double startAngle;
-  final double sweepAngle;
-  final GaugeScale scale;
+    final Rect rect = Rect.fromCircle(center: center, radius: radius);
 
-  double angleOf(double value) =>
-      startAngle + scale.fractionOf(value) * sweepAngle;
+    final Paint backgroundPaint = Paint()
+      ..color = style.backgroundColor ?? style.color.withValues(alpha: 0.2)
+      ..strokeWidth = style.thickness
+      ..style = style.paintingStyle
+      ..strokeCap = style.strokeCap
+      ..shader =
+          style.backgroundGradient?.createShader(rect) ??
+          style.gradient?.createShader(rect);
 
-  Offset pointAt(double angle, double distance) =>
-      center + Offset(math.cos(angle), math.sin(angle)) * distance;
+    final Paint foregroundPaint = Paint()
+      ..color = style.color
+      ..strokeWidth = style.thickness
+      ..style = style.paintingStyle
+      ..strokeCap = style.strokeCap
+      ..shader = style.gradient?.createShader(rect);
+
+    canvas.drawArc(rect, startAngle, sweepAngle, false, backgroundPaint);
+
+    final double sweep = (value.value / value.max) * sweepAngle;
+    canvas.drawArc(rect, startAngle, sweep, false, foregroundPaint);
+  }
+
+  void _drawTickLabels(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double angle,
+    double labelValue,
+    double tickLength,
+    int i,
+  ) {
+    final GxRadialTickLabelStyle filteredLabel = labelStyler != null
+        ? labelStyler!(labelValue, i)
+        : labelTickStyle;
+    final double labelRadius = radius - tickLength - filteredLabel.padding;
+    double labelX = center.dx + labelRadius * math.cos(angle);
+    double labelY = center.dy + labelRadius * math.sin(angle);
+
+    if (filteredLabel.position == GxRadialElementPosition.outside) {
+      labelX =
+          center.dx +
+          (radius + tickLength + filteredLabel.padding) * math.cos(angle);
+      labelY =
+          center.dy +
+          (radius + tickLength + filteredLabel.padding) * math.sin(angle);
+    }
+
+    final String labelValueStr = labelValue.toStringAsFixed(0);
+
+    final String labelText = labelFormatter != null
+        ? labelFormatter!(labelValue, i)
+        : labelValueStr;
+
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: labelText, style: filteredLabel.style),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final Offset labelOffset = Offset(
+      labelX - textPainter.width / 2,
+      labelY - textPainter.height / 2,
+    );
+
+    textPainter.paint(canvas, labelOffset);
+  }
+
+  void _drawTicksAndLabels(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double startAngle,
+    double sweepAngle,
+  ) {
+    final double minValue = value.min;
+    final double maxValue = value.max;
+    final int totalTicks = maxValue ~/ interval;
+
+    final double thickness = style.thickness;
+
+    for (int i = 0; i <= totalTicks; i++) {
+      final double labelValue =
+          minValue + (i / totalTicks) * (maxValue - minValue);
+      final GxRadialTickStyle filteredMajorTickStyle = majorTickStyler != null
+          ? majorTickStyler!(labelValue, i)
+          : majorTickStyle;
+
+      final double tickLength = filteredMajorTickStyle.length;
+
+      // final double angle = (-math.pi / 2) + (i / totalTicks) * 2 * math.pi;
+      final double angle = startAngle + (i / totalTicks) * sweepAngle;
+
+      // Define the start and end points of the tick
+      double x1 = center.dx + (radius - tickLength) * math.cos(angle);
+      double y1 = center.dy + (radius - tickLength) * math.sin(angle);
+      double x2 = center.dx + (radius * math.cos(angle));
+      double y2 = center.dy + radius * math.sin(angle);
+
+      if (filteredMajorTickStyle.position == GxRadialElementPosition.outside) {
+        x1 = center.dx + (radius + tickLength) * math.cos(angle);
+        y1 = center.dy + (radius + tickLength) * math.sin(angle);
+      } else {
+        x1 = center.dx + (radius - tickLength) * math.cos(angle);
+        y1 = center.dy + (radius - tickLength) * math.sin(angle);
+      }
+
+      // End point depends on the alignment
+      if (filteredMajorTickStyle.alignment == GxRadialElementAlignment.center) {
+        x2 = center.dx + (radius * math.cos(angle));
+        y2 = center.dy + radius * math.sin(angle);
+      } else if (filteredMajorTickStyle.alignment ==
+          GxRadialElementAlignment.end) {
+        x1 = center.dx + (radius - thickness / 2) * math.cos(angle);
+        y1 = center.dy + (radius - thickness / 2) * math.sin(angle);
+        x2 = center.dx + (radius - tickLength) * math.cos(angle);
+        y2 = center.dy + (radius - tickLength) * math.sin(angle);
+      } else if (filteredMajorTickStyle.alignment ==
+          GxRadialElementAlignment.start) {
+        x1 = center.dx + (radius + thickness / 2) * math.cos(angle);
+        y1 = center.dy + (radius + thickness / 2) * math.sin(angle);
+        x2 = center.dx + (radius + tickLength) * math.cos(angle);
+        y2 = center.dy + (radius + tickLength) * math.sin(angle);
+      }
+
+      if (showMajorTicks) {
+        // Draw tick
+        final Paint tickPaint = Paint()
+          ..color = filteredMajorTickStyle.color
+          ..strokeWidth = filteredMajorTickStyle.thickness
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke;
+
+        canvas.drawLine(Offset(x1, y1), Offset(x2, y2), tickPaint);
+      }
+
+      if (showMinorTicks) {
+        // Draw minor ticks
+
+        final double nextAngle =
+            startAngle + ((i + 1) / totalTicks) * sweepAngle;
+        _drawMinorTicks(
+          canvas: canvas,
+          center: center,
+          radius: radius,
+          startAngle: startAngle,
+          sweepAngle: sweepAngle,
+          angle: angle,
+          tickLength: tickLength,
+          nextAngle: nextAngle,
+        );
+      }
+
+      if (showLabels) {
+        // Draw label
+        _drawTickLabels(
+          canvas,
+          center,
+          radius,
+          angle,
+          labelValue,
+          tickLength,
+          i,
+        );
+      }
+    }
+  }
+
+  void _drawValueAtCenter(Canvas canvas, Offset center, Size size) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(
+        text: value.value.toStringAsFixed(1),
+        style: const TextStyle(color: Colors.black, fontSize: 20),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final double textWidth = textPainter.width;
+    final double textHeight = textPainter.height;
+
+    final double textX = center.dx - (textWidth / 2);
+    final double textY = center.dy - (textHeight / 2);
+
+    textPainter.paint(canvas, Offset(textX, textY));
+  }
 }

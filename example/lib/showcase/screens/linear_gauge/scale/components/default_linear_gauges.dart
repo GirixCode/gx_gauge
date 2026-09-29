@@ -287,8 +287,8 @@ class _DefaultScaleLinearGaugeBodyState
             fillAreas: [
               GxLinearFillArea(
                 thickness: 60,
-                start: 30,
-                end: 80,
+                startValue: 30,
+                endValue: 80,
                 color: Colors.green.withValues(alpha: 0.3),
               ),
             ],
@@ -356,14 +356,14 @@ class _DefaultScaleLinearGaugeBodyState
             fillAreas: [
               GxLinearFillArea(
                 thickness: 60,
-                start: 10,
-                end: 70,
+                startValue: 10,
+                endValue: 70,
                 color: Colors.grey.withValues(alpha: 0.3),
               ),
               GxLinearFillArea(
                 thickness: 48,
-                start: 30,
-                end: 80,
+                startValue: 30,
+                endValue: 80,
                 color: Colors.orange.withValues(alpha: 0.3),
               ),
             ],

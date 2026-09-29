@@ -1,142 +1,177 @@
-import 'package:flutter/foundation.dart';
+// lib/src/linear/widgets/linear_gauge.dart
+
 import 'package:flutter/material.dart';
-import 'package:gx_gauge/src/common/models/gauge_label.dart';
-import 'package:gx_gauge/src/common/models/gauge_value.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
-import 'package:gx_gauge/src/core/gauge_defaults.dart';
-import 'package:gx_gauge/src/core/gauge_scale.dart';
-import 'package:gx_gauge/src/core/gauge_widgets.dart';
-import 'package:gx_gauge/src/core/semantics.dart';
-import 'package:gx_gauge/src/linear/models/linear_needle.dart';
-import 'package:gx_gauge/src/linear/models/linear_progress_style.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
 import 'package:gx_gauge/src/linear/painters/progress_linear_painter.dart';
 
-/// A horizontal progress bar with an optional needle and label.
+/// The [GxLinearProgressGauge] widget is used to display a linear gauge.
 ///
-/// Takes the full available width. Set [duration] to animate value changes.
+/// The [GxLinearProgressGauge] widget requires the following properties:
 ///
-/// ```dart
-/// GxLinearProgressGauge(
-///   value: const GxGaugeValue(value: 64),
-///   style: const GxLinearProgressStyle(thickness: 8),
-///   label: const GxGaugeLabel(label: '{value}%'),
-///   showLabel: true,
-///   duration: const Duration(milliseconds: 400),
-/// )
-/// ```
-class GxLinearProgressGauge extends ImplicitlyAnimatedWidget {
-  /// Creates a linear progress gauge.
+/// - [value]: An instance of the [GxGaugeValue] class that holds the value of the gauge.
+///
+/// - [style]: An instance of the [GxLinearProgressStyle] class that holds the style properties of the gauge.
+///
+/// - [needle]: An instance of the [GxLinearNeedle] class that holds the needle properties of the Needle.
+///
+/// - [needlePainter]: A function that takes a Canvas and Offset as arguments and returns void. This function is used to draw a custom needle.
+///
+/// - [reverse]: A boolean value that determines if the gauge is reversed.
+///
+/// - [showLabel]: A boolean value that determines if the label is shown.
+///
+/// - [height]: A double value that determines the height of the gauge.
+class GxLinearProgressGauge extends StatelessWidget {
   const GxLinearProgressGauge({
     super.key,
     required this.value,
     this.style = const GxLinearProgressStyle(),
     this.label,
-    this.showLabel = false,
     this.needle,
     this.needlePainter,
     this.reverse = false,
+    this.showLabel = false,
     this.height,
-    this.semanticLabel,
-    this.semanticValueFormatter,
-    super.duration = Duration.zero,
-    super.curve = Curves.easeInOut,
-    super.onEnd,
   });
 
-  /// The value and its range.
+  /// Specifies the value of the gauge. It is required.
+  ///
+  /// [value] GxGaugeValue: The value of the gauge.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  /// )
+  /// ```
+  ///
   final GxGaugeValue value;
 
-  /// Colors and shape of the track.
+  /// Specifies the style of the gauge. Default is GxLinearProgressStyle().
+  ///
+  /// [style] GxLinearProgressStyle: The style of the gauge.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  style: GxLinearProgressStyle(
+  ///   color: Colors.blue,
+  ///   backgroundColor: Colors.grey,
+  ///   thickness: 10.0,
+  ///  ),
+  /// )
+  /// ```
+  ///
   final GxLinearProgressStyle style;
 
-  /// Text drawn on the gauge when [showLabel] is true. `{value}` is replaced
-  /// with the current value.
+  /// Specifies the label of the gauge. Default is null.
+  ///
+  /// [label] GxGaugeLabel: The label of the gauge. If label contains {value} then it will be replaced with the value.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  label: GxGaugeLabel(
+  ///   label: 'Label {value}',
+  ///   style: TextStyle(color: Colors.black),
+  ///  ),
+  /// )
+  /// ```
+  ///
+
   final GxGaugeLabel? label;
 
-  /// Whether [label] is drawn. Defaults to false.
-  final bool showLabel;
-
-  /// An optional needle at the current value.
+  /// Specifies the needle of the gauge. Default is null.
+  ///
+  /// [needle] GxLinearNeedle: The needle of the gauge.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  needle: GxLinearNeedle(
+  ///   position: GxNeedlePosition.center,
+  ///   size: Size(20, 20),
+  ///   color: Colors.blueGrey[800]!,
+  ///  )
+  /// )
+  /// ```
+  ///
   final GxLinearNeedle? needle;
 
-  /// Draws the needle when its shape is `GxNeedleShape.custom`. Pass a
-  /// stable (top-level or static) function to avoid needless repaints.
+  /// Specifies the needlePainter of the gauge. Default is null.
+  ///
+  /// [needlePainter] [GxNeedlePainter]: draws the needle when its shape is `GxNeedleShape.custom`.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  needlePainter: (Canvas canvas, Offset position) {
+  ///    final Paint paint = Paint()
+  ///    ..color = Colors.blue
+  ///    ..strokeWidth = 2;
+  ///    canvas.drawLine(position, Offset(position.dx, position.dy + 20), paint);
+  ///  },
+  /// )
+  /// ```
+  ///
   final GxNeedlePainter? needlePainter;
 
-  /// Fills from the end instead of the start. In a right-to-left locale the
-  /// gauge already fills from the right, and [reverse] flips it back.
+  /// Specifies the reverse of the gauge. Default is false.
+  ///
+  /// [reverse] bool: The reverse of the gauge.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  reverse: true,
+  /// )
+  /// ```
+  ///
   final bool reverse;
 
-  /// The gauge's height. Null uses `style.thickness`.
+  /// Specifies the showLabel of the gauge. Default is false.
+  ///
+  /// [showLabel] bool: The showLabel of the gauge.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  showLabel: true,
+  /// )
+  /// ```
+  ///
+  final bool showLabel;
+
+  /// Specifies the height of the gauge. Default is null.
+  ///
+  /// [height] double: The height of the gauge.
+  ///
+  /// ```dart
+  /// GxLinearProgressGauge(
+  ///  value: GxGaugeValue(value: 50),
+  ///  height: 40,
+  /// )
+  /// ```
+  ///
   final double? height;
-
-  /// Describes the gauge to screen readers, e.g. 'Download progress'.
-  final String? semanticLabel;
-
-  /// Formats the value announced by screen readers.
-  final GxSemanticValueFormatter? semanticValueFormatter;
-
-  @override
-  AnimatedGaugeState<GxLinearProgressGauge> createState() =>
-      _GxLinearProgressGaugeState();
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty<GxGaugeValue>('value', value))
-      ..add(DiagnosticsProperty<GxLinearProgressStyle>('style', style))
-      ..add(
-        DiagnosticsProperty<GxLinearNeedle>(
-          'needle',
-          needle,
-          defaultValue: null,
-        ),
-      )
-      ..add(FlagProperty('reverse', value: reverse, ifTrue: 'reversed'))
-      ..add(DoubleProperty('height', height, defaultValue: null))
-      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
-  }
-}
-
-class _GxLinearProgressGaugeState
-    extends AnimatedGaugeState<GxLinearProgressGauge> {
-  @override
-  double get targetValue => widget.value.value;
 
   @override
   Widget build(BuildContext context) {
-    final GxLinearProgressGauge w = widget;
-    final GaugeDefaults defaults = GaugeDefaults.of(context);
-    final TextDirection direction =
-        Directionality.maybeOf(context) ?? TextDirection.ltr;
-    final Color color = w.style.color ?? defaults.primary;
+    final Size size = Size.fromHeight(height ?? style.thickness);
 
-    return gaugeSemantics(
-      label: w.semanticLabel,
-      value: semanticValue(w.semanticValueFormatter, w.value.value),
-      child: LinearGaugeBox(
-        height: w.height ?? w.style.thickness,
-        child: CustomPaint(
-          painter: ProgressLinearPainter(
-            value: valueAnimation,
-            config: ProgressPainterConfig(
-              scale: GaugeScale(w.value.min, w.value.max),
-              style: w.style,
-              color: color,
-              backgroundColor:
-                  w.style.backgroundColor ?? color.withValues(alpha: 0.2),
-              reversed: (direction == TextDirection.rtl) != w.reverse,
-              textDirection: direction,
-              labelStyle: defaults.labelStyle,
-              needleColor: defaults.needle,
-              needle: w.needle,
-              needlePainter: w.needlePainter,
-              label: w.label,
-              showLabel: w.showLabel,
-            ),
-          ),
-        ),
+    return CustomPaint(
+      size: size,
+      painter: ProgressLinearPainter(
+        label: label,
+        style: style,
+        gaugeValue: value,
+        needle: needle,
+        needlePainter: needlePainter,
+        reverse: reverse,
+        showLabel: showLabel,
+        height: height,
       ),
     );
   }

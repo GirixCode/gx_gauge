@@ -1,95 +1,173 @@
-import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 
-import 'package:flutter/painting.dart';
-import 'package:gx_gauge/src/common/models/gauge_label.dart';
-import 'package:gx_gauge/src/core/gauge_scale.dart';
-import 'package:gx_gauge/src/core/text_utils.dart';
-import 'package:gx_gauge/src/linear/models/linear_bar_pointer.dart';
+class LinearBarUtils {
+  // Draw the Linear bars
 
-/// Draws [GxLinearBarPointer]s along a [LinearTrack].
-abstract final class LinearBarUtils {
-  /// Draws each bar from `x(start)` to `x(end)`, [height] tall with its top
-  /// at [top].
-  ///
-  /// Bars are shrunk by `gap / 2` on every side that doesn't touch the end of
-  /// the track, which leaves a [gap]-pixel space between adjacent bars.
-  /// [color] is the fallback for bars without a color, and [labelStyle] the
-  /// base style that bar labels merge onto.
   static void drawBars({
     required Canvas canvas,
-    required GaugeScale scale,
-    required LinearTrack track,
+    required Size size,
     required List<GxLinearBarPointer> bars,
-    required double top,
-    required double height,
-    required Color color,
-    required TextStyle labelStyle,
-    required TextDirection textDirection,
-    double gap = 0,
+    required double value,
+    required double gapBetweenBars,
+    required double minValue,
+    required double maxValue,
+    double barOffset = 0,
   }) {
-    const double epsilon = 1e-6;
-    for (final GxLinearBarPointer bar in bars) {
-      final double x1 = track.xOf(scale.fractionOf(bar.start));
-      final double x2 = track.xOf(scale.fractionOf(bar.end));
-      double left = math.min(x1, x2);
-      double right = math.max(x1, x2);
-      if (gap > 0) {
-        if (left > track.start + epsilon) {
-          left += gap / 2;
+    final double height = size.height;
+    final double width = size.width;
+
+    double startValue = minValue;
+
+    // Gap Value between bars wrt to the width
+    final double gapValue = (gapBetweenBars / maxValue) * width;
+
+    // Find out the no of gaps between bars
+    final int noOfGaps = bars.length - 1;
+
+    // Calculate the size after gap between bars
+    // final double widthAfterGap = size.width - (gapValue * noOfGaps);
+
+    for (int index = 0; index < bars.length; index++) {
+      final GxLinearBarPointer barPointer = bars[index];
+      final double barToDrawnValue = barPointer.value;
+
+      final Paint paintAxis = Paint()
+        ..color = barPointer.color
+        ..strokeWidth = barPointer.thickness
+        ..strokeCap = barPointer.strokeCap
+        ..style = barPointer.paintingStyle;
+      double barToDrawnWidth = (barToDrawnValue / maxValue) * width;
+
+      //Allowing the bar to be drawn with a gap between them
+      final bool isGap = gapBetweenBars > 0 && index <= noOfGaps;
+
+      // Gap To Drawn Value. We need to divide the gapValue by 2 to get the gap value for each side
+      final double gapToDrawn = gapValue / 2;
+      if (isGap) {
+        // Ignore start value for the first bar. It will be 0
+        if (index > 0) {
+          startValue += gapToDrawn;
         }
-        if (right < track.end - epsilon) {
-          right -= gap / 2;
-        }
-      }
-      if (right <= left) {
-        continue;
+
+        final double tempBarToDrawn = barToDrawnWidth - gapToDrawn;
+
+        // Adjust the size to bartoDrawnValue because of the [noOfGaps] and BarPointers.length
+        barToDrawnWidth = tempBarToDrawn + (gapToDrawn / bars.length);
       }
 
-      final Rect rect = Rect.fromLTRB(left, top, right, top + height);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, bar.radius ?? Radius.zero),
-        Paint()
-          ..color = bar.color ?? color
-          ..strokeWidth = bar.thickness
-          ..strokeCap = bar.strokeCap
-          ..style = bar.paintingStyle,
+      final Rect barRect = Rect.fromLTWH(
+        startValue,
+        barOffset,
+        barToDrawnWidth,
+        height,
       );
 
-      final GxGaugeLabel? label = bar.label;
-      if (label != null) {
-        _drawLabel(canvas, rect, label, labelStyle, textDirection);
+      final RRect rRect = RRect.fromRectAndRadius(
+        barRect,
+        barPointer.radius ?? Radius.zero,
+      );
+
+      canvas.drawRRect(rRect, paintAxis);
+      startValue += barToDrawnWidth;
+
+      // Text label and style
+
+      if (barPointer.label != null) {
+        final GxGaugeLabel label = barPointer.label!;
+        final TextPainter textPainter = TextPainter(
+          text: TextSpan(text: label.label, style: label.style),
+          textDirection: TextDirection.rtl,
+          textAlign: barPointer.label?.textAlign ?? TextAlign.center,
+        )..layout();
+        final double textWidth = textPainter.width;
+        final double textHeight = textPainter.height;
+
+        double textX = barRect.left + (barRect.width - textWidth) / 2;
+        double textY = barRect.top + (barRect.height - textHeight) / 2;
+
+        if (barPointer.label!.offset != null) {
+          textX += barPointer.label!.offset!.dx;
+          textY += barPointer.label!.offset!.dy;
+        } else {
+          switch (barPointer.label!.textAlign!) {
+            case TextAlign.center:
+            case TextAlign.justify:
+              break;
+            case TextAlign.left:
+              textX = barRect.left;
+              break;
+            case TextAlign.right:
+              textX = barRect.right - textWidth;
+              break;
+
+            case TextAlign.start:
+              textY = 5;
+              break;
+            case TextAlign.end:
+              textY = barRect.height - textHeight - 5;
+              break;
+          }
+        }
+
+        textPainter.paint(canvas, Offset(textX, textY));
       }
     }
   }
 
-  static void _drawLabel(
-    Canvas canvas,
-    Rect rect,
-    GxGaugeLabel label,
-    TextStyle baseStyle,
-    TextDirection textDirection,
-  ) {
-    paintText(
-      canvas,
-      text: label.label,
-      style: baseStyle.merge(label.style),
-      textDirection: textDirection,
-      position: (Size size) {
-        double x;
-        switch (resolveTextAlign(label.textAlign, textDirection)) {
-          case TextAlign.left:
-            x = rect.left + label.spaceExtent;
-          case TextAlign.right:
-            x = rect.right - size.width - label.spaceExtent;
-          case TextAlign.center:
-          case TextAlign.justify:
-          case TextAlign.start:
-          case TextAlign.end:
-            x = rect.center.dx - size.width / 2;
+  // Draw Needle for the Linear Bars
+  static void drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required GxLinearNeedle needle,
+    required double value,
+    required double minValue,
+    required double maxValue,
+    required double gapBetweenBars,
+    required List<GxLinearBarPointer> bars,
+    required bool showNeedleInsideBar,
+    GxNeedlePainter? needlePainter,
+  }) {
+    double needleValue = value;
+
+    // Gap Value
+    if (gapBetweenBars > 0 && showNeedleInsideBar) {
+      // Find out the no of gaps between bars
+      final int noOfGaps = bars.length - 1;
+      // Check whether the needleValue is inside the gap range
+      if (noOfGaps > 0) {
+        for (int index = 0; index < noOfGaps; index++) {
+          final double startValue = bars[index].value;
+          final double endValue = startValue + gapBetweenBars;
+
+          if (needleValue == startValue) {
+            needleValue = startValue - gapBetweenBars / 2;
+            break;
+          } else if (needleValue > startValue && needleValue < endValue) {
+            needleValue = needleValue;
+            break;
+          } else if (needleValue > startValue && needleValue < endValue) {
+            needleValue += gapBetweenBars;
+
+            break;
+          }
         }
-        final Offset offset = label.offset ?? Offset.zero;
-        return Offset(x, rect.center.dy - size.height / 2) + offset;
-      },
+      }
+    }
+
+    // Draw the needle
+    NeedleUtils.drawIt(
+      canvas: canvas,
+      size: size,
+      maxValue: maxValue,
+      minValue: minValue,
+      thickness: needle.offset,
+      value: needleValue,
+      needle: needle,
+      needlePainter: needlePainter,
     );
   }
 }

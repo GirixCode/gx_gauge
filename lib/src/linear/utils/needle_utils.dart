@@ -1,86 +1,143 @@
-import 'package:flutter/painting.dart';
-import 'package:gx_gauge/src/common/models/enums.dart';
-import 'package:gx_gauge/src/common/utils/typedef.dart';
-import 'package:gx_gauge/src/linear/models/linear_needle.dart';
+import 'dart:ui';
 
-/// Draws a [GxLinearNeedle] on a horizontal track.
-abstract final class NeedleUtils {
-  /// Draws [needle] at horizontal position [x] within a gauge of [size].
-  ///
-  /// The vertical position follows `needle.position`. In [dense] mode, a
-  /// needle above or below the track is offset by the track [thickness]
-  /// instead of by its own height. [color] is the resolved needle color.
-  /// For [GxNeedleShape.custom], [needlePainter] receives the anchor and the
-  /// needle with its color resolved.
+import 'package:gx_gauge/src/common/models/enums.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
+import 'package:gx_gauge/src/common/utils/typedef.dart';
+import 'package:gx_gauge/src/linear/models/linear_gauge_style.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
+
+class NeedleUtils {
   static void drawIt({
     required Canvas canvas,
     required Size size,
-    required double x,
+    required double minValue,
+    required double maxValue,
+    required double value,
+    bool dense = false,
     required GxLinearNeedle needle,
     required double thickness,
-    required Color color,
-    bool dense = false,
     GxNeedlePainter? needlePainter,
   }) {
-    final double width = needle.size.width;
-    final double height = needle.size.height;
+    // Calculate the needle's x-position based on the needle position
+    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
+      0.0,
+      1.0,
+    );
 
-    double y = size.height / 2;
-    switch (needle.position) {
+    // To allign nnedle with center position 0: Start after progress
+    // final double denseValue = dense ? -5 : needle.size.width / 2;
+    const double denseValue = 0;
+    final double needleX = (size.width * progress) - denseValue;
+    double needleY = size.height / 2;
+
+    final GxNeedlePosition needlePosition = needle.position;
+    final Color needleColor = needle.color;
+    final double needleWidthSize = needle.size.width;
+    final double needleHeightSize = needle.size.height;
+    final GxNeedleShape shape = needle.shape;
+
+    //    |
+    // -------- X+
+    //    | Y+ needle
+
+    switch (needlePosition) {
       case GxNeedlePosition.top:
-        y = -(dense ? thickness : height / 2);
+        needleY = -(dense ? thickness : needleHeightSize / 2);
+        break;
       case GxNeedlePosition.bottom:
         if (dense) {
-          y = size.height >= thickness
-              ? size.height + height / 2
-              : size.height + thickness / 2;
+          if (size.height >= thickness) {
+            needleY = size.height + needleHeightSize / 2;
+          } else {
+            needleY = size.height + thickness / 2;
+          }
         } else {
-          y = size.height;
+          needleY = size.height;
         }
+        break;
       case GxNeedlePosition.center:
+        // Use the calculated needleX based on the value
+        // needleX = size.height / 2;
         break;
     }
 
-    final Paint paint = Paint()
-      ..color = color
+    // Computed needle X
+    // needleX = needleX - needleWidthSize / 4;
+
+    final Paint needlePaint = Paint()
+      ..color = needleColor
       ..style = needle.paintingStyle
       ..strokeWidth = needle.strokeWidth
       ..strokeCap = needle.strokeCap;
 
-    switch (needle.shape) {
+    switch (shape) {
       case GxNeedleShape.circle:
-        canvas.drawCircle(Offset(x, y), width / 2, paint);
+        canvas.drawCircle(
+          Offset(needleX, needleY),
+          needleWidthSize / 2,
+          needlePaint,
+        );
+        break;
       case GxNeedleShape.triangle:
-        canvas.drawPath(
-          Path()
-            ..moveTo(x, y - width / 2)
-            ..lineTo(x - width / 2, y + width / 2)
-            ..lineTo(x + width / 2, y + width / 2)
-            ..close(),
-          paint,
-        );
+        final Path trianglePath = Path()
+          ..moveTo(needleX, needleY - needleWidthSize / 2)
+          ..lineTo(needleX - needleWidthSize / 2, needleY + needleWidthSize / 2)
+          ..lineTo(needleX + needleWidthSize / 2, needleY + needleWidthSize / 2)
+          ..close();
+        canvas.drawPath(trianglePath, needlePaint);
+        break;
       case GxNeedleShape.diamond:
-        canvas.drawPath(
-          Path()
-            ..moveTo(x, y - width / 2)
-            ..lineTo(x - width / 2, y)
-            ..lineTo(x, y + width / 2)
-            ..lineTo(x + width / 2, y)
-            ..close(),
-          paint,
-        );
+        final Path diamondPath = Path()
+          ..moveTo(needleX, needleY - needleWidthSize / 2)
+          ..lineTo(needleX - needleWidthSize / 2, needleY)
+          ..lineTo(needleX, needleY + needleWidthSize / 2)
+          ..lineTo(needleX + needleWidthSize / 2, needleY)
+          ..close();
+        canvas.drawPath(diamondPath, needlePaint);
+        break;
       case GxNeedleShape.rectangle:
-      case GxNeedleShape.pipe:
-        canvas.drawRect(
-          Rect.fromCenter(center: Offset(x, y), width: width, height: height),
-          paint,
+        final Rect rect = Rect.fromCenter(
+          center: Offset(needleX, needleY),
+          width: needleWidthSize,
+          height: needleWidthSize,
         );
+        canvas.drawRect(rect, needlePaint);
+        break;
       case GxNeedleShape.custom:
-        needlePainter?.call(
-          canvas,
-          Offset(x, y),
-          needle.color == null ? needle.copyWith(color: color) : needle,
+        if (needlePainter != null) {
+          needlePainter(canvas, Offset(needleX, needleY), needle);
+        }
+        break;
+      case GxNeedleShape.pipe:
+        final Rect rect = Rect.fromCenter(
+          center: Offset(needleX, needleY),
+          width: needleWidthSize,
+          height: needle.size.height,
         );
+        canvas.drawRect(rect, needlePaint);
+        break;
     }
+  }
+
+  static void drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required GxGaugeValue gaugeValue,
+    bool dense = false,
+    required GxLinearProgressStyle style,
+    required GxLinearNeedle needle,
+    GxNeedlePainter? needlePainter,
+  }) {
+    return drawIt(
+      canvas: canvas,
+      size: size,
+      minValue: gaugeValue.min,
+      maxValue: gaugeValue.max,
+      value: gaugeValue.value,
+      dense: dense,
+      needle: needle,
+      thickness: style.thickness,
+      needlePainter: needlePainter,
+    );
   }
 }

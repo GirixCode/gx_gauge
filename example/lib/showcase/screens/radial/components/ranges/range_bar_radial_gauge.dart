@@ -21,7 +21,7 @@ class RangeBarRadialGaugeBody extends StatelessWidget {
               showValueAtCenter: true,
               // startAngleInDegree: 180,
               // sweepAngleInDegree: 180,
-              diameter: twinSize.width,
+              size: twinSize,
               value: GxGaugeValue(value: value),
               showLabels: true,
               labelTickStyle: const GxRadialTickLabelStyle(padding: 30),
@@ -31,8 +31,8 @@ class RangeBarRadialGaugeBody extends StatelessWidget {
                 GxRadialRange(
                   // offset: 18,
                   height: 30,
-                  start: 0,
-                  end: 33,
+                  startValue: 0,
+                  endValue: 33,
                   color: Colors.green,
                   label: GxGaugeLabel(
                     label: 'Poor',
@@ -41,8 +41,8 @@ class RangeBarRadialGaugeBody extends StatelessWidget {
                 ),
                 GxRadialRange(
                   height: 30,
-                  start: 33,
-                  end: 66,
+                  startValue: 33,
+                  endValue: 66,
                   color: Colors.yellow,
                   label: GxGaugeLabel(
                     label: 'Average',
@@ -51,8 +51,8 @@ class RangeBarRadialGaugeBody extends StatelessWidget {
                 ),
                 GxRadialRange(
                   height: 30,
-                  start: 66,
-                  end: 100,
+                  startValue: 66,
+                  endValue: 100,
                   color: Colors.red,
                   label: GxGaugeLabel(
                     label: 'Good',
@@ -60,8 +60,8 @@ class RangeBarRadialGaugeBody extends StatelessWidget {
                   ),
                 ),
                 // GxRadialRange(
-                //     start: 33,
-                //     end: 49,
+                //     startValue: 33,
+                //     endValue: 49,
                 //     label: GxGaugeLabel(
                 //         label: 'Average', style: TextStyle(color: Colors.red))),
               ],

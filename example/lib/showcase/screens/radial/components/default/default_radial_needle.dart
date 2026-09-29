@@ -23,20 +23,20 @@ class DefaultRadialNeedle extends StatelessWidget {
             children: [
               GxRadialGauge(
                 showValueAtCenter: false,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 showLabels: true,
                 interval: 10,
                 showNeedle: true,
                 needle: const GxRadialNeedle(
-                  cap: GxNeedleCap(
+                  circle: GxNeedleCap(
                     radius: 10,
                     paintingStyle: PaintingStyle.fill,
                   ),
                   color: Colors.red,
                   bottomOffset: 1.0,
                   thickness: 20,
-                  topOffset: 0,
+                  topOffest: 0,
                   alignment: GxRadialElementAlignment.start,
                 ),
                 style: const GxRadialGaugeStyle(
@@ -48,12 +48,12 @@ class DefaultRadialNeedle extends StatelessWidget {
                 showValueAtCenter: false,
                 startAngleInDegree: 135,
                 sweepAngleInDegree: 270,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 interval: 10,
                 showNeedle: true,
                 needle: const GxRadialNeedle(
-                  cap: GxNeedleCap(
+                  circle: GxNeedleCap(
                     radius: 12,
                     strokeWidth: 5,
                     innerColor: Colors.orange,
@@ -62,7 +62,7 @@ class DefaultRadialNeedle extends StatelessWidget {
                   color: Colors.indigo,
                   bottomOffset: 1.0,
                   thickness: 20,
-                  topOffset: 0,
+                  topOffest: 0,
                   alignment: GxRadialElementAlignment.end,
                 ),
                 style: const GxRadialGaugeStyle(
@@ -80,7 +80,7 @@ class DefaultRadialNeedle extends StatelessWidget {
                 showValueAtCenter: false,
                 startAngleInDegree: 90,
                 sweepAngleInDegree: 180,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 interval: 10,
                 showNeedle: true,
@@ -97,7 +97,7 @@ class DefaultRadialNeedle extends StatelessWidget {
                   );
                 },
                 needle: const GxRadialNeedle(
-                  cap: GxNeedleCap(
+                  circle: GxNeedleCap(
                     radius: 8,
                     strokeWidth: 5,
                     innerColor: Colors.orange,
@@ -106,7 +106,7 @@ class DefaultRadialNeedle extends StatelessWidget {
                   color: Colors.brown,
                   bottomOffset: 20.0,
                   thickness: 10,
-                  topOffset: 12,
+                  topOffest: 12,
                   alignment: GxRadialElementAlignment.start,
                 ),
                 style: const GxRadialGaugeStyle(
@@ -116,14 +116,14 @@ class DefaultRadialNeedle extends StatelessWidget {
               ),
               GxRadialGauge(
                 showValueAtCenter: false,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 showLabels: true,
                 interval: 10,
                 showNeedle: true,
                 needle: const GxRadialNeedle(
                   shape: GxRadialNeedleShape.line,
-                  cap: GxNeedleCap(
+                  circle: GxNeedleCap(
                     radius: 8,
                     strokeWidth: 4,
                     paintingStyle: PaintingStyle.stroke,
@@ -131,7 +131,7 @@ class DefaultRadialNeedle extends StatelessWidget {
                   color: Colors.grey,
                   bottomOffset: 20.0,
                   thickness: 4,
-                  topOffset: 0,
+                  topOffest: 0,
                   alignment: GxRadialElementAlignment.start,
                 ),
                 style: const GxRadialGaugeStyle(

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Tints and shades of a base color.
-abstract final class ColorUtils {
-  /// A [MaterialColor] swatch with [color] as shade 500, lighter tints for
-  /// 50–400 and darker shades for 600–900.
+class ColorUtils {
+  // Get Material Color from Color
+
   static MaterialColor getMaterialColor(Color color) {
     final Map<int, Color> colorSwatch = <int, Color>{
       50: tintColor(color, 0.9),

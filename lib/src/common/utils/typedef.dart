@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:gx_gauge/src/common/models/enums.dart';
-import 'package:gx_gauge/src/linear/models/linear_needle.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
 
 /// Formats a scale value as label text.
 ///

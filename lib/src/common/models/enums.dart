@@ -1,126 +1,118 @@
-/// Where a tooltip sits relative to a linear gauge.
 enum GxTooltipPosition {
-  /// Above the gauge.
+  /// Tooltip position at the top of the gauge
   top,
 
-  /// Below the gauge.
+  /// Tooltip position at the bottom of the gauge
   bottom,
 }
 
-/// The kind of tooltip a linear gauge shows.
 enum GxTooltipType {
-  /// A bubble with the value, optionally connected to the gauge by a pointer
-  /// line (see `GxGaugeTooltip.showPointer`).
+  /// Shows the tooltip for the gauge
   normal,
 }
 
-/// Where ticks (and, opposite to them, bars) sit relative to a linear axis.
 enum GxElementPosition {
-  /// Ticks below the axis. Bars are drawn above it.
+  /// Element position inside the gauge bounds
+  ///
+  /// Horizontal: bottom of the Gauge.
+  ///
+  /// Vertical: Left of the Gauge.
   inside,
 
-  /// Ticks above the axis. Bars are drawn below it.
+  /// Element position outside the gauge bounds.
+  /// Horizontal: Top of the Gauge.
+  ///
+  /// Vertical: Right of the Gauge.
   outside,
 
-  /// Ticks cross the axis, centered on it. Bars are centered on the axis.
+  /// Element position at the start of the gauge
+  ///
   cross,
 
-  /// Alternating: even ticks below the axis, odd ticks above it.
+  /// Element position
   inAndOut,
 
-  /// Alternating: even ticks above the axis, odd ticks below it.
+  /// Element position
   outAndIn,
 }
 
-/// Where a linear scale's tick labels sit.
-enum GxLabelPosition {
-  /// Centered above each major tick.
-  topCenter,
+enum GxLabelPosition { topCenter, bottomCenter }
 
-  /// Centered below each major tick.
-  bottomCenter,
-}
-
-/// Where a linear gauge's needle sits vertically.
 enum GxNeedlePosition {
-  /// Above the track.
   top,
 
-  /// Below the track.
+  /// Needle position at the start of the gauge
   bottom,
 
-  /// Centered on the track.
+  /// Needle position at the end of the gauge
   center,
+
+  /// Needle position at the center of the gauge
 }
 
-/// The shape of a linear gauge's needle.
+/// Enum for the type of needle to be used in the gauge
+/// The needle can be a circle, triangle, diamond, rectangle, or a custom shape
 enum GxNeedleShape {
-  /// Drawn by the gauge's `needlePainter` callback.
+  /// Custom needle type such as this ✒
   custom,
 
-  /// A circle ●, `size.width` in diameter.
+  /// Circle needle type such as this ●
   circle,
 
-  /// A triangle ▲, `size.width` wide and tall.
+  /// Triangle needle type such as this ▲
   triangle,
 
-  /// A diamond ◆, `size.width` wide and tall.
+  /// Diamond needle type such as this ◆
   diamond,
 
-  /// A rectangle ■ of `size`.
+  /// Rectangle needle type such as this ■
   rectangle,
 
-  /// A thin bar |, `size.width` wide and `size.height` tall.
+  /// Pipe needle type such as this |
   pipe,
 }
 
-/// How a radial element aligns across the thickness of the gauge arc.
 enum GxRadialElementAlignment {
-  /// Starts at the arc's outer edge.
+  /// Allign the ticks at the start of the gauge
   start,
 
-  /// Starts at the arc's inner edge.
+  /// Allign the ticks at the end of the gauge
   end,
 
-  /// Centered on the arc's center line.
+  /// Allign the ticks at the center of the gauge
   center,
 }
 
-/// Which side of the radial arc an element is drawn on.
 enum GxRadialElementPosition {
-  /// Towards the center of the gauge.
+  /// Position the ticks to the inside of the gauge
   inside,
 
-  /// Away from the center of the gauge.
+  /// Position the ticks to the outside of the gauge
   outside,
 }
 
-/// The shape of a radial gauge's needle.
+/// Radial Gause
+///
+///
+///
+///
 enum GxRadialNeedleShape {
-  /// A straight line of the needle's thickness.
+  /// Needle with a line shape
   line,
 
-  /// A kite shape that tapers from the center to the tip.
+  /// Needle with a taperedLine (triangle shape)
   taperedLine,
 }
 
-/// The marker shape of a radial pointer.
-enum GxRadialPointerShape {
-  /// A circle on the arc.
-  circle,
+enum GxRadialPointerShape { circle, triangle, custom }
 
-  /// A triangle pointing at the arc.
-  triangle,
-}
-
-/// The marker shape of each step on a stepper gauge.
 enum GxStepperShape {
-  /// A circle ●.
+  /// Stepper shape is a circle shape ●
   circle,
 
-  /// A square ■.
+  /// Stepper shape is a rectangle shape ■
   rectangle,
 
-  /// A diamond ◆.
+  /// Stepper shape is a diamond shape ✦
   diamond,
 }

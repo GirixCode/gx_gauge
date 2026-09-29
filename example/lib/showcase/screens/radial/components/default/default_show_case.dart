@@ -39,7 +39,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                     child: GxRadialGauge(
                       showValueAtCenter: false,
                       startAngleInDegree: 270,
-                      diameter: twinSize.width,
+                      size: twinSize,
                       value: GxGaugeValue(
                         value: seconds.toDouble(),
                         min: 0,
@@ -106,7 +106,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                           ),
                           needle: const GxRadialNeedle(
                             thickness: 3.5,
-                            topOffset: -40,
+                            topOffest: -40,
                             color: Colors.brown,
                             shape: GxRadialNeedleShape.line,
                             alignment: GxRadialElementAlignment.end,
@@ -119,7 +119,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                             thickness: 2.5,
                             color: Colors.brown,
                             shape: GxRadialNeedleShape.line,
-                            topOffset: -20,
+                            topOffest: -20,
                             alignment: GxRadialElementAlignment.end,
                           ),
                         ),
@@ -130,7 +130,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                             thickness: 2,
                             color: Colors.brown,
                             shape: GxRadialNeedleShape.line,
-                            topOffset: -15,
+                            topOffest: -15,
                             bottomOffset: 20,
                             alignment: GxRadialElementAlignment.end,
                           ),
@@ -145,7 +145,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                       child: GxRadialGauge(
                         showValueAtCenter: false,
                         startAngleInDegree: 270,
-                        diameter: twinSize.width,
+                        size: twinSize,
                         value: GxGaugeValue(
                           value: seconds.toDouble(),
                           min: 0,
@@ -213,7 +213,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                             ),
                             needle: const GxRadialNeedle(
                               thickness: 3.5,
-                              topOffset: -40,
+                              topOffest: -40,
                               color: Colors.white,
                               shape: GxRadialNeedleShape.line,
                               alignment: GxRadialElementAlignment.end,
@@ -226,7 +226,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                               thickness: 2.5,
                               color: Colors.white,
                               shape: GxRadialNeedleShape.line,
-                              topOffset: -20,
+                              topOffest: -20,
                               alignment: GxRadialElementAlignment.end,
                             ),
                           ),
@@ -237,7 +237,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                               thickness: 2,
                               color: Colors.white,
                               shape: GxRadialNeedleShape.line,
-                              topOffset: -15,
+                              topOffest: -15,
                               bottomOffset: 20,
                               alignment: GxRadialElementAlignment.end,
                             ),
@@ -289,7 +289,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                                 child: GxRadialGauge(
                                   showValueAtCenter: false,
                                   startAngleInDegree: 270,
-                                  diameter: 60,
+                                  size: const Size(60, 60),
                                   value: GxGaugeValue(
                                     value: seconds.toDouble(),
                                     min: 0,
@@ -342,7 +342,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                                       ),
                                       needle: const GxRadialNeedle(
                                         thickness: 5,
-                                        topOffset: -4,
+                                        topOffest: -4,
                                         color: Colors.white,
                                         shape: GxRadialNeedleShape.taperedLine,
                                         alignment: GxRadialElementAlignment.end,
@@ -356,7 +356,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                           GxRadialGauge(
                             showValueAtCenter: false,
                             startAngleInDegree: 270,
-                            diameter: 250,
+                            size: Size(size.width, 250),
                             value: GxGaugeValue(
                               value: seconds.toDouble(),
                               min: 0,
@@ -424,7 +424,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                                 ),
                                 needle: const GxRadialNeedle(
                                   thickness: 3.5,
-                                  topOffset: -40,
+                                  topOffest: -40,
                                   color: Colors.blueGrey,
                                   shape: GxRadialNeedleShape.line,
                                   alignment: GxRadialElementAlignment.end,
@@ -437,7 +437,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                                   thickness: 2.5,
                                   color: Colors.blueGrey,
                                   shape: GxRadialNeedleShape.line,
-                                  topOffset: -20,
+                                  topOffest: -20,
                                   alignment: GxRadialElementAlignment.end,
                                 ),
                               ),
@@ -448,7 +448,7 @@ class _DefaultRadialShowCaseState extends State<DefaultRadialShowCase> {
                                   thickness: 2,
                                   color: Colors.blueGrey,
                                   shape: GxRadialNeedleShape.line,
-                                  topOffset: -15,
+                                  topOffest: -15,
                                   bottomOffset: 20,
                                   alignment: GxRadialElementAlignment.end,
                                 ),

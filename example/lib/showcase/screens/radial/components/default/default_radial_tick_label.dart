@@ -23,7 +23,7 @@ class DefaultRadialTickLabel extends StatelessWidget {
             children: [
               GxRadialGauge(
                 showValueAtCenter: false,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 showLabels: true,
                 labelTickStyle: const GxRadialTickLabelStyle(padding: 20),
@@ -36,7 +36,7 @@ class DefaultRadialTickLabel extends StatelessWidget {
               GxRadialGauge(
                 showValueAtCenter: false,
                 startAngleInDegree: 45,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 showLabels: true,
                 interval: 10,
@@ -81,7 +81,7 @@ class DefaultRadialTickLabel extends StatelessWidget {
                   showValueAtCenter: false,
                   startAngleInDegree: 180,
                   sweepAngleInDegree: 180,
-                  diameter: twinSize.width,
+                  size: twinSize,
                   value: GxGaugeValue(value: value),
                   showLabels: true,
                   showMajorTicks: true,
@@ -113,7 +113,7 @@ class DefaultRadialTickLabel extends StatelessWidget {
                 showValueAtCenter: false,
                 startAngleInDegree: 90,
                 // sweepAngleInDegree: 300,
-                diameter: twinSize.width,
+                size: twinSize,
                 value: GxGaugeValue(value: value),
                 showLabels: true,
                 interval: 25,

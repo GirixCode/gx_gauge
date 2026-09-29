@@ -1,155 +1,120 @@
-import 'package:flutter/animation.dart';
-import 'package:flutter/rendering.dart';
-import 'package:gx_gauge/src/common/models/gauge_tooltip.dart';
+import 'package:flutter/material.dart';
+import 'package:gx_gauge/src/common/models/linear_gauge_common_model.dart';
 import 'package:gx_gauge/src/common/utils/typedef.dart';
-import 'package:gx_gauge/src/core/gauge_scale.dart';
-import 'package:gx_gauge/src/core/painter_config.dart';
-import 'package:gx_gauge/src/linear/models/linear_bar_pointer.dart';
-import 'package:gx_gauge/src/linear/models/linear_needle.dart';
+import 'package:gx_gauge/src/linear/models/linear_needle_model.dart';
 import 'package:gx_gauge/src/linear/utils/linear_bar_utils.dart';
-import 'package:gx_gauge/src/linear/utils/needle_utils.dart';
 import 'package:gx_gauge/src/linear/utils/tooltip_utils.dart';
 
-/// Everything [LinearBarPainter] draws with, with theme defaults already
-/// resolved.
-class BarPainterConfig extends PainterConfig {
-  /// Creates a bar painter configuration.
-  const BarPainterConfig({
-    required this.scale,
-    required this.bars,
-    required this.barColor,
-    required this.labelStyle,
-    required this.needleColor,
-    required this.tooltipColor,
-    required this.tooltipTextColor,
-    required this.reversed,
-    required this.textDirection,
-    this.gap = 0,
-    this.needle,
-    this.needlePainter,
-    this.tooltip,
-  });
-
-  /// The value range.
-  final GaugeScale scale;
-
-  /// The bars, drawn in order.
-  final List<GxLinearBarPointer> bars;
-
-  /// Fallback bar color.
-  final Color barColor;
-
-  /// Base style for bar labels.
-  final TextStyle labelStyle;
-
-  /// Resolved needle color.
-  final Color needleColor;
-
-  /// Resolved tooltip bubble color.
-  final Color tooltipColor;
-
-  /// Resolved tooltip text color.
-  final Color tooltipTextColor;
-
-  /// Whether the scale runs right to left.
-  final bool reversed;
-
-  /// Direction for text.
-  final TextDirection textDirection;
-
-  /// Pixels between adjacent bars.
-  final double gap;
-
-  /// The optional needle.
-  final GxLinearNeedle? needle;
-
-  /// Draws a custom needle.
-  final GxNeedlePainter? needlePainter;
-
-  /// The optional tooltip.
-  final GxGaugeTooltip? tooltip;
-
-  @override
-  List<Object?> get props => <Object?>[
-    scale,
-    bars,
-    barColor,
-    labelStyle,
-    needleColor,
-    tooltipColor,
-    tooltipTextColor,
-    reversed,
-    textDirection,
-    gap,
-    needle,
-    needlePainter,
-    tooltip,
-  ];
-}
-
-/// Paints a linear bar gauge.
 class LinearBarPainter extends CustomPainter {
-  /// Creates a painter that repaints whenever [value] ticks.
-  LinearBarPainter({required this.config, required this.value})
-    : super(repaint: value);
-
-  /// What to draw.
-  final BarPainterConfig config;
-
-  /// The current (animated) value.
-  final Animation<double> value;
+  LinearBarPainter({
+    required this.gaugeValue,
+    required this.bars,
+    this.gapBetweenBars = 0,
+    this.needle,
+    this.showNeedleInsideBar = true,
+    this.tooltip,
+    this.needlePainter,
+  });
+  final GxGaugeValue gaugeValue;
+  final List<GxLinearBarPointer> bars;
+  final double gapBetweenBars;
+  final GxLinearNeedle? needle;
+  final bool showNeedleInsideBar;
+  final GxGaugeTooltip? tooltip;
+  GxNeedlePainter? needlePainter;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final LinearTrack track = LinearTrack(
-      start: 0,
-      end: size.width,
-      reversed: config.reversed,
-    );
-    LinearBarUtils.drawBars(
-      canvas: canvas,
-      scale: config.scale,
-      track: track,
-      bars: config.bars,
-      top: 0,
-      height: size.height,
-      color: config.barColor,
-      labelStyle: config.labelStyle,
-      textDirection: config.textDirection,
-      gap: config.gap,
-    );
-
-    final double x = track.xOf(config.scale.fractionOf(value.value));
-    final GxLinearNeedle? needle = config.needle;
-    if (needle != null && needle.enabled) {
-      NeedleUtils.drawIt(
-        canvas: canvas,
-        size: size,
-        x: x,
-        needle: needle,
-        thickness: needle.offset,
-        color: needle.color ?? config.needleColor,
-        needlePainter: config.needlePainter,
-      );
+    // draw the gauge
+    if (bars.isNotEmpty) {
+      _drawBars(canvas, size);
     }
 
-    final GxGaugeTooltip? tooltip = config.tooltip;
-    if (tooltip != null && tooltip.enabled) {
-      final String text = formatGaugeValue(config.scale.clamp(value.value));
-      TooltipUtils.drawTooltip(
+    _drawNeedle(canvas, size);
+
+    // Draw Tooltip
+    _drawTooltip(canvas, size);
+  }
+
+  @override
+  bool shouldRepaint(covariant LinearBarPainter oldDelegate) {
+    return gaugeValue != oldDelegate.gaugeValue ||
+        _isBarPointersChanged(oldDelegate.bars) ||
+        gapBetweenBars != oldDelegate.gapBetweenBars ||
+        needle != oldDelegate.needle ||
+        showNeedleInsideBar != oldDelegate.showNeedleInsideBar;
+  }
+
+  void _drawBars(Canvas canvas, Size size) {
+    LinearBarUtils.drawBars(
+      canvas: canvas,
+      size: size,
+      bars: bars,
+      value: gaugeValue.value,
+      gapBetweenBars: gapBetweenBars,
+      minValue: gaugeValue.min,
+      maxValue: gaugeValue.max,
+    );
+  }
+
+  void _drawNeedle(Canvas canvas, Size size) {
+    if (needle != null && needle!.enabled) {
+      LinearBarUtils.drawNeedle(
         canvas: canvas,
         size: size,
-        x: x,
-        tooltip: tooltip,
-        text: tooltip.label?.replaceAll('{value}', text) ?? text,
-        color: tooltip.color ?? config.tooltipColor,
-        textColor: config.tooltipTextColor,
-        textDirection: config.textDirection,
+        needle: needle!,
+        value: gaugeValue.value,
+        minValue: gaugeValue.min,
+        maxValue: gaugeValue.max,
+        gapBetweenBars: gapBetweenBars,
+        bars: bars,
+        showNeedleInsideBar: showNeedleInsideBar,
+        needlePainter: needlePainter,
       );
     }
   }
 
-  @override
-  bool shouldRepaint(covariant LinearBarPainter oldDelegate) =>
-      oldDelegate.config != config || oldDelegate.value != value;
+  // Draw Tooltip
+  void _drawTooltip(Canvas canvas, Size size) {
+    if (tooltip != null && tooltip!.enabled) {
+      final double minValue = gaugeValue.min;
+      final double maxValue = gaugeValue.max;
+      final double value = gaugeValue.value;
+
+      TooltipUtils.drawTooltip(
+        canvas: canvas,
+        size: size,
+        tooltip: tooltip!,
+        value: value,
+        minValue: minValue,
+        maxValue: maxValue,
+      );
+    }
+  }
+
+  // Check List of BarPointers changes
+  bool _isBarPointersChanged(List<GxLinearBarPointer> oldBarPointers) {
+    if (bars.length != oldBarPointers.length) {
+      return true;
+    }
+
+    for (int index = 0; index < bars.length; index++) {
+      final GxLinearBarPointer barPointer = bars[index];
+      final GxLinearBarPointer oldBarPointer = oldBarPointers[index];
+
+      if (barPointer.value != oldBarPointer.value ||
+          barPointer.color != oldBarPointer.color ||
+          barPointer.thickness != oldBarPointer.thickness ||
+          barPointer.position != oldBarPointer.position ||
+          barPointer.offset != oldBarPointer.offset ||
+          barPointer.radius != oldBarPointer.radius ||
+          barPointer.paintingStyle != oldBarPointer.paintingStyle ||
+          barPointer.strokeCap != oldBarPointer.strokeCap ||
+          barPointer.label != oldBarPointer.label) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

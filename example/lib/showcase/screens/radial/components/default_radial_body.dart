@@ -33,7 +33,7 @@ class DefaultRadialGaugeBody extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     GxRadialGauge(
-                      diameter: twinSize.width,
+                      size: twinSize,
                       value: GxGaugeValue(value: value),
                       style: const GxRadialGaugeStyle(
                         color: Colors.orange,
@@ -41,7 +41,7 @@ class DefaultRadialGaugeBody extends StatelessWidget {
                       ),
                     ),
                     GxRadialGauge(
-                      diameter: twinSize.width,
+                      size: twinSize,
                       value: GxGaugeValue(value: value),
                       style: const GxRadialGaugeStyle(
                         backgroundColor: Colors.amber,

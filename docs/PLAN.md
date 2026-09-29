@@ -1,6 +1,6 @@
 # Modernisation plan: `girix_code_gauge` → `gx_gauge`
 
-Status: **Phase 0 done** (`064d6cf`). **Phase 1 done** (`7c81892`). **Phase 2 done** (uncommitted, on branch `refactor/phase-2-quality`). Phases 3–5 are not started.
+Status: **Phase 0 done** (commit `064d6cf`). **Phase 1 done** (uncommitted, on branch `chore/phase-0-tooling`). Phases 2–5 are not started.
 
 References:
 - `docs/code_review.md` lists the confirmed defects. It is cited below as **CR**, followed by the section and item, e.g. *CR Radial 1*.
@@ -83,7 +83,7 @@ Exit criteria: run locally, `dart format`, `flutter analyze --fatal-infos` and b
   - Example smoke test replaced.
   - pubspec description shortened, which fixes a pana penalty.
 - Baseline pana score: 140/160. The two failures are the description length (fixed) and dartdoc crashing (below).
-- **Known issue:** dartdoc 9.0.x (shipped with Dart 3.13) crashes with a stack overflow on this package, which costs 10 pana points for API docs. An unnamed `library;` directive in the barrel is one trigger, so the barrel keeps a named library with an `ignore`. The Phase 0 tree still overflows with the named library. A bisect showed that no single changed file causes it on its own; reverting any one file still crashes. The trigger is therefore an interaction between changes, most likely the file deletions. **Deferred to Phase 2 (§4.6)**, where the export surface and doc comments are rewritten anyway. Re-check with `fvm dart doc --dry-run` after each Phase 1–2 PR. **Resolved in Phase 2:** after the rewrite, dartdoc reports 0 warnings, even with an unnamed `library;`, so the workaround was removed.
+- **Known issue:** dartdoc 9.0.x (shipped with Dart 3.13) crashes with a stack overflow on this package, which costs 10 pana points for API docs. An unnamed `library;` directive in the barrel is one trigger, so the barrel keeps a named library with an `ignore`. The Phase 0 tree still overflows with the named library. A bisect showed that no single changed file causes it on its own; reverting any one file still crashes. The trigger is therefore an interaction between changes, most likely the file deletions. **Deferred to Phase 2 (§4.6)**, where the export surface and doc comments are rewritten anyway. Re-check with `fvm dart doc --dry-run` after each Phase 1–2 PR.
 
 ---
 
@@ -207,56 +207,6 @@ Fix every CR item. The fixes are grouped by technique, so each fix lands once ra
 - Remove every stale doc: `ranges`, `LinearGaugeRange`, `shape`, `foregroundColor`, the swapped defaults (CR Radial 7), and the mislabelled enum docs.
 
 Exit criteria: all 24 CR items and the 14 below-threshold items are closed, `flutter analyze --fatal-infos` is clean, and pana scores 160/160.
-
-### Phase 2 progress log
-
-- **Result:**
-  - `flutter analyze --fatal-infos` is clean, with `public_member_api_docs` on.
-  - 116 package tests and 2 example tests pass.
-  - `dart doc` reports 0 warnings.
-  - **pana scores 160/160.** The only note is that the `gx-gauge` repo URL is unreachable, which clears once the repo is renamed (D10).
-  - Version bumped to 1.0.0-dev.2.
-- **Done:**
-  - §4.1: `core/gauge_scale.dart` (`GaugeScale`, `LinearTrack`, `formatGaugeValue`), with every painter moved onto it. Bars, fill areas and radial ranges use explicit `start`/`end`.
-  - §4.2:
-    - All models are `@immutable` + `Diagnosticable`, with hand-written `==`/`hashCode` and complete `copyWith`. `equatable` is removed.
-    - One `*PainterConfig` per painter, with `shouldRepaint` = config equality.
-    - Table-driven equality tests and per-painter `shouldRepaint` tests.
-  - §4.3: every gauge is an `ImplicitlyAnimatedWidget` (`duration`, `curve`, `onEnd`), sharing `AnimatedGaugeState`. The animation is passed via `CustomPainter(repaint:)`. `GxAnimatedLinearProgressGauge` and `GxAnimationType` are removed.
-  - §4.4:
-    - `RepaintBoundary` around every gauge, and no `!` assertions in painters.
-    - Sizing comes from constraints: linear gauges get `height` and full width, the radial gauge gets `diameter` or the shortest side, with a fallback of 200.
-    - The stepper's `height`/`size` conflict is removed.
-  - §4.5:
-    - `Semantics` with `semanticLabel`/`semanticValueFormatter`.
-    - RTL mirroring with `reverse` on every linear gauge.
-    - Theme-derived defaults through `GaugeDefaults`.
-    - `debugFillProperties` on widgets and models.
-  - §4.6: every public member is documented, and the stale docs (`ranges`, `LinearGaugeRange`, `shape`, `foregroundColor`, swapped defaults, misaligned enum docs) are removed.
-  - Review items closed:
-    - Radial 1–4, 6, 7.
-    - Scale 1–5.
-    - Bar 1–2.
-    - Progress 1–4.
-    - Stepper 2, plus the divide-by-zero part of Stepper 1.
-    - The rectangle-height part of Needle 1.
-    - Hygiene 1.
-    - Below the threshold: bar value semantics, scale tick NaN, scale `shouldRepaint`, radial minor ticks past the arc, progress `shouldRepaint`, the `textAlign!` crash, the hairline `strokeWidth` default, and the stale `ranges` docs.
-  - Pulled forward from Phase 3 because they fell out of the rewrite: `showMinorTicks` without major ticks, the rectangle needle's height, and removal of `showTooltip`/`alignment` (plus `showNeedleInsideBar`, `GxRadialTickLabelStyle.offset`, `GxRadialPointerShape.custom`).
-- **Deviations from the plan:**
-  - **TextPainter caching** (§4.4) became create → paint → `dispose()` per paint (`paintText`). A `CustomPainter` has no dispose hook, so a cache would hold native paragraphs until garbage collection. Painting only happens on config changes and animation frames, so the cost is small.
-  - **`lerp` for styles and pointers** (§4.2/§4.3) was not added. Only the gauge value animates; `GxGaugeValue.lerp` exists. Animating pointers and styles can be added later without breaking changes.
-  - Gauges don't animate on their first build, which is standard `ImplicitlyAnimatedWidget` behaviour. The old animated wrapper swept in from 0.
-  - Scale tick alternation (`inAndOut`/`outAndIn`) is now keyed on the tick index, not `min + i`.
-  - The radial z-order is now arcs → ranges → ticks → value → needle → pointers. Previously ranges were drawn over the needle.
-- **Left for Phase 3 (per §5):**
-  - Radial range labels (CR Radial 5).
-  - The needle label (the rest of CR Needle 1).
-  - Stepper value positioning (the rest of CR Stepper 1).
-  - Bar pointer and fill-area `shaderCallback`/`offset`/`position`/`thickness`/border, and marker widgets. These are documented as "Not applied yet".
-  - Custom needles on the scale gauge.
-  - Vertical orientation, linear ranges, and interaction.
-  - README examples (Hygiene 2–3) are rewritten in Phase 5.
 
 ---
 

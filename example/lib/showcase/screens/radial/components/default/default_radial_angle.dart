@@ -21,7 +21,7 @@ class DefaultRadialAngle extends StatelessWidget {
         children: [
           GxRadialGauge(
             showValueAtCenter: true,
-            diameter: twinSize.width,
+            size: twinSize,
             startAngleInDegree: 180,
             sweepAngleInDegree: 180,
             value: GxGaugeValue(value: value),
@@ -33,7 +33,7 @@ class DefaultRadialAngle extends StatelessWidget {
           ),
           GxRadialGauge(
             showValueAtCenter: true,
-            diameter: twinSize.width,
+            size: twinSize,
             startAngleInDegree: 270,
             sweepAngleInDegree: 180,
             value: GxGaugeValue(value: value),
