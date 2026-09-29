@@ -186,6 +186,7 @@ class LinearBarPainter extends CustomPainter {
         color: tooltip.color ?? config.tooltipColor,
         textColor: config.tooltipTextColor,
         textDirection: config.textDirection,
+        baseStyle: config.labelStyle,
         upright: config.vertical,
       );
     }

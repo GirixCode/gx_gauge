@@ -34,7 +34,7 @@ class GxGaugeTooltip with Diagnosticable {
   /// the value.
   final String? label;
 
-  /// Merged onto the default text style: the theme's `onInverseSurface` for a
+  /// Merged onto the theme's label style, colored `onInverseSurface` for a
   /// filled bubble, or [borderColor]/[color] for an outlined one.
   final TextStyle textStyle;
 

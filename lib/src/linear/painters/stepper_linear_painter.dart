@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gx_gauge/src/common/models/enums.dart';
@@ -178,8 +180,16 @@ class StepperLinearPainter extends CustomPainter {
         textDirection: c.textDirection,
         maxWidth: spacing,
         upright: c.vertical,
+        // Centered under the step, but kept inside the gauge so the first
+        // and last labels don't spill past its edges.
         position: (Size text) =>
-            Offset(x - text.width / 2, y + c.offset + 5) +
+            Offset(
+              (x - text.width / 2).clamp(
+                0.0,
+                math.max(0.0, size.width - text.width),
+              ),
+              y + c.offset + 5,
+            ) +
             (step.label.offset ?? Offset.zero),
       );
     }

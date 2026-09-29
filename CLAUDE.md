@@ -25,7 +25,7 @@ fvm dart format lib test example/lib example/test     # keep everything formatte
 fvm flutter test                                      # all package tests
 fvm flutter test test/linear/needle_utils_test.dart   # single file
 fvm flutter test --plain-name "clamps values"         # single test by name
-fvm flutter test --coverage                           # coverage → coverage/lcov.info (targets: core ≥ 90%, overall ≥ 80%)
+fvm flutter test --coverage && fvm dart run tool/coverage_gate.dart   # coverage gate (core ≥ 90%, overall ≥ 80%)
 (cd example && fvm flutter test)                      # example app smoke test
 fvm flutter pub publish --dry-run                     # package validation
 fvm dart doc --dry-run                                # must report 0 warnings
@@ -38,7 +38,7 @@ cd example && fvm flutter test tool/screenshots_test.dart  # re-render doc/scree
 
 **README.** Every README code block comes from `example/lib/readme_snippets.dart` (between `// #docregion` markers), which `flutter analyze` compiles. The screenshots in `doc/screenshots/` are rendered from the quick-start regions with real fonts. When you change a snippet, change the matching README block too, and re-run the screenshot tool for anything visual. Look at the regenerated PNGs, because they catch layout bugs that tests don't.
 
-There is no CI yet (deferred, see PLAN.md Phase 0). Before handing work back, run format, `analyze --fatal-infos`, and both test suites locally.
+**CI** (`.github/workflows/ci.yaml`) runs on every PR and push to `main`: format (including `tool/` and `example/tool/`), `analyze --fatal-infos`, package tests with coverage plus `dart run tool/coverage_gate.dart` (core ≥ 90%, overall ≥ 80%), example tests, `pub publish --dry-run`, and pana with `--exit-code-threshold 0`, so any lost pub point fails the build. `publish.yaml` publishes on `v*` tags through pub.dev OIDC. Run the same checks locally before handing work back.
 
 **Tests.** Painter tests draw into `test/helpers/recording_canvas.dart` (a `Canvas` that records calls) and assert on recorded arguments, e.g. `canvas.callsTo('drawArc')`. Widget tests live in `test/widgets/`: `smoke_test.dart` pumps every public gauge, and `edge_cases_test.dart` runs every gauge through the size and value edge cases (min/max, 0×0, unbounded constraints, unmounting mid-animation). When you add a gauge or a major option, add it to `_gauges()` there. `test/helpers/configs.dart` builds painter configs with fixed colors. `test/widgets/behavior_test.dart` covers animation, semantics, RTL, theming and sizing, and `test/models/model_equality_test.dart` is a table of one variant per field for every model; add a row when you add a field. A known bug gets a test with `skip: 'Known bug CR <ref> …'` rather than a test that pins the wrong behaviour; the phase that fixes the bug removes the `skip`. Compare colors read back from `Paint` with `toARGB32()`, not `==`. Test files mirror `lib/src/` without the `src/` segment. The target layout, including Linux-only goldens tagged `golden`, is in PLAN.md §6.
 
@@ -70,7 +70,14 @@ There is no CI yet (deferred, see PLAN.md Phase 0). Before handing work back, ru
 
 **Interaction.** `onChanged` is opt-in. When it's null, no `GestureDetector` is added, so gauges are read-only by default. Drags follow the gauge's axis. Interactive gauges are adjustable semantics nodes.
 
-**Example app** (package `gx_gauge_example`). `example/lib/main.dart` is a deliberately minimal demo, because pub.dev shows it on the Example tab. Keep it short. The full showcase is `example/lib/showcase/`: `showcase_app.dart` lists `FeatureItem` demos, with one screen per gauge type under `showcase/screens/`, and `screens/features/` demonstrates the Phase 3 features. `example/assets/images/features/` holds only the showcase's own thumbnails; README images live in `doc/screenshots/`.
+**Example app** (package `gx_gauge_example`). `example/lib/main.dart` is a deliberately minimal demo, because pub.dev shows it on the Example tab. Keep it short.
+
+The full showcase is `example/lib/showcase/`:
+- `showcase_app.dart` holds the app, the home grid of live previews, and dark-mode/RTL toggles from `widgets/showcase_settings.dart`.
+- `screens/` has one file per gauge (`progress`, `stepper`, `scale`, `bar`, `radial`) plus `playground_screen.dart`.
+- Each gauge screen is a `GaugePage` (`widgets/demo.dart`) whose `DemoTab`s hold `DemoList`s of `DemoCard`s, with one tab per feature area.
+- When you add a gauge option, add a `DemoCard` for it in the right tab.
+- `example/test/widget_test.dart` opens every screen and every tab at tablet and phone sizes, so a layout overflow in any demo fails the test.
 
 ## Conventions
 

@@ -8,7 +8,8 @@ abstract final class TooltipUtils {
   /// Draws [tooltip] showing [text] at horizontal position [x].
   ///
   /// The bubble is kept inside the gauge's width. [color] and [textColor]
-  /// are the resolved bubble and default text colors.
+  /// are the resolved bubble and default text colors, and [baseStyle] the
+  /// theme's label style the text is based on.
   static void drawTooltip({
     required Canvas canvas,
     required Size size,
@@ -18,6 +19,7 @@ abstract final class TooltipUtils {
     required Color color,
     required Color textColor,
     required TextDirection textDirection,
+    TextStyle baseStyle = const TextStyle(),
     bool upright = false,
   }) {
     final Color strokeColor = tooltip.borderColor ?? color;
@@ -77,11 +79,13 @@ abstract final class TooltipUtils {
     paintText(
       canvas,
       text: text,
-      style: TextStyle(
-        color: tooltip.paintingStyle == PaintingStyle.fill
-            ? textColor
-            : strokeColor,
-      ).merge(tooltip.textStyle),
+      style: baseStyle
+          .copyWith(
+            color: tooltip.paintingStyle == PaintingStyle.fill
+                ? textColor
+                : strokeColor,
+          )
+          .merge(tooltip.textStyle),
       textDirection: textDirection,
       maxWidth: tooltip.size.width,
       upright: upright,
