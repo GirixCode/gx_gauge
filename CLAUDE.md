@@ -16,24 +16,30 @@ The package is being rebuilt and republished as **`gx_gauge`**. `docs/PLAN.md` i
 
 ## Commands
 
+The Flutter version is pinned in `.fvmrc` (currently 3.47.5 / Dart 3.13). Always run the toolchain through `fvm`. The global `flutter` on this machine is an older, locally modified SDK.
+
 ```bash
-flutter pub get                      # install deps (root package)
-flutter analyze                      # lint (currently 54 known issues; Phase 0 brings this to 0, then CI uses --fatal-infos)
-flutter test                         # run all tests
-flutter test test/girix_shape_test.dart          # single test file
-flutter test --plain-name "<test name>"          # single test by name
-dart format lib test                 # format
-flutter pub publish --dry-run        # validate before publishing
+fvm flutter pub get                                   # install deps (also run in example/)
+fvm flutter analyze --fatal-infos                     # must report "No issues found!"
+fvm dart format lib test example/lib example/test     # keep everything formatted
+fvm flutter test                                      # all package tests
+fvm flutter test test/linear/needle_utils_test.dart   # single file
+fvm flutter test --plain-name "clamps values"         # single test by name
+(cd example && fvm flutter test)                      # example app smoke test
+fvm flutter pub publish --dry-run                     # package validation
+fvm dart doc --dry-run                                # dartdoc (see the known crash in PLAN.md Phase 0 log)
 
 # Demo app (depends on the package via `path: ../`)
-cd example && flutter pub get && flutter run
+cd example && fvm flutter run
 ```
 
-The `test/` directory currently has only a placeholder test, so the example app is the main way to check visual changes. The target test layout (unit, widget, and Linux-only golden tests tagged `golden`) is in PLAN.md §6. Test files mirror `lib/src/` paths.
+There is no CI yet (deferred, see PLAN.md Phase 0). Before handing work back, run format, `analyze --fatal-infos`, and both test suites locally.
+
+**Tests.** Painter tests draw into `test/helpers/recording_canvas.dart` (a `Canvas` that records calls) and assert on recorded arguments, e.g. `canvas.callsTo('drawArc')`. `test/widgets_smoke_test.dart` pumps every public gauge. A known bug gets a test with `skip: 'Known bug CR <ref> …'` rather than a test that pins the wrong behaviour; the phase that fixes the bug removes the `skip`. Test files mirror `lib/src/` without the `src/` segment. The target layout, including Linux-only goldens tagged `golden`, is in PLAN.md §6.
 
 ## Architecture
 
-**Public API surface.** `lib/girix_code_gauge.dart` re-exports barrel files (`models.dart`, `painters.dart`, `widgets.dart`, `animations.dart`) from each of `lib/src/{common,linear,radial}/`. Something is public only if its barrel exports it. The barrels are incomplete: for example, `linear/painters/painters.dart` exports only `progress_linear_painter.dart`, and `bar_linear_gauge_model.dart` is not exported. When you add a public type, update the right barrel.
+**Public API surface.** `lib/girix_code_gauge.dart` re-exports barrel files from `lib/src/{common,linear,radial}/`. It must keep its *named* `library girix_code_gauge;` directive, because an unnamed `library;` crashes dartdoc 9.0.x. Something is public only if its barrel exports it. The barrels are incomplete: for example, `linear/painters/painters.dart` exports only `progress_linear_painter.dart`. When you add a public type, update the right barrel.
 
 **Widget → Painter split.** Each gauge is a thin `Gx*` widget (`GxProgressLinearGauge`, `GxStepperLinearGauge`, `GxScaleLinearGauge`, `GxLinearBarGauge`, `GxRadialGauge`) that passes its configuration to a matching `CustomPainter` in `painters/`. The painter does all the layout math and drawing. Helper math lives in `linear/utils/` (needle, tooltip, color, bar geometry) and `radial/utils/angle_utils.dart`. When you add a new option, you usually need to change the widget constructor, the painter's fields, **and** its `shouldRepaint`.
 
@@ -59,7 +65,6 @@ Per-gauge style objects are in `linear/models/` (`linear_gauge_style.dart`, `sca
   - Value→position math goes through the shared scale helper using `(v - min) / (max - min)`, never `v / max`.
   - Take the text direction from `Directionality` and defaults from `Theme`, and wrap each gauge in `Semantics`.
   - Don't add parameters that aren't wired to rendering.
-- `analysis_options.yaml` turns on `strict-casts`, `strict-raw-types`, `always_specify_types`, `always_use_package_imports` (`package:girix_code_gauge/...`, never relative imports), `prefer_single_quotes`, `sort_constructors_first`, `always_put_control_body_on_new_line`, `avoid_print`, and many more. Run `flutter analyze` after edits.
+- `analysis_options.yaml` builds on `flutter_lints` and adds `strict-casts`/`strict-inference`/`strict-raw-types`, `always_use_package_imports` (in `lib/`, use `package:girix_code_gauge/...`, never relative imports), `prefer_single_quotes`, `sort_constructors_first` and a curated rule list. `always_specify_types` was intentionally dropped (PLAN.md D7), but existing code still spells out types, so match the surrounding style.
 - Public model fields are documented with `///` doc comments that include a ```dart usage snippet. Keep this style, because pub.dev scoring and the README depend on it.
 - Record user-visible changes in `CHANGELOG.md` and bump `version` in `pubspec.yaml`.
-- `lib/src/linear/painters/linear_bar_painter copy.dart` is a stray, unreferenced backup file. Don't edit it thinking it's live code.

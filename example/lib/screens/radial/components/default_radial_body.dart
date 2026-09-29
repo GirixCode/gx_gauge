@@ -18,7 +18,6 @@ class DefaultRadialGaugeBody extends StatelessWidget {
   const DefaultRadialGaugeBody({super.key, required this.value});
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
     const Size twinSize = Size(150, 150);
 
     return Column(
@@ -29,35 +28,35 @@ class DefaultRadialGaugeBody extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             children: [
               ItemCard(
-                  title: 'Default',
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      GxRadialGauge(
-                        size: twinSize,
-                        value: GaugeValue(
-                          value: value,
-                        ),
-                        style: const RadialGaugeStyle(
-                            color: Colors.orange, thickness: 20),
+                title: 'Default',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    GxRadialGauge(
+                      size: twinSize,
+                      value: GaugeValue(value: value),
+                      style: const RadialGaugeStyle(
+                        color: Colors.orange,
+                        thickness: 20,
                       ),
-                      GxRadialGauge(
-                        size: twinSize,
-                        value: GaugeValue(
-                          value: value,
-                        ),
-                        style: const RadialGaugeStyle(
-                            backgroundColor: Colors.amber,
-                            color: Colors.green,
-                            thickness: 20),
+                    ),
+                    GxRadialGauge(
+                      size: twinSize,
+                      value: GaugeValue(value: value),
+                      style: const RadialGaugeStyle(
+                        backgroundColor: Colors.amber,
+                        color: Colors.green,
+                        thickness: 20,
                       ),
-                    ],
-                  )),
+                    ),
+                  ],
+                ),
+              ),
               DefaultRadialAngle(value: value, twinSize: twinSize),
               DefaultRadialTicks(value: value, twinSize: twinSize),
               DefaultRadialTickLabel(value: value, twinSize: twinSize),
               DefaultRadialNeedle(value: value, twinSize: twinSize),
-              DefaultRadialPointer(value: value, twinSize: twinSize)
+              DefaultRadialPointer(value: value, twinSize: twinSize),
             ],
           ),
         ),

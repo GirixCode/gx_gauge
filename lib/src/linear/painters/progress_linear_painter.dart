@@ -12,7 +12,7 @@ import 'package:girix_code_gauge/src/linear/utils/needle_utils.dart';
 ///
 /// The [ProgressLinearPainter] class contains the following properties:
 ///
-/// - [value]: An instance of the [GaugeValue] class that holds the value of the gauge.
+/// - [gaugeValue]: An instance of the [GaugeValue] class that holds the value of the gauge.
 ///
 /// - [style]: An instance of the [ProgressLinearStyle] class that holds the style properties of the gauge.
 ///
@@ -48,7 +48,8 @@ class ProgressLinearPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ProgressLinearPainter oldDelegate) {
-    final bool shouldRepaint = oldDelegate.gaugeValue != gaugeValue ||
+    final bool shouldRepaint =
+        oldDelegate.gaugeValue != gaugeValue ||
         oldDelegate.style != style ||
         oldDelegate.needle != needle ||
         oldDelegate.reverse != reverse ||
@@ -63,7 +64,7 @@ class ProgressLinearPainter extends CustomPainter {
     // Style Properties: Background
     final double thicknessBg = style.thickness;
     final Color backgroundColor =
-        style.backgroundColor ?? style.color.withOpacity(0.2);
+        style.backgroundColor ?? style.color.withValues(alpha: 0.2);
     final double barWidth = size.width;
     final double barHeight = size.height;
 
@@ -77,8 +78,10 @@ class ProgressLinearPainter extends CustomPainter {
     final double value = gaugeValue.value;
 
     // Calculate progress ratio
-    final double progress =
-        ((value - minValue) / (maxValue - minValue)).clamp(0.0, 1.0);
+    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
+      0.0,
+      1.0,
+    );
 
     final double progressWidth = size.width * progress;
 
@@ -124,21 +127,29 @@ class ProgressLinearPainter extends CustomPainter {
       }
     } else {
       final Rect rect = Rect.fromLTWH(0, 0, barWidth, barHeight);
-      final RRect rrect =
-          RRect.fromRectAndRadius(rect, style.radius ?? Radius.zero);
+      final RRect rrect = RRect.fromRectAndRadius(
+        rect,
+        style.radius ?? Radius.zero,
+      );
       canvas.drawRRect(rrect, backgroundPaint);
 
       final double frontWidth = progress * barWidth;
       late final Rect valueRect;
       if (reverse) {
-        valueRect =
-            Rect.fromLTWH(barWidth - frontWidth, 0, frontWidth, barHeight);
+        valueRect = Rect.fromLTWH(
+          barWidth - frontWidth,
+          0,
+          frontWidth,
+          barHeight,
+        );
       } else {
         valueRect = Rect.fromLTWH(0, 0, frontWidth, barHeight);
       }
 
-      final RRect valueRRect =
-          RRect.fromRectAndRadius(valueRect, style.radius ?? Radius.zero);
+      final RRect valueRRect = RRect.fromRectAndRadius(
+        valueRect,
+        style.radius ?? Radius.zero,
+      );
 
       canvas.drawRRect(valueRRect, foregroundPaint);
     }
@@ -154,9 +165,7 @@ class ProgressLinearPainter extends CustomPainter {
         ),
         textAlign: label?.textAlign ?? TextAlign.center,
         textDirection: TextDirection.ltr,
-      );
-
-      textPainter.layout();
+      )..layout();
       final Offset offset = label!.offset ?? Offset.zero;
 
       double x;
@@ -188,15 +197,16 @@ class ProgressLinearPainter extends CustomPainter {
 
       // Draw the needle
       NeedleUtils.drawIt(
-          dense: style.dense,
-          canvas: canvas,
-          size: size,
-          minValue: gaugeValue.min,
-          maxValue: gaugeValue.max,
-          value: gaugeValue.value,
-          needle: needle!,
-          thickness: style.thickness,
-          customDrawNeedle: customDrawNeedle);
+        dense: style.dense,
+        canvas: canvas,
+        size: size,
+        minValue: gaugeValue.min,
+        maxValue: gaugeValue.max,
+        value: gaugeValue.value,
+        needle: needle!,
+        thickness: style.thickness,
+        customDrawNeedle: customDrawNeedle,
+      );
     }
   }
 }

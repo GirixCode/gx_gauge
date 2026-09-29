@@ -46,24 +46,19 @@ class LinearBarPainter extends CustomPainter {
         showNeedleInsideBar != oldDelegate.showNeedleInsideBar;
   }
 
-  void _drawBars(
-    Canvas canvas,
-    Size size,
-  ) {
+  void _drawBars(Canvas canvas, Size size) {
     LinearBarUtils.drawBars(
-        canvas: canvas,
-        size: size,
-        barPointers: barPointers,
-        value: gaugeValue.value,
-        gapBetweenBars: gapBetweenBars,
-        minValue: gaugeValue.min,
-        maxValue: gaugeValue.max);
+      canvas: canvas,
+      size: size,
+      barPointers: barPointers,
+      value: gaugeValue.value,
+      gapBetweenBars: gapBetweenBars,
+      minValue: gaugeValue.min,
+      maxValue: gaugeValue.max,
+    );
   }
 
-  void _drawNeedle(
-    Canvas canvas,
-    Size size,
-  ) {
+  void _drawNeedle(Canvas canvas, Size size) {
     if (needle != null && needle!.enabled) {
       LinearBarUtils.drawNeedle(
         canvas: canvas,
@@ -81,10 +76,7 @@ class LinearBarPainter extends CustomPainter {
   }
 
   // Draw Tooltip
-  void _drawTooltip(
-    Canvas canvas,
-    Size size,
-  ) {
+  void _drawTooltip(Canvas canvas, Size size) {
     if (tooltip != null && tooltip!.enabled) {
       final double minValue = gaugeValue.min;
       final double maxValue = gaugeValue.max;

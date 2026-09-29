@@ -33,14 +33,15 @@ class GxLinearBarGauge extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: LinearBarPainter(
-          gapBetweenBars: gapBetweenBars,
-          gaugeValue: value,
-          barPointers: barPointers,
-          needle: needle,
-          showNeedleInsideBar: showNeedleInsideBar,
-          direction: direction,
-          tooltip: tooltip,
-          customDrawNeedle: customDrawNeedle),
+        gapBetweenBars: gapBetweenBars,
+        gaugeValue: value,
+        barPointers: barPointers,
+        needle: needle,
+        showNeedleInsideBar: showNeedleInsideBar,
+        direction: direction,
+        tooltip: tooltip,
+        customDrawNeedle: customDrawNeedle,
+      ),
       size: size,
     );
   }

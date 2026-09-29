@@ -39,30 +39,28 @@ class _DefaultScaleLinearGaugeBodyState
           ),
         ),
         ItemCard(
-            title: 'With Customized Label and Axis',
-            child: GxScaleLinearGauge(
-              minimum: 0,
-              maximum: 100,
-              interval: 50,
-              minorTicksPerInterval: 10,
-              axisSpaceExtent: 2,
-              axisLabelStyle: const TextStyle(
-                color: Colors.teal,
-                fontSize: 10,
-              ),
-              valueToLabelFormatCallback: (value, index) => 'Label-$value',
-              labelPosition: LinearGaugeLabelPosition.topCenter,
-              majorTickStyle: const LinearTickStyle(
-                length: 40,
-                thickness: 2,
-                color: Colors.teal,
-              ),
-              axisTrackStyle: const LinearAxisTrackStyle(
-                color: Colors.teal,
-              ),
-              minorTickStyle:
-                  const LinearTickStyle(color: Colors.white, thickness: 2),
-            )),
+          title: 'With Customized Label and Axis',
+          child: GxScaleLinearGauge(
+            minimum: 0,
+            maximum: 100,
+            interval: 50,
+            minorTicksPerInterval: 10,
+            axisSpaceExtent: 2,
+            axisLabelStyle: const TextStyle(color: Colors.teal, fontSize: 10),
+            valueToLabelFormatCallback: (value, index) => 'Label-$value',
+            labelPosition: LinearGaugeLabelPosition.topCenter,
+            majorTickStyle: const LinearTickStyle(
+              length: 40,
+              thickness: 2,
+              color: Colors.teal,
+            ),
+            axisTrackStyle: const LinearAxisTrackStyle(color: Colors.teal),
+            minorTickStyle: const LinearTickStyle(
+              color: Colors.white,
+              thickness: 2,
+            ),
+          ),
+        ),
         ItemCard(
           title: 'With Tick outside',
           child: GxScaleLinearGauge(
@@ -73,17 +71,9 @@ class _DefaultScaleLinearGaugeBodyState
             axisSpaceExtent: 2,
             labelPosition: LinearGaugeLabelPosition.topCenter,
             tickPosition: LinearElementPosition.outside,
-            axisTrackStyle: const LinearAxisTrackStyle(
-              thickness: 2,
-            ),
-            majorTickStyle: const LinearTickStyle(
-              length: 50,
-              thickness: 2,
-            ),
-            minorTickStyle: const LinearTickStyle(
-              length: 30,
-              thickness: 1,
-            ),
+            axisTrackStyle: const LinearAxisTrackStyle(thickness: 2),
+            majorTickStyle: const LinearTickStyle(length: 50, thickness: 2),
+            minorTickStyle: const LinearTickStyle(length: 30, thickness: 1),
             markerPointers: [
               LinearMarkerPointer(
                 value: 50,
@@ -96,16 +86,13 @@ class _DefaultScaleLinearGaugeBodyState
           title: 'With Tick inside',
           child: GxScaleLinearGauge(
             tickPosition: LinearElementPosition.inside,
-            minorTickStyle: LinearTickStyle(
-              length: 20,
-              thickness: 1,
-            ),
-            majorTickStyle: LinearTickStyle(
-              length: 40,
-              thickness: 1,
-            ),
+            minorTickStyle: LinearTickStyle(length: 20, thickness: 1),
+            majorTickStyle: LinearTickStyle(length: 40, thickness: 1),
             axisTrackStyle: LinearAxisTrackStyle(
-                thickness: 2, strokeCap: StrokeCap.butt, color: Colors.orange),
+              thickness: 2,
+              strokeCap: StrokeCap.butt,
+              color: Colors.orange,
+            ),
             // showAxisLabel: false,
             // showAxisTrack: false,
           ),
@@ -114,16 +101,13 @@ class _DefaultScaleLinearGaugeBodyState
           title: 'With Tick Out and In',
           child: GxScaleLinearGauge(
             tickPosition: LinearElementPosition.outAndIn,
-            minorTickStyle: LinearTickStyle(
-              length: 30,
-              thickness: 1,
-            ),
-            majorTickStyle: LinearTickStyle(
-              length: 30,
-              thickness: 1,
-            ),
+            minorTickStyle: LinearTickStyle(length: 30, thickness: 1),
+            majorTickStyle: LinearTickStyle(length: 30, thickness: 1),
             axisTrackStyle: LinearAxisTrackStyle(
-                thickness: 2, strokeCap: StrokeCap.round, color: Colors.orange),
+              thickness: 2,
+              strokeCap: StrokeCap.round,
+              color: Colors.orange,
+            ),
             // showAxisLabel: false,
             // showAxisTrack: false,
             showMinorTicks: false,
@@ -133,16 +117,13 @@ class _DefaultScaleLinearGaugeBodyState
           title: 'With Tick In and Out',
           child: GxScaleLinearGauge(
             tickPosition: LinearElementPosition.inAndOut,
-            minorTickStyle: LinearTickStyle(
-              length: 10,
-              thickness: 1,
-            ),
-            majorTickStyle: LinearTickStyle(
-              length: 30,
-              thickness: 1,
-            ),
+            minorTickStyle: LinearTickStyle(length: 10, thickness: 1),
+            majorTickStyle: LinearTickStyle(length: 30, thickness: 1),
             axisTrackStyle: LinearAxisTrackStyle(
-                thickness: 2, strokeCap: StrokeCap.round, color: Colors.orange),
+              thickness: 2,
+              strokeCap: StrokeCap.round,
+              color: Colors.orange,
+            ),
             // showAxisLabel: false,
             // showAxisTrack: false,
             showMinorTicks: true,
@@ -152,16 +133,13 @@ class _DefaultScaleLinearGaugeBodyState
           title: 'With Customized Major Tick Style',
           child: GxScaleLinearGauge(
             tickPosition: LinearElementPosition.inAndOut,
-            minorTickStyle: const LinearTickStyle(
-              length: 10,
-              thickness: 1,
-            ),
-            majorTickStyle: const LinearTickStyle(
-              length: 60,
-              thickness: 4,
-            ),
+            minorTickStyle: const LinearTickStyle(length: 10, thickness: 1),
+            majorTickStyle: const LinearTickStyle(length: 60, thickness: 4),
             axisTrackStyle: const LinearAxisTrackStyle(
-                thickness: 4, strokeCap: StrokeCap.round, color: Colors.black),
+              thickness: 4,
+              strokeCap: StrokeCap.round,
+              color: Colors.black,
+            ),
             showMinorTicks: false,
             valueToMajorTickStyleCallback: (value, index) {
               return LinearTickStyle(
@@ -195,7 +173,10 @@ class _DefaultScaleLinearGaugeBodyState
               color: Colors.deepOrange,
             ),
             minorTickStyle: const LinearTickStyle(
-                color: Colors.deepOrange, thickness: 2, length: 18),
+              color: Colors.deepOrange,
+              thickness: 2,
+              length: 18,
+            ),
             value: 80,
             needle: const LinearNeedle(
               offset: 20,
@@ -210,65 +191,62 @@ class _DefaultScaleLinearGaugeBodyState
         ItemCard(
           title: 'With Marker Pointers',
           child: GxScaleLinearGauge(
-              tickPosition: LinearElementPosition.outAndIn,
-              minorTickStyle: const LinearTickStyle(
-                length: 10,
-                thickness: 1,
+            tickPosition: LinearElementPosition.outAndIn,
+            minorTickStyle: const LinearTickStyle(length: 10, thickness: 1),
+            majorTickStyle: const LinearTickStyle(
+              length: 60,
+              thickness: 1,
+              color: Colors.black26,
+            ),
+            axisTrackStyle: const LinearAxisTrackStyle(
+              thickness: 2,
+              strokeCap: StrokeCap.round,
+              color: Colors.black26,
+            ),
+            showMinorTicks: false,
+            valueToLabelFormatCallback: (value, index) =>
+                value.toInt().toString().length == 1
+                ? '0$value'
+                : value.toInt().toString(),
+            markerPointers: [
+              LinearMarkerPointer(
+                value: 10,
+                // marker:
+                //     const Icon(Icons.circle, color: Colors.red, size: 10),
+                needle: const LinearNeedle(
+                  enabled: true,
+                  color: Colors.blueGrey,
+                  size: Size(2, 70),
+                  position: LinearGaugeNeedlePosition.center,
+                  needleType: LinearGaugeNeedleType.pipe,
+                  offset: 10,
+                ),
               ),
-              majorTickStyle: const LinearTickStyle(
-                  length: 60, thickness: 1, color: Colors.black26),
-              axisTrackStyle: const LinearAxisTrackStyle(
-                  thickness: 2,
-                  strokeCap: StrokeCap.round,
-                  color: Colors.black26),
-              showMinorTicks: false,
-              valueToLabelFormatCallback: (value, index) =>
-                  value.toInt().toString().length == 1
-                      ? '0$value'
-                      : value.toInt().toString(),
-              markerPointers: [
-                LinearMarkerPointer(
-                  value: 10,
-                  // marker:
-                  //     const Icon(Icons.circle, color: Colors.red, size: 10),
-                  needle: const LinearNeedle(
-                    enabled: true,
-                    color: Colors.blueGrey,
-                    size: Size(2, 70),
-                    position: LinearGaugeNeedlePosition.center,
-                    needleType: LinearGaugeNeedleType.pipe,
-                    offset: 10,
-                  ),
+              LinearMarkerPointer(
+                value: 70,
+                needle: const LinearNeedle(
+                  enabled: true,
+                  color: Colors.blueGrey,
+                  size: Size(2, 70),
+                  position: LinearGaugeNeedlePosition.center,
+                  needleType: LinearGaugeNeedleType.pipe,
+                  offset: 10,
                 ),
-                LinearMarkerPointer(
-                  value: 70,
-                  needle: const LinearNeedle(
-                    enabled: true,
-                    color: Colors.blueGrey,
-                    size: Size(2, 70),
-                    position: LinearGaugeNeedlePosition.center,
-                    needleType: LinearGaugeNeedleType.pipe,
-                    offset: 10,
-                  ),
-                ),
-              ]),
+              ),
+            ],
+          ),
         ),
         ItemCard(
           title: 'With Filled area and Marker Pointers',
           child: GxScaleLinearGauge(
             tickPosition: LinearElementPosition.outAndIn,
-            minorTickStyle: const LinearTickStyle(
-              length: 10,
-              thickness: 1,
-            ),
-            majorTickStyle: const LinearTickStyle(
-              length: 60,
-              thickness: 1,
-            ),
+            minorTickStyle: const LinearTickStyle(length: 10, thickness: 1),
+            majorTickStyle: const LinearTickStyle(length: 60, thickness: 1),
             axisTrackStyle: const LinearAxisTrackStyle(
-                thickness: 2,
-                strokeCap: StrokeCap.round,
-                color: Colors.black26),
+              thickness: 2,
+              strokeCap: StrokeCap.round,
+              color: Colors.black26,
+            ),
             showMinorTicks: false,
             valueToMajorTickStyleCallback: (value, index) {
               return LinearTickStyle(
@@ -281,8 +259,8 @@ class _DefaultScaleLinearGaugeBodyState
             },
             valueToLabelFormatCallback: (value, index) =>
                 value.toInt().toString().length == 1
-                    ? '0$value'
-                    : value.toInt().toString(),
+                ? '0$value'
+                : value.toInt().toString(),
             markerPointers: [
               LinearMarkerPointer(
                 value: 10,
@@ -310,18 +288,20 @@ class _DefaultScaleLinearGaugeBodyState
               ),
             ],
             valueToLabelStyleCallback: (value, index) => TextStyle(
-              color:
-                  (value == 10 || value == 70) ? Colors.black : Colors.black38,
+              color: (value == 10 || value == 70)
+                  ? Colors.black
+                  : Colors.black38,
               fontWeight: (value == 10 || value == 70)
                   ? FontWeight.bold
                   : FontWeight.normal,
             ),
             fillAreaPointers: [
               FillAreaPointer(
-                  thickness: 60,
-                  startValue: 30,
-                  endValue: 80,
-                  color: Colors.green.withOpacity(0.3))
+                thickness: 60,
+                startValue: 30,
+                endValue: 80,
+                color: Colors.green.withValues(alpha: 0.3),
+              ),
             ],
           ),
         ),
@@ -329,18 +309,13 @@ class _DefaultScaleLinearGaugeBodyState
           title: 'With Multiple Filled area and Marker Pointers',
           child: GxScaleLinearGauge(
             tickPosition: LinearElementPosition.outAndIn,
-            minorTickStyle: const LinearTickStyle(
-              length: 10,
-              thickness: 1,
-            ),
-            majorTickStyle: const LinearTickStyle(
-              length: 60,
-              thickness: 1,
-            ),
+            minorTickStyle: const LinearTickStyle(length: 10, thickness: 1),
+            majorTickStyle: const LinearTickStyle(length: 60, thickness: 1),
             axisTrackStyle: const LinearAxisTrackStyle(
-                thickness: 2,
-                strokeCap: StrokeCap.round,
-                color: Colors.black26),
+              thickness: 2,
+              strokeCap: StrokeCap.round,
+              color: Colors.black26,
+            ),
             showMinorTicks: false,
             valueToMajorTickStyleCallback: (value, index) {
               return LinearTickStyle(
@@ -353,8 +328,8 @@ class _DefaultScaleLinearGaugeBodyState
             },
             valueToLabelFormatCallback: (value, index) =>
                 value.toInt().toString().length == 1
-                    ? '0$value'
-                    : value.toInt().toString(),
+                ? '0$value'
+                : value.toInt().toString(),
             markerPointers: [
               LinearMarkerPointer(
                 value: 10,
@@ -382,23 +357,26 @@ class _DefaultScaleLinearGaugeBodyState
               ),
             ],
             valueToLabelStyleCallback: (value, index) => TextStyle(
-              color:
-                  (value == 10 || value == 70) ? Colors.black : Colors.black38,
+              color: (value == 10 || value == 70)
+                  ? Colors.black
+                  : Colors.black38,
               fontWeight: (value == 10 || value == 70)
                   ? FontWeight.bold
                   : FontWeight.normal,
             ),
             fillAreaPointers: [
               FillAreaPointer(
-                  thickness: 60,
-                  startValue: 10,
-                  endValue: 70,
-                  color: Colors.grey.withOpacity(0.3)),
+                thickness: 60,
+                startValue: 10,
+                endValue: 70,
+                color: Colors.grey.withValues(alpha: 0.3),
+              ),
               FillAreaPointer(
-                  thickness: 48,
-                  startValue: 30,
-                  endValue: 80,
-                  color: Colors.orange.withOpacity(0.3))
+                thickness: 48,
+                startValue: 30,
+                endValue: 80,
+                color: Colors.orange.withValues(alpha: 0.3),
+              ),
             ],
           ),
         ),
@@ -407,10 +385,7 @@ class _DefaultScaleLinearGaugeBodyState
   }
 
   // Build a Card with a GxScaleLinearGauge
-  Widget buildCard(
-    String title,
-    Widget child,
-  ) {
+  Widget buildCard(String title, Widget child) {
     return Card(
       elevation: 0.1,
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -419,8 +394,10 @@ class _DefaultScaleLinearGaugeBodyState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(fontSize: 16, color: Colors.black54)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
+            ),
             const SizedBox(height: 10),
             child,
           ],

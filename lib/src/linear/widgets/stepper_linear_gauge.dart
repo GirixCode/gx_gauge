@@ -6,6 +6,20 @@ import 'package:girix_code_gauge/src/linear/painters/stepper_linear_painter.dart
 
 /// [GxStepperLinearGauge]: A linear gauge that displays the progress of a process in a linear manner with step-by-step progress indicators.
 class GxStepperLinearGauge extends StatelessWidget {
+  const GxStepperLinearGauge({
+    super.key,
+    required this.value,
+    this.style = const ProgressLinearStyle(color: Colors.blue, thickness: 5),
+    required this.stepperPointers,
+    this.height,
+    this.size,
+    this.shape = StepperShape.circle,
+    this.shapeSize = 20,
+    this.offset = 10,
+    this.activeStyle = const TextStyle(color: Colors.white),
+    this.inActiveStyle = const TextStyle(color: Colors.black),
+  });
+
   /// Specifies the value of the gauge.
   /// The value should be between the minimum and maximum values of the gauge.
   /// This value is used to calculate the position of the stepper pointers.
@@ -132,20 +146,6 @@ class GxStepperLinearGauge extends StatelessWidget {
   /// ```
   ///
   final double offset;
-
-  const GxStepperLinearGauge({
-    super.key,
-    required this.value,
-    this.style = const ProgressLinearStyle(color: Colors.blue, thickness: 5),
-    required this.stepperPointers,
-    this.height,
-    this.size,
-    this.shape = StepperShape.circle,
-    this.shapeSize = 20,
-    this.offset = 10,
-    this.activeStyle = const TextStyle(color: Colors.white),
-    this.inActiveStyle = const TextStyle(color: Colors.black),
-  });
 
   @override
   Widget build(BuildContext context) {

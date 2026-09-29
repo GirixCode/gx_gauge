@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 /// [ProgressLinearStyle] is a class that holds the style properties for the GxProgressLinearGauge widget.
 ///
 /// It contains the following properties:
-/// - [size]: The size of the GxProgressLinearGauge widget. It is a required property.
-///
 /// - [backgroundColor]: The background color of the GxProgressLinearGauge widget. It is set to Colors.grey by default.
 ///
 ///
@@ -15,6 +13,16 @@ import 'package:flutter/material.dart';
 ///
 /// - [dense]: A boolean value that determines if the GxProgressLinearGauge widget is dense. It is set to true by default.
 class ProgressLinearStyle extends Equatable {
+  const ProgressLinearStyle({
+    this.color = Colors.grey,
+    this.backgroundColor,
+    this.thickness = 10.0,
+    this.dense = true,
+    this.radius = const Radius.circular(10),
+    this.strokeCap = StrokeCap.butt,
+    this.paintingStyle = PaintingStyle.fill,
+  });
+
   /// Specifies the color of the GxProgressLinearGauge widget. The default value is Colors.grey.
   ///
   final Color? backgroundColor;
@@ -44,17 +52,12 @@ class ProgressLinearStyle extends Equatable {
   /// The painting style determines how the GxProgressLinearGauge widget is painted.
   final PaintingStyle paintingStyle;
 
-  const ProgressLinearStyle({
-    this.color = Colors.grey,
-    this.backgroundColor,
-    this.thickness = 10.0,
-    this.dense = true,
-    this.radius = const Radius.circular(10),
-    this.strokeCap = StrokeCap.butt,
-    this.paintingStyle = PaintingStyle.fill,
-  });
-
   @override
-  List<Object?> get props =>
-      <Object?>[color, backgroundColor, thickness, dense, radius];
+  List<Object?> get props => <Object?>[
+    color,
+    backgroundColor,
+    thickness,
+    dense,
+    radius,
+  ];
 }

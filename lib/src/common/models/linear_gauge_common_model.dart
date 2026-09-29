@@ -8,6 +8,14 @@ import 'package:girix_code_gauge/src/common/models/enums.dart';
 ///
 ///
 class GaugeLabel {
+  const GaugeLabel({
+    required this.label,
+    this.textAlign = TextAlign.center,
+    this.style = const TextStyle(),
+    this.offset,
+    this.spaceExtent = 0.0,
+  });
+
   /// Specifies the label of the gauge. It is required.
   ///
   /// [label] String: The label of the gauge.
@@ -67,31 +75,9 @@ class GaugeLabel {
   /// ```
   ///
   final double spaceExtent;
-
-  const GaugeLabel({
-    required this.label,
-    this.textAlign = TextAlign.center,
-    this.style = const TextStyle(),
-    this.offset,
-    this.spaceExtent = 0.0,
-  });
 }
 
 class GaugeTooltip {
-  final Size size;
-  final bool enabled;
-  final Color color;
-  final Color? borderColor;
-  final Radius? radius;
-  final GaugeTooltipType type;
-  final GaugeTooltipPosition position;
-  final PaintingStyle paintingStyle;
-  final double thickness;
-  final double offset;
-  final StrokeCap strokeCap;
-  final TextStyle textStyle;
-  final String? label;
-  final bool showPointer;
   const GaugeTooltip({
     this.showPointer = true,
     this.enabled = true,
@@ -108,6 +94,20 @@ class GaugeTooltip {
     this.borderColor,
     this.label,
   });
+  final Size size;
+  final bool enabled;
+  final Color color;
+  final Color? borderColor;
+  final Radius? radius;
+  final GaugeTooltipType type;
+  final GaugeTooltipPosition position;
+  final PaintingStyle paintingStyle;
+  final double thickness;
+  final double offset;
+  final StrokeCap strokeCap;
+  final TextStyle textStyle;
+  final String? label;
+  final bool showPointer;
 }
 
 /// Gauge value model
@@ -121,16 +121,12 @@ class GaugeTooltip {
 /// [max] double: The maximum value of the gauge. Default is 100.0.
 ///
 class GaugeValue extends Equatable {
+  const GaugeValue({required this.value, this.min = 0.0, this.max = 100.0})
+    : assert(min < max, 'min must be less than max'),
+      assert(value >= min && value <= max, 'value must be between min and max');
   final double value;
   final double min;
   final double max;
-  const GaugeValue({
-    required this.value,
-    this.min = 0.0,
-    this.max = 100.0,
-  })  : assert(min < max, 'min must be less than max'),
-        assert(
-            value >= min && value <= max, 'value must be between min and max');
 
   @override
   List<Object?> get props => <Object?>[value, min, max];
@@ -140,6 +136,19 @@ class GaugeValue extends Equatable {
 ///
 /// This model is used to represent the bar pointer of a linear gauge. It contains the value, the color, the thickness, the position, the shader callback, the border color, the border width, the offset, the radius, the painting style, the stroke cap and the label.
 class LinearBarPointer {
+  LinearBarPointer({
+    required this.value,
+    this.color = Colors.blue,
+    this.thickness = 5.0,
+    this.position = LinearElementPosition.cross,
+    this.shaderCallback,
+    this.radius,
+    this.offset = 0.0,
+    this.paintingStyle = PaintingStyle.fill,
+    this.strokeCap = StrokeCap.butt,
+    this.label,
+  });
+
   /// Specifies the value of the bar pointer. It is required.
   ///
   /// [value] double: The value of the bar pointer. The value must be between the `minimum` and `maximum` value of the gauge.
@@ -271,19 +280,6 @@ class LinearBarPointer {
   /// ```
   ///
   final GaugeLabel? label;
-
-  LinearBarPointer({
-    required this.value,
-    this.color = Colors.blue,
-    this.thickness = 5.0,
-    this.position = LinearElementPosition.cross,
-    this.shaderCallback,
-    this.radius,
-    this.offset = 0.0,
-    this.paintingStyle = PaintingStyle.fill,
-    this.strokeCap = StrokeCap.butt,
-    this.label,
-  });
 }
 
 // Directional Linear Gauge

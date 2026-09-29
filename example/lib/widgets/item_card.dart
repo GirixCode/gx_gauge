@@ -34,8 +34,10 @@ class ItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(title,
-                  style: const TextStyle(fontSize: 16, color: Colors.black54)),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 16, color: Colors.black54),
+              ),
               const SizedBox(height: 10),
               child,
             ],

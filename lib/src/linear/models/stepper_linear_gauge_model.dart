@@ -6,6 +6,8 @@ import 'package:girix_code_gauge/src/common/models/linear_gauge_common_model.dar
 ///  * [value]: The value of the step. The value should be between the minimum and maximum values of the gauge.
 /// * [label]: The label of the step. The label is displayed on the gauge.
 class StepperPointer {
+  const StepperPointer({this.value, required this.label});
+
   /// Specifies the value of the step. The value should be between the minimum and maximum values of the gauge.
   ///
   /// ```dart
@@ -27,9 +29,4 @@ class StepperPointer {
   /// ```
   ///
   final GaugeLabel label;
-
-  const StepperPointer({
-    this.value,
-    required this.label,
-  });
 }

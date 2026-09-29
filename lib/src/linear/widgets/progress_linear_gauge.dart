@@ -14,8 +14,6 @@ import 'package:girix_code_gauge/src/linear/painters/progress_linear_painter.dar
 ///
 /// - [style]: An instance of the [ProgressLinearStyle] class that holds the style properties of the gauge.
 ///
-/// - [shape]: An instance of the [LinearGaugeShape] enum that holds the shape of the gauge.
-///
 /// - [needle]: An instance of the [LinearNeedle] class that holds the needle properties of the Needle.
 ///
 /// - [customDrawNeedle]: A function that takes a Canvas and Offset as arguments and returns void. This function is used to draw a custom needle.
@@ -26,6 +24,18 @@ import 'package:girix_code_gauge/src/linear/painters/progress_linear_painter.dar
 ///
 /// - [height]: A double value that determines the height of the gauge.
 class GxProgressLinearGauge extends StatelessWidget {
+  const GxProgressLinearGauge({
+    super.key,
+    required this.value,
+    this.style = const ProgressLinearStyle(),
+    this.label,
+    this.needle,
+    this.customDrawNeedle,
+    this.reverse = false,
+    this.showLabel = false,
+    this.height,
+  });
+
   /// Specifies the value of the gauge. It is required.
   ///
   /// [value] GaugeValue: The value of the gauge.
@@ -146,17 +156,6 @@ class GxProgressLinearGauge extends StatelessWidget {
   ///
   final double? height;
 
-  const GxProgressLinearGauge(
-      {super.key,
-      required this.value,
-      this.style = const ProgressLinearStyle(),
-      this.label,
-      this.needle,
-      this.customDrawNeedle,
-      this.reverse = false,
-      this.showLabel = false,
-      this.height});
-
   @override
   Widget build(BuildContext context) {
     final Size size = Size.fromHeight(height ?? style.thickness);
@@ -164,14 +163,15 @@ class GxProgressLinearGauge extends StatelessWidget {
     return CustomPaint(
       size: size,
       painter: ProgressLinearPainter(
-          label: label,
-          style: style,
-          gaugeValue: value,
-          needle: needle,
-          customDrawNeedle: customDrawNeedle,
-          reverse: reverse,
-          showLabel: showLabel,
-          height: height),
+        label: label,
+        style: style,
+        gaugeValue: value,
+        needle: needle,
+        customDrawNeedle: customDrawNeedle,
+        reverse: reverse,
+        showLabel: showLabel,
+        height: height,
+      ),
     );
   }
 }

@@ -31,8 +31,6 @@ import 'package:girix_code_gauge/src/linear/painters/scale_linear_gauge_painter.
 ///
 /// - [minorTickStyle]: An instance of the [LinearTickStyle] class that holds the style of the minor tick of the gauge axis.
 ///
-/// - [ranges]: A list of [LinearGaugeRange] that holds the list of ranges of the gauge.
-///
 /// - [barPointers]: A list of [LinearBarPointer] that holds the list of bar pointers of the gauge.
 ///
 /// - [markerPointers]: A list of [LinearMarkerPointer] that holds the list of marker pointers of the gauge.
@@ -87,6 +85,48 @@ import 'package:girix_code_gauge/src/linear/painters/scale_linear_gauge_painter.
 /// ```
 ///
 class GxScaleLinearGauge extends StatelessWidget {
+  const GxScaleLinearGauge({
+    super.key,
+    this.gaugeType = ScaleLinearGaugeType.defaultGauge,
+    this.orientation = LinearGaugeOrientation.horizontal,
+    this.minimum = 0.0,
+    this.maximum = 100.0,
+    this.interval,
+    this.axisSpaceExtent = 0.0,
+    this.axisLabelStyle,
+    this.axisTrackStyle = const LinearAxisTrackStyle(),
+    this.minorTicksPerInterval = 1,
+    this.majorTickStyle = const LinearTickStyle(),
+    this.minorTickStyle = const LinearTickStyle(),
+    this.barPointers,
+    this.barHeight,
+    this.markerPointers,
+    this.size,
+    this.valueToLabelFormatCallback,
+    this.labelPosition = LinearGaugeLabelPosition.bottomCenter,
+    this.tickPosition = LinearElementPosition.cross,
+    this.showMajorTicks = true,
+    this.showMinorTicks = true,
+    this.showAxisTrack = true,
+    this.showAxisLabel = true,
+    this.valueToMajorTickStyleCallback,
+    this.needle,
+    this.value = 0.0,
+    this.fillAreaPointers,
+    this.valueToLabelStyleCallback,
+    this.barOffset = 0.5,
+    this.applyBarColorOnAxisTick = false,
+  }) : assert(minimum < maximum, 'min must be less than max'),
+       assert(
+         value >= minimum && value <= maximum,
+         'value must be between min and max',
+       ),
+       // BarHeight can not be null when barPoints are not null
+       assert(
+         barPointers != null || barHeight == null,
+         'barHeight can not be null when barPoints are not null',
+       );
+
   /// Specifies the type of gauge to be drawn of the [GxScaleLinearGauge].
   ///
   /// The default value is [ScaleLinearGaugeType.defaultGauge].
@@ -477,77 +517,40 @@ class GxScaleLinearGauge extends StatelessWidget {
   ///
   final bool applyBarColorOnAxisTick;
 
-  const GxScaleLinearGauge({
-    super.key,
-    this.gaugeType = ScaleLinearGaugeType.defaultGauge,
-    this.orientation = LinearGaugeOrientation.horizontal,
-    this.minimum = 0.0,
-    this.maximum = 100.0,
-    this.interval,
-    this.axisSpaceExtent = 0.0,
-    this.axisLabelStyle,
-    this.axisTrackStyle = const LinearAxisTrackStyle(),
-    this.minorTicksPerInterval = 1,
-    this.majorTickStyle = const LinearTickStyle(),
-    this.minorTickStyle = const LinearTickStyle(),
-    this.barPointers,
-    this.barHeight,
-    this.markerPointers,
-    this.size,
-    this.valueToLabelFormatCallback,
-    this.labelPosition = LinearGaugeLabelPosition.bottomCenter,
-    this.tickPosition = LinearElementPosition.cross,
-    this.showMajorTicks = true,
-    this.showMinorTicks = true,
-    this.showAxisTrack = true,
-    this.showAxisLabel = true,
-    this.valueToMajorTickStyleCallback,
-    this.needle,
-    this.value = 0.0,
-    this.fillAreaPointers,
-    this.valueToLabelStyleCallback,
-    this.barOffset = 0.5,
-    this.applyBarColorOnAxisTick = false,
-  })  : assert(minimum < maximum, 'min must be less than max'),
-        assert(value >= minimum && value <= maximum,
-            'value must be between min and max'),
-        // BarHeight can not be null when barPoints are not null
-        assert(barPointers != null || barHeight == null,
-            'barHeight can not be null when barPoints are not null');
-
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-        painter: ScaleLinearGaugePainter(
-          gaugeType: gaugeType,
-          orientation: orientation,
-          minimum: minimum,
-          maximum: maximum,
-          interval: interval,
-          axisSpaceExtent: axisSpaceExtent,
-          axisLabelStyle: axisLabelStyle,
-          axisTrackStyle: axisTrackStyle,
-          minorTicksPerInterval: minorTicksPerInterval,
-          majorTickStyle: majorTickStyle,
-          minorTickStyle: minorTickStyle,
-          barPointers: barPointers,
-          markerPointers: markerPointers,
-          valueToLabelFormatCallback: valueToLabelFormatCallback,
-          labelPosition: labelPosition,
-          tickPosition: tickPosition,
-          showMajorTicks: showMajorTicks,
-          showMinorTicks: showMinorTicks,
-          showAxisTrack: showAxisTrack,
-          showAxisLabel: showAxisLabel,
-          valueToMajorTickStyleCallback: valueToMajorTickStyleCallback,
-          value: value,
-          needle: needle,
-          fillAreaPointers: fillAreaPointers,
-          valueToLabelStyleCallback: valueToLabelStyleCallback,
-          barHeight: barHeight,
-          barOffset: barOffset,
-          applyBarColorOnAxisTick: applyBarColorOnAxisTick,
-        ),
-        size: size ?? const Size.fromHeight(100));
+      painter: ScaleLinearGaugePainter(
+        gaugeType: gaugeType,
+        orientation: orientation,
+        minimum: minimum,
+        maximum: maximum,
+        interval: interval,
+        axisSpaceExtent: axisSpaceExtent,
+        axisLabelStyle: axisLabelStyle,
+        axisTrackStyle: axisTrackStyle,
+        minorTicksPerInterval: minorTicksPerInterval,
+        majorTickStyle: majorTickStyle,
+        minorTickStyle: minorTickStyle,
+        barPointers: barPointers,
+        markerPointers: markerPointers,
+        valueToLabelFormatCallback: valueToLabelFormatCallback,
+        labelPosition: labelPosition,
+        tickPosition: tickPosition,
+        showMajorTicks: showMajorTicks,
+        showMinorTicks: showMinorTicks,
+        showAxisTrack: showAxisTrack,
+        showAxisLabel: showAxisLabel,
+        valueToMajorTickStyleCallback: valueToMajorTickStyleCallback,
+        value: value,
+        needle: needle,
+        fillAreaPointers: fillAreaPointers,
+        valueToLabelStyleCallback: valueToLabelStyleCallback,
+        barHeight: barHeight,
+        barOffset: barOffset,
+        applyBarColorOnAxisTick: applyBarColorOnAxisTick,
+      ),
+      size: size ?? const Size.fromHeight(100),
+    );
   }
 }

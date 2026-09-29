@@ -40,10 +40,7 @@ enum LinearGaugeAxisPosition { start, end, center }
 
 enum LinearGaugeDirection { horizontal }
 
-enum LinearGaugeLabelPosition {
-  topCenter,
-  bottomCenter,
-}
+enum LinearGaugeLabelPosition { topCenter, bottomCenter }
 
 enum LinearGaugeNeedlePosition {
   top,
@@ -52,7 +49,7 @@ enum LinearGaugeNeedlePosition {
   bottom,
 
   /// Needle position at the end of the gauge
-  center
+  center,
 
   /// Needle position at the center of the gauge
 }
@@ -76,12 +73,10 @@ enum LinearGaugeNeedleType {
   rectangle,
 
   /// Pipe needle type such as this |
-  pipe
+  pipe,
 }
 
-enum LinearGaugeOrientation {
-  horizontal,
-}
+enum LinearGaugeOrientation { horizontal }
 
 enum RadialElementAlignment {
   /// Allign the ticks at the start of the gauge
@@ -115,16 +110,9 @@ enum RadialNeedleShape {
   tapperedLine,
 }
 
-enum RadialPointerShape {
-  circle,
-  triangle,
-  custom,
-}
+enum RadialPointerShape { circle, triangle, custom }
 
-enum ScaleLinearGaugeType {
-  defaultGauge,
-  multiRange,
-}
+enum ScaleLinearGaugeType { defaultGauge, multiRange }
 
 enum StepperShape {
   /// Stepper shape is a circle shape ●

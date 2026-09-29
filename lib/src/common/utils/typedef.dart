@@ -40,13 +40,19 @@ typedef ValueToLabelStyleCallback = TextStyle Function(double value, int index);
 /// ```
 ///
 typedef ValueToMajorTickStyleCallback = LinearTickStyle Function(
-    double value, int index);
+  double value,
+  int index,
+);
 
 /// Callback to format the value to be displayed as radial tick label.
 ///
 /// The [ValueToRadialLabelStyleCallback] is used to format the value to be displayed as radial tick label in the gauge.
 typedef ValueToRadialLabelStyleCallback = RadialTickLabelStyle Function(
-    double value, int index);
+  double value,
+  int index,
+);
 
 typedef ValueToRadialMajorTickCallback = RadialTickStyle Function(
-    double value, int index);
+  double value,
+  int index,
+);

@@ -115,9 +115,9 @@ class ScaleLinearGaugePainter extends CustomPainter {
   void _drawBars(Canvas canvas, Size size) {
     final List<LinearElementPosition> allowedTickPosition =
         <LinearElementPosition>[
-      LinearElementPosition.inside,
-      LinearElementPosition.outside
-    ];
+          LinearElementPosition.inside,
+          LinearElementPosition.outside,
+        ];
     if (!allowedTickPosition.contains(tickPosition)) {
       return;
     }
@@ -147,14 +147,15 @@ class ScaleLinearGaugePainter extends CustomPainter {
     final Size barSize = Size(size.width, height);
 
     LinearBarUtils.drawBars(
-        canvas: canvas,
-        size: barSize,
-        barPointers: barPointers!,
-        barOffset: barFromTop,
-        value: value,
-        gapBetweenBars: 0,
-        minValue: minimum,
-        maxValue: maximum);
+      canvas: canvas,
+      size: barSize,
+      barPointers: barPointers!,
+      barOffset: barFromTop,
+      value: value,
+      gapBetweenBars: 0,
+      minValue: minimum,
+      maxValue: maximum,
+    );
   }
 
   // Implement drawing methods for each gauge type
@@ -233,14 +234,15 @@ class ScaleLinearGaugePainter extends CustomPainter {
         if (markerPointer.needle != null && markerPointer.needle!.enabled) {
           // Draw the needle
           NeedleUtils.drawIt(
-              canvas: canvas,
-              size: size,
-              maxValue: maximum,
-              minValue: minimum,
-              value: markerPointer.value,
-              needle: markerPointer.needle!,
-              thickness: markerPointer.needle!.offset,
-              dense: true);
+            canvas: canvas,
+            size: size,
+            maxValue: maximum,
+            minValue: minimum,
+            value: markerPointer.value,
+            needle: markerPointer.needle!,
+            thickness: markerPointer.needle!.offset,
+            dense: true,
+          );
         }
       }
     }
@@ -256,19 +258,24 @@ class ScaleLinearGaugePainter extends CustomPainter {
 
         // Draw the needle
         NeedleUtils.drawIt(
-            canvas: canvas,
-            size: size,
-            maxValue: maximum,
-            minValue: minimum,
-            value: value,
-            needle: needle!,
-            thickness: _getThickness(needle!.size.width, needle!.size.height));
+          canvas: canvas,
+          size: size,
+          maxValue: maximum,
+          minValue: minimum,
+          value: value,
+          needle: needle!,
+          thickness: _getThickness(needle!.size.width, needle!.size.height),
+        );
       }
     }
   }
 
   void _drawTicksAndLabels(
-      Canvas canvas, Size size, double startX, double endX) {
+    Canvas canvas,
+    Size size,
+    double startX,
+    double endX,
+  ) {
     // Get the total interval from the minimum and maximum values
     final double totalInterval = maximum - minimum;
 
@@ -291,44 +298,60 @@ class ScaleLinearGaugePainter extends CustomPainter {
       // P2: End Point and Vertical Down Line from X Axis
 
       // Default cross
-      Offset majorTickP1 =
-          Offset(x, size.height / 2 - majorTickStyle.length / 2);
-      Offset majorTickP2 =
-          Offset(x, size.height / 2 + majorTickStyle.length / 2);
+      Offset majorTickP1 = Offset(
+        x,
+        size.height / 2 - majorTickStyle.length / 2,
+      );
+      Offset majorTickP2 = Offset(
+        x,
+        size.height / 2 + majorTickStyle.length / 2,
+      );
       double minorP1dY = size.height / 2 - minorTickStyle.length / 2;
       double minorP2dY = size.height / 2 + minorTickStyle.length / 2;
 
       if (tickPosition == LinearElementPosition.inside) {
         // Horizontal: Start From Bottom
-        majorTickP1 =
-            Offset(x, size.height / 2 + (axisTrackStyle.thickness / 2));
+        majorTickP1 = Offset(
+          x,
+          size.height / 2 + (axisTrackStyle.thickness / 2),
+        );
 
         minorP1dY = size.height / 2 + axisTrackStyle.thickness / 2;
       } else if (tickPosition == LinearElementPosition.outside) {
         // Horizontal: Start From Top and Hide Bottom
-        majorTickP2 =
-            Offset(x, size.height / 2 - (axisTrackStyle.thickness / 2));
+        majorTickP2 = Offset(
+          x,
+          size.height / 2 - (axisTrackStyle.thickness / 2),
+        );
 
         minorP2dY = size.height / 2 - axisTrackStyle.thickness / 2;
       } else if (tickPosition == LinearElementPosition.outAndIn) {
         // Determine if the current tick should go up or down
         if (isOdd) {
           // Horizontal: Start From Bottom
-          majorTickP1 =
-              Offset(x, size.height / 2 + (axisTrackStyle.thickness / 2));
+          majorTickP1 = Offset(
+            x,
+            size.height / 2 + (axisTrackStyle.thickness / 2),
+          );
         } else {
-          majorTickP2 =
-              Offset(x, size.height / 2 - (axisTrackStyle.thickness / 2));
+          majorTickP2 = Offset(
+            x,
+            size.height / 2 - (axisTrackStyle.thickness / 2),
+          );
         }
       } else if (tickPosition == LinearElementPosition.inAndOut) {
         // Determine if the current tick should go up or down
         if (isOdd) {
           // Horizontal: Start From Top and Hide Bottom
-          majorTickP2 =
-              Offset(x, size.height / 2 - (axisTrackStyle.thickness / 2));
+          majorTickP2 = Offset(
+            x,
+            size.height / 2 - (axisTrackStyle.thickness / 2),
+          );
         } else {
-          majorTickP1 =
-              Offset(x, size.height / 2 + (axisTrackStyle.thickness / 2));
+          majorTickP1 = Offset(
+            x,
+            size.height / 2 + (axisTrackStyle.thickness / 2),
+          );
         }
       }
 
@@ -338,7 +361,8 @@ class ScaleLinearGaugePainter extends CustomPainter {
       LinearTickStyle filterMajorTickStyle = majorTickStyle;
 
       // Check whether to apply the bar color on the axis tick
-      final bool allowFilterStyle = applyBarColorOnAxisTick &&
+      final bool allowFilterStyle =
+          applyBarColorOnAxisTick &&
           barPointers != null &&
           barPointers!.isNotEmpty;
 
@@ -387,7 +411,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
         final TextStyle labelStyle = valueToLabelStyleCallback != null
             ? valueToLabelStyleCallback!(minimum + actualInterval * i, i)
             : axisLabelStyle ??
-                const TextStyle(color: Colors.black, fontSize: 12);
+                  const TextStyle(color: Colors.black, fontSize: 12);
         // Check Tick Position is InAndOut
         final bool isTickPositionInOutAndTickIsOdd =
             tickPosition == LinearElementPosition.inAndOut && isOdd;
@@ -397,14 +421,16 @@ class ScaleLinearGaugePainter extends CustomPainter {
         final bool isLabelPositionTopCenter =
             labelPosition == LinearGaugeLabelPosition.topCenter;
 
-        final bool showLabelOnTop = isTickPositionInOutAndTickIsOdd ||
+        final bool showLabelOnTop =
+            isTickPositionInOutAndTickIsOdd ||
             isLabelPositionTopCenter ||
             isTickPositionOutInAndTickIsEven;
 
         final TextPainter textPainter = TextPainter(
-            textAlign: TextAlign.left,
-            textDirection: TextDirection.rtl,
-            textWidthBasis: TextWidthBasis.longestLine);
+          textAlign: TextAlign.left,
+          textDirection: TextDirection.rtl,
+          textWidthBasis: TextWidthBasis.longestLine,
+        );
 
         final double actualValue = minimum + actualInterval * i;
         final String label = actualValue.toStringAsFixed(0);
@@ -443,7 +469,9 @@ class ScaleLinearGaugePainter extends CustomPainter {
 
   // Helper method to get Tick Style color
   LinearTickStyle _getFilteredTickStyle(
-      LinearTickStyle tickStyle, double tickValue) {
+    LinearTickStyle tickStyle,
+    double tickValue,
+  ) {
     LinearTickStyle localStyle = tickStyle;
     double startBarValue = minimum;
     for (final LinearBarPointer barPointer in barPointers!) {

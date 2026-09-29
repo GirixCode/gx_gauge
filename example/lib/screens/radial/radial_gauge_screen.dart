@@ -33,15 +33,9 @@ class _RadialGuageScreenState extends State<RadialGuageScreen>
               text: 'Show Case',
               // child: Text('Default'),
             ),
-            Tab(
-              child: Text('Radial Gauge'),
-            ),
-            Tab(
-              child: Text('Gradient'),
-            ),
-            Tab(
-              child: Text('Range Bar'),
-            ),
+            Tab(child: Text('Radial Gauge')),
+            Tab(child: Text('Gradient')),
+            Tab(child: Text('Range Bar')),
           ],
         ),
       ),
@@ -49,16 +43,10 @@ class _RadialGuageScreenState extends State<RadialGuageScreen>
         physics: const ClampingScrollPhysics(),
         controller: _tabController,
         children: <Widget>[
-          DefaultRadialShowCase(
-            value: value,
-          ),
-          DefaultRadialGaugeBody(
-            value: value,
-          ),
-          GradientRadialGaugeBody(
-            value: value,
-          ),
-          RangeBarRadialGaugeBody(value: value)
+          DefaultRadialShowCase(value: value),
+          DefaultRadialGaugeBody(value: value),
+          GradientRadialGaugeBody(value: value),
+          RangeBarRadialGaugeBody(value: value),
           // MultiRangeScaleLinearGaugeBody(),
         ],
       ),

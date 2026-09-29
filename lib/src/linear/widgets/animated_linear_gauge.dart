@@ -4,16 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:girix_code_gauge/girix_code_gauge.dart';
 
 class GxAnimatedProgressLinearGauge extends StatefulWidget {
-  final double value;
-  final GaugeAnimationType animationType;
-  final Duration duration;
-  final ProgressLinearStyle style;
-  final LinearNeedle? needle;
-  final void Function(Canvas canvas, Offset position)? customDrawNeedle;
-  final bool reverse;
-  final bool showLabel;
-  final double? height;
-  final GaugeLabel? label;
   const GxAnimatedProgressLinearGauge({
     super.key,
     required this.value,
@@ -27,9 +17,19 @@ class GxAnimatedProgressLinearGauge extends StatefulWidget {
     this.height,
     this.label,
   });
+  final double value;
+  final GaugeAnimationType animationType;
+  final Duration duration;
+  final ProgressLinearStyle style;
+  final LinearNeedle? needle;
+  final void Function(Canvas canvas, Offset position)? customDrawNeedle;
+  final bool reverse;
+  final bool showLabel;
+  final double? height;
+  final GaugeLabel? label;
 
   @override
-  _AnimatedProgressLinearGaugeState createState() =>
+  State<GxAnimatedProgressLinearGauge> createState() =>
       _AnimatedProgressLinearGaugeState();
 }
 
@@ -107,7 +107,7 @@ class _AnimatedProgressLinearGaugeState
     return Tween<double>(begin: begin, end: end).animate(
       CurvedAnimation(parent: _controller, curve: curve),
     )..addListener(() {
-        setState(() {});
-      });
+      setState(() {});
+    });
   }
 }

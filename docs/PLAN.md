@@ -1,6 +1,6 @@
 # Modernisation plan: `girix_code_gauge` → `gx_gauge`
 
-Status: **proposed, not started**. Nothing in this plan has been executed.
+Status: **Phase 0 in progress** on branch `chore/phase-0-tooling`. Phases 1–5 are not started.
 
 References:
 - `docs/code_review.md` lists the confirmed defects. It is cited below as **CR**, followed by the section and item, e.g. *CR Radial 1*.
@@ -34,7 +34,7 @@ Each decision has a recommended default. The plan below assumes these defaults, 
 | D2 | Type naming | **Every public type gets the `Gx` prefix**, and names are ordered as `Gx<Kind><Thing>` (see §3.2). | Avoids collisions with other gauge packages (`GaugeValue` and `LinearGauge*` are common names) and makes the API easy to discover. |
 | D3 | Backward compatibility | **None in `gx_gauge`.** It is a clean API, and a `MIGRATION.md` maps old names to new ones. | It is a new package, so deprecation shims across packages are impossible. |
 | D4 | First version of `gx_gauge` | `1.0.0-dev.N` prereleases while the phases land, then **`1.0.0`** once phases 1–5 are complete. | Semver-stable from day one of general availability, while still leaving room to iterate. |
-| D5 | Minimum SDK | `sdk: ^3.6.0`, `flutter: ">=3.27.0"` | 3.27 introduced `Color.withValues`/`.r` etc., which lets us drop the deprecated APIs. It is about 18 months old, so adoption is broad. |
+| D5 | Minimum SDK | **Latest stable**: `sdk: ^3.13.0`, `flutter: ">=3.47.0"`. The toolchain is pinned to Flutter 3.47.5 in `.fvmrc`, and CI reads that file. | Owner decision (2026-09-29): target the latest SDK for compatibility. It allows the modern `Color` API (`withValues`, `.r`/`.g`/`.b`). The trade-off is that apps on older Flutter can't upgrade to `gx_gauge`. |
 | D6 | Runtime dependencies | **Zero**: drop `equatable` and write `==`/`hashCode` with `Object.hash`. | Pub.dev best practice for UI leaf packages: no transitive dependency for consumers. |
 | D7 | Lint set | `flutter_lints` (latest), plus `strict-casts`, `strict-inference` and `strict-raw-types`, plus a curated rule list that includes `public_member_api_docs`. **Drop `always_specify_types`.** | `always_specify_types` conflicts with the recommended Dart style (`omit_local_variable_types`) and adds noise. |
 | D8 | Animation API | Every gauge becomes implicitly animated through `duration` and `curve` parameters (the `ImplicitlyAnimatedWidget` pattern). **Remove `GxAnimatedProgressLinearGauge` and the `GaugeAnimationType` enum.** | This matches Flutter's own `AnimatedContainer`-style API, lets users pass any `Curve`, and fixes CR Progress 1–3 by construction. |
@@ -57,16 +57,33 @@ Goal: a green, trustworthy baseline before anything moves.
    - `common/widgets/gauge_label.dart`, which is entirely commented out
    - `example/flutter_0*.log`
 4. **`.gitignore`:** fix the `*.// log` line, add `*.log` and `coverage/`, and stop ignoring `.vscode/` only where it's useful.
-5. **CI** (`.github/workflows/ci.yaml`): on each PR and on `main`, run the following for the package and for `example/`:
+5. **CI (deferred by the owner, 2026-09-29).** Not part of Phase 0. When it's picked up, `.github/workflows/ci.yaml` should run the following on each PR and on `main`, for the package and for `example/`:
    - `dart format --set-exit-if-changed`
    - `flutter analyze --fatal-infos`
    - `flutter test --coverage`
    - `dart pub publish --dry-run`
    - `pana` (fail on score regression)
-6. **Publishing** (`.github/workflows/publish.yaml`): use pub.dev *automated publishing* through GitHub OIDC, triggered by `v*` tags. No personal credentials are needed.
+6. **Publishing (deferred together with CI)** (`.github/workflows/publish.yaml`): use pub.dev *automated publishing* through GitHub OIDC, triggered by `v*` tags. No personal credentials are needed. It needs a one-time admin setup on pub.dev. pub.dev can't auto-publish a package that doesn't exist yet, so the **first `gx_gauge` release must be published manually**.
+6a. **`.pubignore`**: keep `docs/`, `.github/`, `.fvm*`, `CLAUDE.md` and editor files out of the published archive.
 7. **Characterisation tests.** Before refactoring, add unit tests that pin the current *correct* behaviour of the pure math (see §6.1). They act as a safety net for phases 1–2.
 
-Exit criteria: CI is green and `flutter analyze` reports 0 issues.
+Exit criteria: run locally, `dart format`, `flutter analyze --fatal-infos` and both test suites are clean. Until CI exists, these local checks gate every phase.
+
+### Phase 0 progress log
+
+- Done:
+  - Flutter 3.47.5 / Dart 3.13 pinned via fvm, with the constraints bumped.
+  - `analysis_options.yaml` rewritten.
+  - Deprecated `Color` APIs replaced.
+  - Dead files deleted: the painter copy, `bar_linear_gauge_model`, `BasePainter`, `AnimationUtils`, the commented-out `gauge_label`, and the logs.
+  - `.gitignore` fixed and `.pubignore` added.
+  - `.pubignore` also drops README-only images and `doc/api/` from the archive, which was 10 MB.
+- Deferred: CI and publish workflows (owner decision).
+  - 35 characterisation tests (1 skipped on purpose as the known bug CR Radial 1).
+  - Example smoke test replaced.
+  - pubspec description shortened, which fixes a pana penalty.
+- Baseline pana score: 140/160. The two failures are the description length (fixed) and dartdoc crashing (below).
+- **Known issue:** dartdoc 9.0.x (shipped with Dart 3.13) crashes with a stack overflow on this package, which costs 10 pana points for API docs. An unnamed `library;` directive in the barrel is one trigger, so the barrel keeps a named library with an `ignore`. The remaining trigger is under investigation. If it isn't resolved in Phase 0, it moves to Phase 2 (§4.6), where the doc comments are rewritten anyway.
 
 ---
 
@@ -258,7 +275,7 @@ The README must not contain a manually maintained table of contents (pub.dev and
 ### 7.3 Release checklist
 
 1. `dart pub publish --dry-run` passes with 0 warnings, and `pana` scores 160/160.
-2. Tag `v1.0.0`; the publish workflow releases it.
+2. Publish `gx_gauge 1.0.0` **manually** (`flutter pub publish`), because pub.dev only allows automated publishing for existing packages. Then enable automated publishing (tag pattern `v{{version}}`) for later releases.
 3. Publish `girix_code_gauge 0.0.7` from the `legacy` branch. It changes only the README and adds a deprecation notice.
 4. In the pub.dev admin UI, mark `girix_code_gauge` as discontinued and replaced by `gx_gauge`.
 5. Create a GitHub release with notes linking to `MIGRATION.md`.

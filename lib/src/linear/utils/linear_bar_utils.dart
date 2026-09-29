@@ -78,14 +78,10 @@ class LinearBarUtils {
       if (barPointer.label != null) {
         final GaugeLabel label = barPointer.label!;
         final TextPainter textPainter = TextPainter(
-            text: TextSpan(
-              text: label.label,
-              style: label.style,
-            ),
-            textDirection: TextDirection.rtl,
-            textAlign: barPointer.label?.textAlign ?? TextAlign.center);
-
-        textPainter.layout();
+          text: TextSpan(text: label.label, style: label.style),
+          textDirection: TextDirection.rtl,
+          textAlign: barPointer.label?.textAlign ?? TextAlign.center,
+        )..layout();
         final double textWidth = textPainter.width;
         final double textHeight = textPainter.height;
 
@@ -122,17 +118,18 @@ class LinearBarUtils {
   }
 
   // Draw Needle for the Linear Bars
-  static void drawNeedle(
-      {required Canvas canvas,
-      required Size size,
-      required LinearNeedle needle,
-      required double value,
-      required double minValue,
-      required double maxValue,
-      required double gapBetweenBars,
-      required List<LinearBarPointer> barPointers,
-      required bool showNeedleInsideBar,
-      void Function(Canvas canvas, Offset position)? customDrawNeedle}) {
+  static void drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required LinearNeedle needle,
+    required double value,
+    required double minValue,
+    required double maxValue,
+    required double gapBetweenBars,
+    required List<LinearBarPointer> barPointers,
+    required bool showNeedleInsideBar,
+    void Function(Canvas canvas, Offset position)? customDrawNeedle,
+  }) {
     double needleValue = value;
 
     // Gap Value
@@ -160,7 +157,7 @@ class LinearBarUtils {
       }
     }
 
-// Draw the needle
+    // Draw the needle
     NeedleUtils.drawIt(
       canvas: canvas,
       size: size,

@@ -6,7 +6,7 @@ import 'package:girix_code_gauge/src/common/utils/typedef.dart';
 import 'package:girix_code_gauge/src/radial/models/radial_gauge_style.dart';
 import 'package:girix_code_gauge/src/radial/painters/radial_gauge_painter.dart';
 
-/// The [RadialGauge] widget is used to display a radial gauge.
+/// The [GxRadialGauge] widget is used to display a radial gauge.
 ///
 ///
 class GxRadialGauge extends StatelessWidget {
@@ -329,7 +329,7 @@ class GxRadialGauge extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color needleCircleInnerColor =
         context.findAncestorWidgetOfExactType<Material>()?.color ??
-            Theme.of(context).colorScheme.surface;
+        Theme.of(context).colorScheme.surface;
     return CustomPaint(
       size: size,
       painter: RadialGaugePainter(

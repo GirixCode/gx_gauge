@@ -14,9 +14,11 @@ class NeedleUtils {
     required double thickness,
     void Function(Canvas canvas, Offset position)? customDrawNeedle,
   }) {
-// Calculate the needle's x-position based on the needle position
-    final double progress =
-        ((value - minValue) / (maxValue - minValue)).clamp(0.0, 1.0);
+    // Calculate the needle's x-position based on the needle position
+    final double progress = ((value - minValue) / (maxValue - minValue)).clamp(
+      0.0,
+      1.0,
+    );
 
     // To allign nnedle with center position 0: Start after progress
     // final double denseValue = dense ? -5 : needle.size.width / 2;
@@ -67,25 +69,26 @@ class NeedleUtils {
     switch (needleType) {
       case LinearGaugeNeedleType.circle:
         canvas.drawCircle(
-            Offset(needleX, needleY), needleWidthSize / 2, needlePaint);
+          Offset(needleX, needleY),
+          needleWidthSize / 2,
+          needlePaint,
+        );
         break;
       case LinearGaugeNeedleType.triangle:
-        final Path trianglePath = Path();
-        trianglePath.moveTo(needleX, needleY - needleWidthSize / 2);
-        trianglePath.lineTo(
-            needleX - needleWidthSize / 2, needleY + needleWidthSize / 2);
-        trianglePath.lineTo(
-            needleX + needleWidthSize / 2, needleY + needleWidthSize / 2);
-        trianglePath.close();
+        final Path trianglePath = Path()
+          ..moveTo(needleX, needleY - needleWidthSize / 2)
+          ..lineTo(needleX - needleWidthSize / 2, needleY + needleWidthSize / 2)
+          ..lineTo(needleX + needleWidthSize / 2, needleY + needleWidthSize / 2)
+          ..close();
         canvas.drawPath(trianglePath, needlePaint);
         break;
       case LinearGaugeNeedleType.diamond:
-        final Path diamondPath = Path();
-        diamondPath.moveTo(needleX, needleY - needleWidthSize / 2);
-        diamondPath.lineTo(needleX - needleWidthSize / 2, needleY);
-        diamondPath.lineTo(needleX, needleY + needleWidthSize / 2);
-        diamondPath.lineTo(needleX + needleWidthSize / 2, needleY);
-        diamondPath.close();
+        final Path diamondPath = Path()
+          ..moveTo(needleX, needleY - needleWidthSize / 2)
+          ..lineTo(needleX - needleWidthSize / 2, needleY)
+          ..lineTo(needleX, needleY + needleWidthSize / 2)
+          ..lineTo(needleX + needleWidthSize / 2, needleY)
+          ..close();
         canvas.drawPath(diamondPath, needlePaint);
         break;
       case LinearGaugeNeedleType.rectangle:
@@ -112,14 +115,15 @@ class NeedleUtils {
     }
   }
 
-  static void drawNeedle(
-      {required Canvas canvas,
-      required Size size,
-      required GaugeValue gaugeValue,
-      bool dense = false,
-      required ProgressLinearStyle style,
-      required LinearNeedle needle,
-      void Function(Canvas canvas, Offset position)? customDrawNeedle}) {
+  static void drawNeedle({
+    required Canvas canvas,
+    required Size size,
+    required GaugeValue gaugeValue,
+    bool dense = false,
+    required ProgressLinearStyle style,
+    required LinearNeedle needle,
+    void Function(Canvas canvas, Offset position)? customDrawNeedle,
+  }) {
     return drawIt(
       canvas: canvas,
       size: size,

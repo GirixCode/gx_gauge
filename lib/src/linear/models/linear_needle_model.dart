@@ -4,17 +4,18 @@ import 'package:equatable/equatable.dart';
 import 'package:girix_code_gauge/src/common/models/enums.dart';
 
 class LinearNeedle extends Equatable {
-  const LinearNeedle(
-      {this.needleType = LinearGaugeNeedleType.rectangle,
-      this.position = LinearGaugeNeedlePosition.center,
-      this.size = const Size(10, 10),
-      this.color = const Color(0xFF000000),
-      this.enabled = true,
-      this.label,
-      this.offset = 2,
-      this.strokeCap = StrokeCap.square,
-      this.paintingStyle = PaintingStyle.fill,
-      this.strokeWidth = 0.0});
+  const LinearNeedle({
+    this.needleType = LinearGaugeNeedleType.rectangle,
+    this.position = LinearGaugeNeedlePosition.center,
+    this.size = const Size(10, 10),
+    this.color = const Color(0xFF000000),
+    this.enabled = true,
+    this.label,
+    this.offset = 2,
+    this.strokeCap = StrokeCap.square,
+    this.paintingStyle = PaintingStyle.fill,
+    this.strokeWidth = 0.0,
+  });
   final LinearGaugeNeedleType needleType;
   final LinearGaugeNeedlePosition position;
   final Size size;
@@ -29,17 +30,17 @@ class LinearNeedle extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        needleType,
-        position,
-        size,
-        color,
-        enabled,
-        label,
-        offset,
-        strokeCap,
-        paintingStyle,
-        strokeWidth
-      ];
+    needleType,
+    position,
+    size,
+    color,
+    enabled,
+    label,
+    offset,
+    strokeCap,
+    paintingStyle,
+    strokeWidth,
+  ];
 }
 
 // Needle Label

@@ -46,11 +46,7 @@ class RadialBarRange {
 ///
 /// It contains the following properties:
 ///
-/// - [size]: The size of the RadialGauge widget. It is a required property.
-///
 /// - [backgroundColor]: The background color of the RadialGauge widget. It is set to Colors.grey by default.
-///
-/// - [foregroundColor]: The foreground color of the RadialGauge widget. It is set to Colors.blue by default.
 ///
 /// - [thickness]: The stroke width of the RadialGauge widget. It is set to 10.0 by default.
 ///
@@ -206,11 +202,7 @@ class RadialTickStyle {
   final RadialElementPosition position;
 
   // CopyWith method
-  RadialTickStyle copyWith({
-    double? length,
-    double? thickness,
-    Color? color,
-  }) {
+  RadialTickStyle copyWith({double? length, double? thickness, Color? color}) {
     return RadialTickStyle(
       length: length ?? this.length,
       thickness: thickness ?? this.thickness,

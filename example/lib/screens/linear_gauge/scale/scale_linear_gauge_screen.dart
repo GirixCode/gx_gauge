@@ -30,9 +30,7 @@ class _MyScaleLinearGaugeScreenState extends State<MyScaleLinearGaugeScreen>
               text: 'Default',
               // child: Text('Default'),
             ),
-            Tab(
-              child: Text('Multi Range'),
-            ),
+            Tab(child: Text('Multi Range')),
           ],
         ),
       ),

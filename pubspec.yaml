@@ -1,5 +1,5 @@
 name: girix_code_gauge
-description: "A Flutter package for creating progress bar, linear and radial gauges with customizable ranges, ticks, and labels. It also supports step indicators and steppers. It is highly customizable and easy to use."
+description: "Customizable Flutter gauges: linear progress, stepper, scale and bar gauges plus radial gauges with ranges, ticks, labels, needles and animation."
 version: 0.0.6
 homepage: "https://github.com/GirixCode/girix-code-gauge"
 repository: "https://github.com/GirixCode/girix-code-gauge"
@@ -17,8 +17,8 @@ topics:
   - steppers
 
 environment:
-  sdk: ^3.5.1
-  flutter: ">=1.17.0"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
@@ -28,6 +28,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
