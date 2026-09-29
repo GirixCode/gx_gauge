@@ -1,8 +1,48 @@
-# Girix Code Gauge
+[![Discontinued](https://img.shields.io/badge/status-DISCONTINUED-critical?style=for-the-badge)](https://pub.dev/packages/gx_gauge)
+[![Use gx_gauge](https://img.shields.io/pub/v/gx_gauge?label=use%20gx_gauge&style=for-the-badge&color=0175C2)](https://pub.dev/packages/gx_gauge)
+[![Migration guide](https://img.shields.io/badge/migration-guide-blue?style=for-the-badge)](https://github.com/GirixCode/gx_gauge/blob/main/doc/MIGRATION.md)
 
-> **This package has moved to [gx_gauge](https://pub.dev/packages/gx_gauge).**
-> `girix_code_gauge` receives no further updates. See the
-> [migration guide](https://github.com/GirixCode/gx_gauge/blob/main/doc/MIGRATION.md).
+# ⚠️ DISCONTINUED: use [gx_gauge](https://pub.dev/packages/gx_gauge) instead
+
+> ## 🚫 `girix_code_gauge` is no longer maintained
+>
+> It receives **no further features, fixes or Flutter compatibility updates**.
+>
+> ### 👉 Switch to **[gx_gauge](https://pub.dev/packages/gx_gauge)**, its successor, which has the same gauges rebuilt and extended
+
+| ❌ Old (discontinued)                                      | ✅ New (maintained)                                 |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| `girix_code_gauge`                                         | **[`gx_gauge`](https://pub.dev/packages/gx_gauge)** |
+| `import 'package:girix_code_gauge/girix_code_gauge.dart';` | `import 'package:gx_gauge/gx_gauge.dart';`          |
+| No updates                                                 | Actively maintained, tested and documented          |
+
+### Switch in two steps
+
+```sh
+flutter pub remove girix_code_gauge
+flutter pub add gx_gauge
+```
+
+Every public type now has the `Gx` prefix (for example, `GaugeValue` became `GxGaugeValue` and `GxProgressLinearGauge` became `GxLinearProgressGauge`), and a few parameters changed. The **[migration guide](https://github.com/GirixCode/gx_gauge/blob/main/doc/MIGRATION.md)** lists every old name alongside its replacement, with before-and-after code. gx_gauge requires Flutter 3.47 or later.
+
+### What gx_gauge adds
+
+- **All gauges fixed and tested:** radial gauges now respect `min`, ticks never produce NaN, and every option repaints correctly.
+- **Animated:** set a `duration` and `curve` on any gauge.
+- **Interactive:** add `onChanged` to turn a gauge into a slider, or a radial gauge into a knob.
+- **New features:** vertical gauges, labelled ranges, gradients, needle labels, marker widgets and custom needles.
+- **Theme-aware and accessible:** colors follow your `ColorScheme` (dark mode included), and gauges work with screen readers and in right-to-left locales.
+- **No dependencies** beyond Flutter.
+
+**Links:** [gx_gauge on pub.dev](https://pub.dev/packages/gx_gauge) · [Migration guide](https://github.com/GirixCode/gx_gauge/blob/main/doc/MIGRATION.md) · [Changelog](https://github.com/GirixCode/gx_gauge/blob/main/CHANGELOG.md) · [Source code](https://github.com/GirixCode/gx_gauge)
+
+---
+
+---
+
+# Girix Code Gauge (legacy documentation)
+
+> _Kept only for reference. It describes the final `girix_code_gauge` release, which is no longer maintained. For new projects, use [gx_gauge](https://pub.dev/packages/gx_gauge)._
 
 ![alt](https://raw.githubusercontent.com/GirixCode/gx_gauge/legacy/example/assets/images/banner/1.png)
 
@@ -12,7 +52,7 @@ A Flutter package for creating customizable progress linear, linear gauges, radi
 
 ## **Table of Contents**
 
-- [Girix Code Gauge](#girix-code-gauge)
+- [Girix Code Gauge (legacy documentation)](#girix-code-gauge-legacy-documentation)
   - [**Table of Contents**](#table-of-contents)
   - [**Features**](#features)
   - [**Preview**](#preview)
@@ -132,7 +172,6 @@ The `GxProgressLinearGauge` widget is used to display a progress linear gauge.
   - `min`: The minimum value of the progress linear gauge.
   - `max`: The maximum value of the progress linear gauge.
 - `style`: An instance of the `ProgressLinearStyle` class that holds the style properties of the progress linear gauge.
-
   - `color`: The color of the active part of the progress linear gauge.
   - `backgroundColor`: The color of the background part of the progress linear gauge.
   - `dense`: Whether the progress linear gauge is dense.
@@ -142,7 +181,6 @@ The `GxProgressLinearGauge` widget is used to display a progress linear gauge.
   - `paintingStyle`: The painting style of the progress linear gauge.
 
 - `label`: An instance of the `GaugeLabel` class that holds the label properties of the progress linear gauge.
-
   - `label`: The label of the progress linear gauge.
   - `style`: The style of the label.
   - `textAlign`: The alignment of the label.
@@ -150,7 +188,6 @@ The `GxProgressLinearGauge` widget is used to display a progress linear gauge.
   - `offset`: The offset of the label.
 
 - `needle`: An instance of the `LinearNeedle` class that holds the needle properties of the progress linear gauge.
-
   - `enabled`: Whether the needle is enabled.
   - `position`: The position of the needle.
   - `size`: The size of the needle.
