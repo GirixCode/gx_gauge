@@ -1,0 +1,4 @@
+{
+  "dart.enableSdkFormatter": true,
+  "cmake.ignoreCMakeListsMissing": true
+}
