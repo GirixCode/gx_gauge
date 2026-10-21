@@ -251,6 +251,7 @@ class _GxLinearScaleGaugeState extends AnimatedGaugeState<GxLinearScaleGauge> {
       applyBarColorOnAxisTick: w.applyBarColorOnAxisTick,
       reversed: linearReversed(context, w.direction, w.reverse),
       textDirection: direction,
+      textScaler: MediaQuery.textScalerOf(context),
       labelFormatter: w.labelFormatter,
       labelStyler: w.labelStyler,
       majorTickStyler: w.majorTickStyler,

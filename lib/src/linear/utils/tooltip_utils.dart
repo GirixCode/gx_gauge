@@ -20,6 +20,7 @@ abstract final class TooltipUtils {
     required Color textColor,
     required TextDirection textDirection,
     TextStyle baseStyle = const TextStyle(),
+    TextScaler textScaler = TextScaler.noScaling,
     bool upright = false,
   }) {
     final Color strokeColor = tooltip.borderColor ?? color;
@@ -87,6 +88,7 @@ abstract final class TooltipUtils {
           )
           .merge(tooltip.textStyle),
       textDirection: textDirection,
+      textScaler: textScaler,
       maxWidth: tooltip.size.width,
       upright: upright,
       position: (Size textSize) =>

@@ -43,6 +43,7 @@ class ScalePainterConfig extends PainterConfig {
     required this.applyBarColorOnAxisTick,
     required this.reversed,
     required this.textDirection,
+    this.textScaler = TextScaler.noScaling,
     this.labelFormatter,
     this.labelStyler,
     this.majorTickStyler,
@@ -124,6 +125,9 @@ class ScalePainterConfig extends PainterConfig {
   /// Direction for text.
   final TextDirection textDirection;
 
+  /// Scales painted text to follow the system text size setting.
+  final TextScaler textScaler;
+
   /// Formats tick labels.
   final GxValueLabelFormatter? labelFormatter;
 
@@ -179,6 +183,7 @@ class ScalePainterConfig extends PainterConfig {
     applyBarColorOnAxisTick,
     reversed,
     textDirection,
+    textScaler,
     labelFormatter,
     labelStyler,
     majorTickStyler,
@@ -288,6 +293,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
           text: label.label,
           style: c.barLabelStyle.merge(label.style),
           textDirection: c.textDirection,
+          textScaler: c.textScaler,
           upright: c.vertical,
           position: (Size text) =>
               Offset(
@@ -345,6 +351,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
       color: c.barColor,
       labelStyle: c.barLabelStyle,
       textDirection: c.textDirection,
+      textScaler: c.textScaler,
       upright: c.vertical,
     );
   }
@@ -420,6 +427,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
           text: c.labelFormatter?.call(tick, i) ?? formatGaugeValue(tick),
           style: style,
           textDirection: c.textDirection,
+          textScaler: c.textScaler,
           upright: c.vertical,
           position: (Size text) => Offset(
             x - text.width / 2,
@@ -515,6 +523,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
         valueText: formatGaugeValue(marker.value),
         labelStyle: config.labelStyle,
         textDirection: config.textDirection,
+        textScaler: config.textScaler,
         upright: config.vertical,
       );
     }
@@ -541,6 +550,7 @@ class ScaleLinearGaugePainter extends CustomPainter {
         valueText: formatGaugeValue(config.scale.clamp(value.value)),
         labelStyle: config.labelStyle,
         textDirection: config.textDirection,
+        textScaler: config.textScaler,
         upright: config.vertical,
       ),
     );

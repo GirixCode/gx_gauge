@@ -137,6 +137,22 @@ Widget animated(double speed) => GxRadialGauge(
 );
 // #enddocregion animation
 
+// #docregion center-value
+Widget centerValue(double speed) => GxRadialGauge(
+  value: GxGaugeValue(value: speed, max: 240),
+  centerBuilder: (BuildContext context, double value) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: <Widget>[
+      Text(
+        '${value.round()}',
+        style: Theme.of(context).textTheme.headlineMedium,
+      ),
+      const Text('km/h'),
+    ],
+  ),
+);
+// #enddocregion center-value
+
 // #docregion interaction
 class VolumeKnob extends StatefulWidget {
   const VolumeKnob({super.key});

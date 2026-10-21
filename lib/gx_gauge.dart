@@ -26,7 +26,9 @@ export 'src/common/models/gauge_tooltip.dart' show GxGaugeTooltip;
 export 'src/common/models/gauge_value.dart' show GxGaugeValue;
 export 'src/common/utils/typedef.dart'
     show
+        GxCenterBuilder,
         GxNeedlePainter,
+        GxValueFormatter,
         GxValueLabelFormatter,
         GxValueLabelStyler,
         GxValueTickStyler;

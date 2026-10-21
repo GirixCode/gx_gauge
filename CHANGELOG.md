@@ -2,6 +2,17 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-22
+
+### Added
+
+- **Radial center value:** `GxRadialGauge` takes `valueFormatter` and `valueStyle` for the painted center value, and `centerBuilder` to replace it with any widget (centered where the value would be drawn, and fed the animated value). New public typedefs `GxValueFormatter` and `GxCenterBuilder`.
+
+### Changed
+
+- **Painted text follows the system text size.** Every gauge now scales its tick labels, value text, step markers, bar labels, needle labels and tooltips with `MediaQuery.textScalerOf`. Apps with a larger font size set on the device will see larger gauge text; cap it by wrapping a gauge in a `MediaQuery` with a clamped `textScaler`.
+- **Reduce motion is honoured.** When the platform's `MediaQuery.disableAnimations` is on, value changes jump to the new value instead of animating.
+
 ## [1.0.1] - 2026-09-29
 
 ### Changed
@@ -95,6 +106,7 @@ Releases published under the previous package name.
 
 - Initial release: progress, scale, bar and stepper linear gauges, and a radial gauge with gradient, ranges and pointers.
 
+[1.1.0]: https://github.com/GirixCode/gx_gauge/releases/tag/v1.1.0
 [1.0.1]: https://github.com/GirixCode/gx_gauge/releases/tag/v1.0.1
 [1.0.0]: https://github.com/GirixCode/gx_gauge/releases/tag/v1.0.0
 [0.0.6]: https://pub.dev/packages/girix_code_gauge/versions/0.0.6

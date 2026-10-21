@@ -162,6 +162,7 @@ class _GxLinearProgressGaugeState
                 w.style.backgroundColor ?? color.withValues(alpha: 0.2),
             reversed: reversed,
             textDirection: direction,
+            textScaler: MediaQuery.textScalerOf(context),
             labelStyle: defaults.labelStyle,
             needleColor: defaults.needle,
             needle: w.needle,

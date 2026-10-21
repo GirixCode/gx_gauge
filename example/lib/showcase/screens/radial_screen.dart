@@ -65,6 +65,51 @@ class _Captioned extends StatelessWidget {
   }
 }
 
+/// The center value: formatted text, or any widget through `centerBuilder`.
+class _CenterValue extends StatelessWidget {
+  const _CenterValue();
+
+  @override
+  Widget build(BuildContext context) {
+    return DemoCard(
+      title: 'Center value',
+      subtitle:
+          'valueFormatter and valueStyle restyle the painted value. '
+          'centerBuilder swaps it for any widget.',
+      child: _Grid(
+        children: <Widget>[
+          _Captioned(
+            'valueFormatter + valueStyle',
+            GxRadialGauge(
+              value: _v,
+              diameter: 140,
+              valueFormatter: (double v) => '${v.round()}%',
+              valueStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          _Captioned(
+            'centerBuilder',
+            GxRadialGauge(
+              value: _v,
+              diameter: 140,
+              centerBuilder: (BuildContext context, double v) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    v.round().toString(),
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  Text('km/h', style: Theme.of(context).textTheme.labelSmall),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Arcs extends StatelessWidget {
   const _Arcs();
 
@@ -113,6 +158,7 @@ class _Arcs extends StatelessWidget {
             ],
           ),
         ),
+        _CenterValue(),
         DemoCard(
           title: 'Arc styles',
           child: _Grid(

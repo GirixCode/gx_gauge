@@ -40,6 +40,23 @@ abstract class AnimatedGaugeState<T extends ImplicitlyAnimatedWidget>
   @override
   void didUpdateTweens() {
     _valueAnimation = _value!.animate(animation);
+    _skipAnimationIfReduced();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _skipAnimationIfReduced();
+  }
+
+  /// Jumps to the end of a running animation when the platform asks for
+  /// reduced motion (`MediaQuery.disableAnimations`), so the gauge still
+  /// shows the new value but doesn't sweep to it.
+  void _skipAnimationIfReduced() {
+    if (controller.isAnimating &&
+        (MediaQuery.maybeDisableAnimationsOf(context) ?? false)) {
+      controller.value = 1;
+    }
   }
 }
 

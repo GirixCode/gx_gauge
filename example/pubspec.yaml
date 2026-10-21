@@ -13,7 +13,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  gx_gauge: ^1.0.0
+  gx_gauge:
+    path: ../
 
 dev_dependencies:
   flutter_test:

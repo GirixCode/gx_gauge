@@ -27,6 +27,7 @@ abstract final class LinearBarUtils {
     required Color color,
     required TextStyle labelStyle,
     required TextDirection textDirection,
+    TextScaler textScaler = TextScaler.noScaling,
     double gap = 0,
     bool upright = false,
   }) {
@@ -67,7 +68,15 @@ abstract final class LinearBarUtils {
 
       final GxGaugeLabel? label = bar.label;
       if (label != null) {
-        _drawLabel(canvas, rect, label, labelStyle, textDirection, upright);
+        _drawLabel(
+          canvas,
+          rect,
+          label,
+          labelStyle,
+          textDirection,
+          textScaler,
+          upright,
+        );
       }
     }
   }
@@ -107,6 +116,7 @@ abstract final class LinearBarUtils {
     GxGaugeLabel label,
     TextStyle baseStyle,
     TextDirection textDirection,
+    TextScaler textScaler,
     bool upright,
   ) {
     paintText(
@@ -114,6 +124,7 @@ abstract final class LinearBarUtils {
       text: label.label,
       style: baseStyle.merge(label.style),
       textDirection: textDirection,
+      textScaler: textScaler,
       upright: upright,
       position: (Size size) {
         final double x = switch (resolveTextAlign(

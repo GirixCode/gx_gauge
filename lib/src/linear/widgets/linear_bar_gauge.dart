@@ -159,6 +159,7 @@ class _GxLinearBarGaugeState extends AnimatedGaugeState<GxLinearBarGauge> {
             tooltipTextColor: defaults.onTooltip,
             reversed: reversed,
             textDirection: direction,
+            textScaler: MediaQuery.textScalerOf(context),
             gap: w.gapBetweenBars,
             needle: w.needle,
             needlePainter: w.needlePainter,

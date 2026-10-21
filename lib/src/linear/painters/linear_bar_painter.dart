@@ -26,6 +26,7 @@ class BarPainterConfig extends PainterConfig {
     required this.tooltipTextColor,
     required this.reversed,
     required this.textDirection,
+    this.textScaler = TextScaler.noScaling,
     this.gap = 0,
     this.needle,
     this.needlePainter,
@@ -60,6 +61,9 @@ class BarPainterConfig extends PainterConfig {
   /// Direction for text.
   final TextDirection textDirection;
 
+  /// Scales painted text to follow the system text size setting.
+  final TextScaler textScaler;
+
   /// Pixels between adjacent bars.
   final double gap;
 
@@ -86,6 +90,7 @@ class BarPainterConfig extends PainterConfig {
     tooltipTextColor,
     reversed,
     textDirection,
+    textScaler,
     gap,
     needle,
     needlePainter,
@@ -152,6 +157,7 @@ class LinearBarPainter extends CustomPainter {
       color: config.barColor,
       labelStyle: config.labelStyle,
       textDirection: config.textDirection,
+      textScaler: config.textScaler,
       gap: config.gap,
       upright: config.vertical,
     );
@@ -171,6 +177,7 @@ class LinearBarPainter extends CustomPainter {
         valueText: text,
         labelStyle: config.labelStyle,
         textDirection: config.textDirection,
+        textScaler: config.textScaler,
         upright: config.vertical,
       );
     }
@@ -186,6 +193,7 @@ class LinearBarPainter extends CustomPainter {
         color: tooltip.color ?? config.tooltipColor,
         textColor: config.tooltipTextColor,
         textDirection: config.textDirection,
+        textScaler: config.textScaler,
         baseStyle: config.labelStyle,
         upright: config.vertical,
       );

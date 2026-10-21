@@ -21,6 +21,7 @@ class ProgressPainterConfig extends PainterConfig {
     required this.backgroundColor,
     required this.reversed,
     required this.textDirection,
+    this.textScaler = TextScaler.noScaling,
     required this.labelStyle,
     required this.needleColor,
     this.needle,
@@ -47,6 +48,9 @@ class ProgressPainterConfig extends PainterConfig {
 
   /// Direction for text and `start`/`end` alignment.
   final TextDirection textDirection;
+
+  /// Scales painted text to follow the system text size setting.
+  final TextScaler textScaler;
 
   /// Base style that the label's style merges onto.
   final TextStyle labelStyle;
@@ -77,6 +81,7 @@ class ProgressPainterConfig extends PainterConfig {
     backgroundColor,
     reversed,
     textDirection,
+    textScaler,
     labelStyle,
     needleColor,
     needle,
@@ -186,6 +191,7 @@ class ProgressLinearPainter extends CustomPainter {
       valueText: formatGaugeValue(config.scale.clamp(value.value)),
       labelStyle: config.labelStyle,
       textDirection: config.textDirection,
+      textScaler: config.textScaler,
       upright: config.vertical,
     );
   }
@@ -205,6 +211,7 @@ class ProgressLinearPainter extends CustomPainter {
       text: label.label.replaceAll('{value}', value),
       style: config.labelStyle.merge(label.style),
       textDirection: config.textDirection,
+      textScaler: config.textScaler,
       textAlign: align,
       upright: config.vertical,
       position: (Size text) {

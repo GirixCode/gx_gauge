@@ -1,7 +1,25 @@
-import 'dart:ui';
+import 'package:flutter/widgets.dart';
 
 import 'package:gx_gauge/src/common/models/enums.dart';
 import 'package:gx_gauge/src/linear/models/linear_needle.dart';
+
+/// Formats a gauge's current value as the text written at its center.
+///
+/// ```dart
+/// valueFormatter: (double value) => '${value.round()} km/h',
+/// ```
+typedef GxValueFormatter = String Function(double value);
+
+/// Builds the widget shown at the center of a radial gauge.
+///
+/// [value] is the current, animated value, clamped to the gauge's range. The
+/// builder runs on every animation frame, so keep it cheap.
+///
+/// ```dart
+/// centerBuilder: (BuildContext context, double value) =>
+///     Text('${value.round()}%'),
+/// ```
+typedef GxCenterBuilder = Widget Function(BuildContext context, double value);
 
 /// Formats a scale value as label text.
 ///

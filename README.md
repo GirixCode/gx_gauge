@@ -17,7 +17,7 @@ Customizable, animated and accessible gauges for Flutter: linear progress, stepp
 - **Ranges, needles, markers and labels,** including gradients and fully custom needle painting.
 - **Horizontal or vertical,** and mirrored automatically in right-to-left locales.
 - **Theme-aware:** colors you don't set come from your `ColorScheme`, so dark mode just works.
-- **Accessible:** screen readers announce each gauge's label and value.
+- **Accessible:** screen readers announce each gauge's label and value, painted text follows the system text size, and animations are skipped when the system asks for reduced motion.
 - **No dependencies** beyond Flutter.
 
 ## Install
@@ -169,6 +169,27 @@ GxRadialGauge(
   curve: Curves.easeOutCubic,
 )
 ```
+
+### Center value
+
+The radial gauge writes its value at the center. Restyle it with `valueFormatter` and `valueStyle`, or replace it with any widget through `centerBuilder`, which receives the animated value.
+
+```dart
+GxRadialGauge(
+  value: GxGaugeValue(value: speed, max: 240),
+  centerBuilder: (BuildContext context, double value) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: <Widget>[
+      Text('${value.round()}', style: Theme.of(context).textTheme.headlineMedium),
+      const Text('km/h'),
+    ],
+  ),
+)
+```
+
+### Text size and reduced motion
+
+Text drawn on a gauge follows the system text size. To cap it, wrap the gauge in a `MediaQuery` with a clamped `textScaler`. When the system asks for reduced motion (`MediaQuery.disableAnimations`), value changes jump to the new value instead of animating.
 
 ### Interaction
 

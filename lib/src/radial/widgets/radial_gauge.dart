@@ -47,6 +47,9 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
     this.labelStyler,
     this.majorTickStyler,
     this.showValueAtCenter = true,
+    this.valueFormatter,
+    this.valueStyle,
+    this.centerBuilder,
     this.showNeedle = false,
     this.needle,
     this.pointers = const <GxRadialPointer>[],
@@ -110,8 +113,21 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
   /// Returns the major tick style per tick, replacing [majorTickStyle].
   final GxValueTickStyler<GxRadialTickStyle>? majorTickStyler;
 
-  /// Whether the value is written at the center. Defaults to true.
+  /// Whether the value is written at the center. Defaults to true. Ignored
+  /// when [centerBuilder] is set.
   final bool showValueAtCenter;
+
+  /// Formats the value written at the center. Null writes the plain number.
+  final GxValueFormatter? valueFormatter;
+
+  /// Merged onto the theme's center value style (`titleLarge`).
+  final TextStyle? valueStyle;
+
+  /// Replaces the painted center value with a widget, such as a value and a
+  /// unit on two lines. It's centered where the value would be drawn and
+  /// receives the current animated value. Null (the default) paints the
+  /// value, using [valueFormatter] and [valueStyle].
+  final GxCenterBuilder? centerBuilder;
 
   /// Whether [needle] is drawn. Defaults to false.
   final bool showNeedle;
@@ -149,6 +165,13 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
       ..add(DiagnosticsProperty<GxGaugeValue>('value', value))
       ..add(DiagnosticsProperty<GxRadialGaugeStyle>('style', style))
       ..add(DoubleProperty('diameter', diameter, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextStyle>(
+          'valueStyle',
+          valueStyle,
+          defaultValue: null,
+        ),
+      )
       ..add(DoubleProperty('startAngleInDegree', startAngleInDegree))
       ..add(DoubleProperty('sweepAngleInDegree', sweepAngleInDegree))
       ..add(DoubleProperty('interval', interval))
@@ -162,6 +185,41 @@ class GxRadialGauge extends ImplicitlyAnimatedWidget {
 class _GxRadialGaugeState extends AnimatedGaugeState<GxRadialGauge> {
   @override
   double get targetValue => widget.value.value;
+
+  Widget _buildCenter(
+    GxCenterBuilder builder,
+    RadialPainterConfig config,
+    GaugeScale scale,
+  ) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final Offset anchor = RadialGaugePainter.centerAnchor(
+          config,
+          constraints.biggest,
+        );
+        return Stack(
+          children: <Widget>[
+            Positioned(
+              left: anchor.dx,
+              top: anchor.dy,
+              child: FractionalTranslation(
+                translation: const Offset(-0.5, -0.5),
+                child: DefaultTextStyle(
+                  style: config.valueStyle,
+                  textAlign: TextAlign.center,
+                  child: AnimatedBuilder(
+                    animation: valueAnimation,
+                    builder: (BuildContext context, Widget? _) =>
+                        builder(context, scale.clamp(valueAnimation.value)),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,14 +250,16 @@ class _GxRadialGaugeState extends AnimatedGaugeState<GxRadialGauge> {
       tickColor: defaults.tick,
       labelTickStyle: w.labelTickStyle,
       labelStyle: defaults.labelStyle,
-      showValueAtCenter: w.showValueAtCenter,
-      valueStyle: defaults.valueStyle,
+      showValueAtCenter: w.showValueAtCenter && w.centerBuilder == null,
+      valueStyle: defaults.valueStyle.merge(w.valueStyle),
+      valueFormatter: w.valueFormatter,
       showNeedle: w.showNeedle,
       needleColor: defaults.needle,
       pointerColor: defaults.tertiary,
       rangeColor: color,
       capInnerColor: capInner,
       textDirection: direction,
+      textScaler: MediaQuery.textScalerOf(context),
       needle: w.needle,
       pointers: w.pointers,
       ranges: w.ranges,
@@ -220,14 +280,24 @@ class _GxRadialGaugeState extends AnimatedGaugeState<GxRadialGauge> {
       format: format,
       child: RadialGaugeBox(
         diameter: w.diameter,
-        child: GaugeInteraction(
-          onChanged: w.onChanged,
-          onChangeEnd: w.onChangeEnd,
-          valueAt: (Offset position, Size size) =>
-              RadialGaugePainter.valueAt(config, size, position),
-          child: CustomPaint(
-            painter: RadialGaugePainter(value: valueAnimation, config: config),
-          ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            GaugeInteraction(
+              onChanged: w.onChanged,
+              onChangeEnd: w.onChangeEnd,
+              valueAt: (Offset position, Size size) =>
+                  RadialGaugePainter.valueAt(config, size, position),
+              child: CustomPaint(
+                painter: RadialGaugePainter(
+                  value: valueAnimation,
+                  config: config,
+                ),
+              ),
+            ),
+            if (w.centerBuilder != null)
+              _buildCenter(w.centerBuilder!, config, scale),
+          ],
         ),
       ),
     );

@@ -30,6 +30,7 @@ abstract final class NeedleUtils {
     String valueText = '',
     TextStyle labelStyle = const TextStyle(),
     TextDirection textDirection = TextDirection.ltr,
+    TextScaler textScaler = TextScaler.noScaling,
     bool upright = false,
   }) {
     final double width = needle.size.width;
@@ -110,6 +111,7 @@ abstract final class NeedleUtils {
       text: label.label.replaceAll('{value}', valueText),
       style: labelStyle.merge(label.textStyle),
       textDirection: textDirection,
+      textScaler: textScaler,
       upright: upright,
       position: (Size text) => Offset(
         x - text.width / 2,

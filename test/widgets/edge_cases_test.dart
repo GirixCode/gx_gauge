@@ -63,6 +63,11 @@ List<Widget> _gauges(double value, {Axis direction = Axis.horizontal}) {
       ],
       onChanged: (_) {},
     ),
+    GxRadialGauge(
+      value: v,
+      valueFormatter: (double x) => '$x u',
+      centerBuilder: (BuildContext context, double x) => Text('$x'),
+    ),
   ];
 }
 
@@ -77,6 +82,35 @@ void main() {
     for (final double value in <double>[0, 100]) {
       for (final Widget gauge in _gauges(value)) {
         await _expectRenders(tester, Center(child: gauge));
+      }
+    }
+  });
+
+  testWidgets('large system text and reduced motion', (
+    WidgetTester tester,
+  ) async {
+    for (final double scale in <double>[2, 3]) {
+      for (final Axis direction in Axis.values) {
+        for (final Widget gauge in _gauges(50, direction: direction)) {
+          await tester.pumpWidget(
+            MaterialApp(
+              builder: (BuildContext context, Widget? home) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(scale),
+                  disableAnimations: true,
+                ),
+                child: home!,
+              ),
+              home: Scaffold(
+                body: Center(
+                  child: SizedBox(width: 300, height: 300, child: gauge),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        }
       }
     }
   });

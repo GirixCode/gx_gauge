@@ -40,9 +40,11 @@ class RadialPainterConfig extends PainterConfig {
     required this.rangeColor,
     required this.capInnerColor,
     required this.textDirection,
+    this.textScaler = TextScaler.noScaling,
     this.needle,
     this.pointers = const <GxRadialPointer>[],
     this.ranges = const <GxRadialRange>[],
+    this.valueFormatter,
     this.labelFormatter,
     this.labelStyler,
     this.majorTickStyler,
@@ -102,6 +104,9 @@ class RadialPainterConfig extends PainterConfig {
   /// Resolved style of the center value.
   final TextStyle valueStyle;
 
+  /// Formats the center value. Null writes the plain number.
+  final GxValueFormatter? valueFormatter;
+
   /// Whether [needle] is drawn.
   final bool showNeedle;
 
@@ -119,6 +124,9 @@ class RadialPainterConfig extends PainterConfig {
 
   /// Direction for text.
   final TextDirection textDirection;
+
+  /// Scales painted text to follow the system text size setting.
+  final TextScaler textScaler;
 
   /// The value needle.
   final GxRadialNeedle? needle;
@@ -164,9 +172,11 @@ class RadialPainterConfig extends PainterConfig {
     rangeColor,
     capInnerColor,
     textDirection,
+    textScaler,
     needle,
     pointers,
     ranges,
+    valueFormatter,
     labelFormatter,
     labelStyler,
     majorTickStyler,
@@ -292,6 +302,7 @@ class RadialGaugePainter extends CustomPainter {
           text: label.label,
           style: config.labelStyle.merge(label.style),
           textDirection: config.textDirection,
+          textScaler: config.textScaler,
           position: (Size text) {
             // Beside the band, on the side away from the gauge arc (inside
             // for bands shifted inwards), far enough that the text's corner
@@ -390,22 +401,46 @@ class RadialGaugePainter extends CustomPainter {
           config.labelFormatter?.call(value, index) ?? formatGaugeValue(value),
       style: config.labelStyle.merge(label.style),
       textDirection: config.textDirection,
+      textScaler: config.textScaler,
       position: (Size text) => anchor - Offset(text.width / 2, text.height / 2),
     );
   }
 
   /// Where the value text is centered: the gauge's center, or below the
   /// needle's hub when a needle is drawn, so the needle doesn't cover it.
-  Offset _valueAnchor(_Geometry g) => config.showNeedle && config.needle != null
-      ? g.center + Offset(0, g.radius * 0.45)
-      : g.center;
+  Offset _valueAnchor(_Geometry g) => _anchorOf(config, g.center, g.radius);
+
+  static String _valueText(RadialPainterConfig config, double value) {
+    final double clamped = config.scale.clamp(value);
+    return config.valueFormatter?.call(clamped) ?? formatGaugeValue(clamped);
+  }
+
+  /// Where the center value is centered in a gauge of [size]: the middle of
+  /// the gauge, or below the needle's hub when a needle is drawn. Widgets
+  /// that overlay the gauge, such as `centerBuilder`, use it to line up with
+  /// the painted value.
+  static Offset centerAnchor(RadialPainterConfig config, Size size) {
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final double radius =
+        math.min(size.width, size.height) / 2 - config.style.thickness / 2;
+    return _anchorOf(config, center, radius);
+  }
+
+  static Offset _anchorOf(
+    RadialPainterConfig config,
+    Offset center,
+    double radius,
+  ) => config.showNeedle && config.needle != null
+      ? center + Offset(0, radius * 0.45)
+      : center;
 
   void _drawValueAtCenter(Canvas canvas, Offset center) {
     paintText(
       canvas,
-      text: formatGaugeValue(config.scale.clamp(value.value)),
+      text: _valueText(config, value.value),
       style: config.valueStyle,
       textDirection: config.textDirection,
+      textScaler: config.textScaler,
       position: (Size text) => center - Offset(text.width / 2, text.height / 2),
     );
   }

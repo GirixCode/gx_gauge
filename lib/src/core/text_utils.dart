@@ -10,6 +10,8 @@ import 'package:flutter/painting.dart';
 /// so it reads normally on screen, and [position] receives the text's
 /// footprint in the rotated space (width and height swapped).
 ///
+/// [textScaler] applies the system text size setting to the painted text.
+///
 /// Returns the footprint that was passed to [position].
 Size paintText(
   Canvas canvas, {
@@ -19,6 +21,7 @@ Size paintText(
   required Offset Function(Size footprint) position,
   TextAlign textAlign = TextAlign.center,
   double maxWidth = double.infinity,
+  TextScaler textScaler = TextScaler.noScaling,
   bool upright = false,
 }) {
   final TextPainter painter =
@@ -26,6 +29,7 @@ Size paintText(
         text: TextSpan(text: text, style: style),
         textAlign: textAlign,
         textDirection: textDirection,
+        textScaler: textScaler,
       )..layout(
         maxWidth: maxWidth.isFinite && maxWidth > 0
             ? maxWidth

@@ -162,6 +162,7 @@ class _GxLinearStepperGaugeState
       labelStyle: defaults.labelStyle,
       reversed: linearReversed(context, w.direction, w.reverse),
       textDirection: direction,
+      textScaler: MediaQuery.textScalerOf(context),
       vertical: vertical,
     );
 

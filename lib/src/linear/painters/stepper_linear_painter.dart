@@ -28,6 +28,7 @@ class StepperPainterConfig extends PainterConfig {
     required this.labelStyle,
     required this.reversed,
     required this.textDirection,
+    this.textScaler = TextScaler.noScaling,
     this.vertical = false,
   });
 
@@ -70,6 +71,9 @@ class StepperPainterConfig extends PainterConfig {
   /// Direction for text.
   final TextDirection textDirection;
 
+  /// Scales painted text to follow the system text size setting.
+  final TextScaler textScaler;
+
   /// Whether the gauge is drawn bottom-to-top.
   final bool vertical;
 
@@ -98,6 +102,7 @@ class StepperPainterConfig extends PainterConfig {
     labelStyle,
     reversed,
     textDirection,
+    textScaler,
     vertical,
   ];
 }
@@ -168,6 +173,7 @@ class StepperLinearPainter extends CustomPainter {
         text: step.marker ?? '${i + 1}',
         style: reached ? c.activeStyle : c.inactiveStyle,
         textDirection: c.textDirection,
+        textScaler: c.textScaler,
         maxWidth: c.shapeSize,
         upright: c.vertical,
         position: (Size text) =>
@@ -178,6 +184,7 @@ class StepperLinearPainter extends CustomPainter {
         text: step.label.label,
         style: c.labelStyle.merge(step.label.style),
         textDirection: c.textDirection,
+        textScaler: c.textScaler,
         maxWidth: spacing,
         upright: c.vertical,
         // Centered under the step, but kept inside the gauge so the first
